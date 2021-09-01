@@ -1,0 +1,14 @@
+# charts-js:
+#   filter: rjsmin
+#   output: ckanext-charts/%(version)s-charts.js
+#   contents:
+#     - js/charts.js
+#   extra:
+#     preload:
+#       - base/main
+
+# charts-css:
+#   filter: cssrewrite
+#   output: ckanext-charts/%(version)s-charts.css
+#   contents:
+#     - css/charts.css
