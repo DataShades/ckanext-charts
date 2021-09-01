@@ -16,7 +16,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # http://packaging.python.org/en/latest/tutorial.html#version
-    version='0.0.1a',
+    version='0.0.1',
 
     description='''''',
     long_description=long_description,
@@ -63,6 +63,7 @@ setup(
       #
       # http://docs.ckan.org/en/latest/extensions/best-practices.html
       # add-third-party-libraries-to-requirements-txt
+        "typing_extensions",
     ],
 
     # If there are data files included in your packages that need to be

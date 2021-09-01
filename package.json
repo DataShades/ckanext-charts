@@ -1,0 +1,17 @@
+{
+  "name": "ckanext-charts",
+  "version": "1.0.0",
+  "description": "[![Tests](https://github.com/DataShades/ckanext-charts/workflows/Tests/badge.svg?branch=main)](https://github.com/DataShades/ckanext-charts/actions)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "copy-vendors": "cp node_modules/chart.js/dist/chart.js ckanext/charts/assets/vendor/",
+    "postinstall": "npm run copy-vendors"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chart.js": "^3.5.1"
+  }
+}

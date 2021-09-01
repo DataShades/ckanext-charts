@@ -1,0 +1,26 @@
+{#
+    type
+    color
+    params
+    data
+    action
+    #}
+{% asset "charts/chartjs" %}
+
+<div data-module="charts-chartjs"
+    data-module-type="{{ type|default("line") }}"
+    data-module-options="{{ {"backgroundColor": color|default("black")}|tojson|forceescape }}"
+
+    {% if data %}
+    data-module-data="{{ data|tojson|forceescape }}"
+    {% endif %}
+
+    {% if action %}
+    data-module-data-action="{{ action }}"
+    {% endif %}
+
+    {% if params %}
+    data-module-action-params="{{ params|tojson|forceescape }}"
+    {% endif %}
+
+></div>
