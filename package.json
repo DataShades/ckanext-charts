@@ -12,6 +12,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "chart.js": "^3.5.1"
+    "chart.js": "^4.4.0"
   }
 }

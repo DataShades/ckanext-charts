@@ -1,6 +1,32 @@
 ckan.module("charts-chartjs", function ($) {
     "use strict";
-    const DEFAULT_SCALE = {grace: "5%", ticks: {precision: 0}};
+    // HTMX extension for in-place chart updates
+
+    $(document).ready(function () {
+        window.htmx &&
+            htmx.defineExtension("ckanext-charts:chartjs", {
+                transformResponse: function (text, xhr, elt) {
+                    console.log("hey ho");
+                    const targetId = elt.getAttribute("data-charts-target");
+                    if (!targetId) {
+                        console.log(
+                            "'data-charts-target' is missinf from %o",
+                            elt
+                        );
+                    }
+
+                    const container = document.getElementById(targetId);
+                    const canvas = container.querySelector("canvas");
+                    const chart = Chart.getChart(canvas);
+
+                    const data = JSON.parse(text);
+                    Object.assign(chart.data, data);
+                    chart.update();
+                    return "";
+                },
+            });
+    });
+    const DEFAULT_SCALE = { grace: "5%", ticks: { precision: 0 } };
 
     function fakeData() {
         const labels = [
@@ -36,15 +62,15 @@ ckan.module("charts-chartjs", function ($) {
             dataAction: null,
             actionParams: null,
             options: {},
-	    defaultOptions: {
-		scales: {
-		    x: DEFAULT_SCALE,  y: DEFAULT_SCALE
-		},
-		borderWidth: 1,
+            defaultOptions: {
+                scales: {
+                    x: DEFAULT_SCALE,
+                    y: DEFAULT_SCALE,
+                },
+                borderWidth: 1,
                 // backgroundColor: "#EE0000",
                 // borderColor: "grey",
-
-	    }
+            },
         },
 
         initialize: function () {
@@ -63,39 +89,21 @@ ckan.module("charts-chartjs", function ($) {
             const data = await this.getData();
             const type = this.options.type;
 
+            console.log(options);
             this.chart = new Chart(ctx, { type, data, options });
         },
 
         getOptions: function () {
-            return $.extend(true, {}, this.options.defaultOptions, this.options.options);
+            return $.extend(
+                true,
+                {},
+                this.options.defaultOptions,
+                this.options.options
+            );
         },
 
         getData: async function () {
-            const {
-                data: data,
-                dataUrl: url,
-                dataAction: action,
-                actionParams: params,
-            } = this.options;
-
-            if (action) {
-                const remoteData = await new Promise((ok, err) =>
-                    this.sandbox.client.call(
-                        "GET",
-                        action,
-                        "?" + new URLSearchParams(params),
-                        (resp) => ok(resp.success ? resp.result : null),
-                        (error) => {
-                            console.warn("Data fetch error", err);
-			    ok(null);
-                        }
-                    )
-                );
-
-                return remoteData;
-            } else {
-                return data || fakeData();
-            }
+            return this.options.data || fakeData();
         },
     };
 });

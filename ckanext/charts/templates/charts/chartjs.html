@@ -7,9 +7,15 @@
     #}
 {% asset "charts/chartjs" %}
 
+
 <div data-module="charts-chartjs"
     data-module-type="{{ type|default("line") }}"
+
+    {% if options %}
+    data-module-options="{{ options|tojson|forceescape }}"
+    {% else %}
     data-module-options="{{ {"backgroundColor": color|default("black")}|tojson|forceescape }}"
+    {% endif %}
 
     {% if data %}
     data-module-data="{{ data|tojson|forceescape }}"
