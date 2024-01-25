@@ -17,4 +17,3 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [v0.0.1](https://github.com/DataShades/ckanext-charts/releases/tag/v0.0.1) - 2021-09-01
 
 <small>[Compare with first commit](https://github.com/DataShades/ckanext-charts/compare/e6de562696bc54582001c3b06bb423d29853f308...v0.0.1)</small>
-
