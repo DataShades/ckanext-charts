@@ -1,0 +1,53 @@
+{% import "macros/form.html" as form %}
+{% asset "charts/plotly" %}
+
+<fieldset class="charts-view--chart-settings"
+    hx-get="{{ h.url_for('charts_view.form', resource_id=resource_id) }}"
+    hx-trigger="submit,change"
+    hx-include="closest form"
+    hx-swap="outerHTML"
+>
+
+    {{ form.select("engine", label=_("Engine"), selected=settings.engine, options=[
+        {"value": "", "text": ""},
+        {"value": "plotly", "text": "plotly"},
+        ]) }}
+
+    {{ form.input("query", label=_("Query"), value=settings.query) }}
+
+    {{settings}}
+    {% if settings.engine == "plotly" %}
+        {{ form.select("type", label=_("Type"), selected=settings.type, options=[
+            {"value": "", "text": ""},
+            {"value": "bar", "text": "Bar"},
+            {"value": "line", "text": "Line"},
+            {"value": "scatter", "text": "Scatter"},
+            ]) }}
+
+        {% if settings.type in ["bar", "line", "scatter"] %}
+            {{ form.select("x", label=_("X Axis"), selected=settings.x, options=column_options) }}
+            {{ form.checkbox("log_x", label=_("Log-scale x-axis"), checked=settings.log_x, value="yes") }}
+
+            {{ form.select("y", label=_("Y Axis"), selected=settings.y, options=column_options) }}
+            {{ form.checkbox("log_y", label=_("Log-scale y-axis"), checked=settings.log_y, value="yes") }}
+
+            {{ form.select("color", label=_("Color"), selected=settings.color, options=[{"text": "", "value": ""}] + column_options) }}
+
+            {{ form.select("animation_frame", label=_("Animation frame"), selected=settings.animation_frame, options=[{"text": "", "value": ""}] + column_options) }}
+            {{ form.select("hover_name", label=_("Tooltip label"), selected=settings.hover_name, options=column_options) }}
+            {{ form.input("limit", label=_("Limit"), value=settings.limit, type="number", attrs={"max": 10000, "class": "form-control"}) }}
+
+            {{ form.select("size", label=_("Size"), selected=settings.size, options=[{"text": "", "value": ""}] + column_options) }}
+            {{ form.input("size_max", label=_("Max size"), value=settings.size_max|default(20), type="number") }}
+        {% endif %}
+    {% endif %}
+
+    <div class="charts-view--preview" id="charts-view--preview">
+        {% include ["charts/snippets/" ~ settings.engine ~ "_chart.html", "charts/snippets/unknown_chart.html"] %}
+    </div>
+
+    <input type="hidden" name="{{ g.csrf_field_name }}" value="{{ csrf_token() }}"
+        hx-swap-oob='outerHTML:[name="{{ g.csrf_field_name }}"]'
+    />
+
+</fieldset>

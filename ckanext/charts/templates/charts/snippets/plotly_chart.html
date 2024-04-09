@@ -1,0 +1,10 @@
+{% set figure = h.charts_plotly_datastore(settings, resource_id) %}
+{% if figure %}
+    {{ figure.to_html(full_html=false, include_plotlyjs="cdn", auto_play=false, config={
+        "displaylogo": false,
+        }) | safe }}
+{% else %}
+    <p class="text-muted">
+        {{ _("Cannot build chart with current settings") }}
+    </p>
+{% endif %}

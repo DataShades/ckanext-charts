@@ -7,3 +7,8 @@ help:
 
 changelog:  ## compile changelog
 	git changelog -c conventional -o CHANGELOG.md
+
+
+vendor:
+	cp node_modules/chart.js/dist/chart.umd.js ckanext/charts/assets/vendor/chart.js
+	cp node_modules/plotly.js-dist/plotly.js ckanext/charts/assets/vendor/plotly.js

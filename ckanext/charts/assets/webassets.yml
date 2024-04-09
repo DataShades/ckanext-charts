@@ -8,6 +8,15 @@ chartjs:
     preload:
       - base/main
 
+plotly:
+  filter: rjsmin
+  output: ckanext-charts/%(version)s-chartjs.js
+  contents:
+    - vendor/plotly.js
+  extra:
+    preload:
+      - base/main
+
 # charts-css:
 #   filter: cssrewrite
 #   output: ckanext-charts/%(version)s-charts.css
