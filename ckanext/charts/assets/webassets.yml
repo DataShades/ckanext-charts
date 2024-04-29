@@ -10,9 +10,13 @@ chartjs:
 
 plotly:
   filter: rjsmin
-  output: ckanext-charts/%(version)s-chartjs.js
+  output: ckanext-charts/%(version)s-chartjs-plotly.js
   contents:
     - vendor/plotly.js
+    - vendor/jsoneditor.min.js
+
+    - js/charts-form.js
+
   extra:
     preload:
       - base/main
