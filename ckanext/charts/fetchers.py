@@ -73,7 +73,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
 
 
 class URLDataFetcher(DataFetcherStrategy):
-    SUPPORTED_FORMATS = ["csv", "xlsx", "xml"]
+    SUPPORTED_FORMATS = ["csv", "xlsx", "xls", "xml"]
 
     def __init__(
         self,
@@ -97,13 +97,18 @@ class URLDataFetcher(DataFetcherStrategy):
         data = self.make_request()
 
         try:
-            if self.file_format == "xlsx":
+            if self.file_format in ("xlsx", "xls"):
                 df = pd.read_excel(BytesIO(data))
-            elif self.fetch_data == "xml":
+            elif self.file_format == "xml":
                 df = pd.read_xml(BytesIO(data))
             else:
                 df = pd.read_csv(BytesIO(data))
-        except KeyError as e:
+        except (
+            pd.errors.ParserError,
+            lxml.etree.XMLSyntaxError,
+            UnicodeDecodeError,
+            ValueError,
+        ) as e:
             raise exception.DataFetchError(
                 f"An error occurred during fetching data from URL: {e}"
             )
@@ -175,6 +180,7 @@ class FileSystemDataFetcher(DataFetcherStrategy):
             pd.errors.ParserError,
             lxml.etree.XMLSyntaxError,
             UnicodeDecodeError,
+            ValueError,
         ) as e:
             raise exception.DataFetchError(
                 f"An error occurred during fetching data from file: {e}"
@@ -193,7 +199,14 @@ class HardcodedDataFetcher(DataFetcherStrategy):
         self.data = data
 
     def fetch_data(self) -> pd.DataFrame:
-        return pd.DataFrame(self.data)
+        try:
+            df = pd.DataFrame(self.data)
+        except ValueError as e:
+            raise exception.DataFetchError(
+                f"An error occurred during fetching hardcoded data: {e}"
+            )
+
+        return df
 
     def make_cache_key(self) -> str:
         return "not-cached"

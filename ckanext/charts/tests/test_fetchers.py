@@ -11,8 +11,6 @@ from ckan.tests.helpers import call_action
 import ckanext.charts.fetchers as fetchers
 from ckanext.charts.exception import DataFetchError
 
-CSV_DATA = b"col1,col2\n1,2\n3,4\n"
-
 
 @pytest.mark.ckan_config("ckan.plugins", "datastore")
 @pytest.mark.usefixtures("clean_db", "with_plugins")
@@ -45,18 +43,45 @@ class TestDatastoreDataFetcher:
 
 @pytest.mark.usefixtures("clean_redis")
 class TestURLDataFetcher:
-    URL = "http://example.com/data.csv"
+    URL = "http://xxx"
+
+    def _get_file_content(self, fmt: str) -> bytes:
+        file_path = os.path.join(os.path.dirname(__file__), "data", f"sample.{fmt}")
+
+        with open(file_path, mode="rb") as file:
+            return file.read()
 
     def test_fetch_data_success(self, requests_mock):
-        requests_mock.get(self.URL, content=CSV_DATA)
+        requests_mock.get(self.URL, content=self._get_file_content("csv"))
 
         result = fetchers.URLDataFetcher(self.URL).fetch_data()
 
         assert isinstance(result, pd.DataFrame)
-        assert len(result) == 2
-        assert list(result.columns) == ["col1", "col2"]
-        assert list(result["col1"]) == [1, 3]
-        assert list(result["col2"]) == [2, 4]
+        assert len(result) == 10000
+
+    def test_fetch_data_success_xml(self, requests_mock):
+        requests_mock.get(self.URL, content=self._get_file_content("xml"))
+
+        result = fetchers.URLDataFetcher(self.URL, file_format="xml").fetch_data()
+
+        assert isinstance(result, pd.DataFrame)
+        assert len(result) == 36
+
+    def test_fetch_data_success_xlsx(self, requests_mock):
+        requests_mock.get(self.URL, content=self._get_file_content("xlsx"))
+
+        result = fetchers.URLDataFetcher(self.URL, file_format="xlsx").fetch_data()
+
+        assert isinstance(result, pd.DataFrame)
+        assert len(result) == 100
+
+    def test_fetch_data_success_xlx(self, requests_mock):
+        requests_mock.get(self.URL, content=self._get_file_content("xls"))
+
+        result = fetchers.URLDataFetcher(self.URL, file_format="xls").fetch_data()
+
+        assert isinstance(result, pd.DataFrame)
+        assert len(result) == 100
 
     def test_fetch_data_http_error(self, requests_mock):
         requests_mock.get(self.URL, status_code=404)
@@ -77,7 +102,7 @@ class TestURLDataFetcher:
             fetchers.URLDataFetcher(self.URL).fetch_data()
 
     def test_hit_cache_redis(self, requests_mock):
-        requests_mock.get(self.URL, content=CSV_DATA)
+        requests_mock.get(self.URL, content=self._get_file_content("csv"))
 
         fetcher = fetchers.URLDataFetcher(self.URL)
 
@@ -91,7 +116,7 @@ class TestURLDataFetcher:
 
     @pytest.mark.usefixtures("clean_disk_cache")
     def test_hit_cache_disk(self, requests_mock):
-        requests_mock.get(self.URL, content=CSV_DATA)
+        requests_mock.get(self.URL, content=self._get_file_content("csv"))
 
         fetcher = fetchers.URLDataFetcher(self.URL, cache_stragegy="disk")
 
@@ -119,6 +144,12 @@ class TestHardcodedDataFetcher:
         assert isinstance(result, pd.DataFrame)
         assert len(result) == 4
         assert list(result.columns) == ["col1", "col2", "col3"]
+
+    def test_malformed_data(self):
+        with pytest.raises(DataFetchError):
+            fetchers.HardcodedDataFetcher(
+                {"col1": ["1"], "col2": ["a", "b"]}
+            ).fetch_data()
 
 
 @pytest.mark.usefixtures("clean_redis", "clean_disk_cache")
