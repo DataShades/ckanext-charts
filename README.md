@@ -30,7 +30,7 @@ Compatibility with core CKAN versions:
 List of config options:
 
 	# Caching strategy for chart data (required, default: redis).
-	ckanext-charts = disk
+	ckanext.charts.cache_strategy = disk
 
 
 ## Developer installation
