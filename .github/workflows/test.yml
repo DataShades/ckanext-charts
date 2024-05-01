@@ -30,6 +30,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Install CMake
+      run: sudo apt-get update && sudo apt-get install -y cmake
     - name: Install requirements
       # Install any extra requirements your extension has here (dev requirements, other extensions etc)
       run: |
