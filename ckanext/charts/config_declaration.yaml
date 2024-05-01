@@ -1,0 +1,7 @@
+version: 1
+groups:
+  - annotation: ckanext-charts
+    options:
+      - key: ckanext.charts.cache_strategy
+        description: Charts cache strategy
+        default: redis

@@ -1,17 +1,14 @@
-# encoding: utf-8
-
 import pytest
-from ckan.common import config
-
-from urllib.parse import urljoin
 
 import ckan.lib.helpers as h
-import ckanext.textview.plugin as plugin
 from ckan.tests import factories
 
 
 @pytest.mark.usefixtures("clean_db", "with_plugins")
 class TestAllowedViews:
+    """Test that the allowed views are correctly returned based on the
+    datastore_active field of the resource. For now we're working only
+    with resources that are stored in datastore."""
 
     def test_not_in_datastore(self):
         dataset = factories.Dataset()

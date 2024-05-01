@@ -1,0 +1,15 @@
+scheming_version: 2
+schema_id: charts_config
+about: An extension config form schema
+
+fields:
+  - field_name: ckanext.charts.cache_strategy
+    label: Cache Strategy
+    validators: default(disk), one_of([disk, redis])
+    preset: select
+    required: true
+    choices:
+      - value: disk
+        label: Disk
+      - value: redis
+        label: Redis
