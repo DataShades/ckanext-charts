@@ -74,9 +74,8 @@ class FileCache(CacheStrategy):
 
     def get_data(self, key: str) -> pd.DataFrame | None:
         """Return data from cache if exists"""
-        file_path = os.path.join(
-            self.directory, f"{self.generate_unique_consistent_filename(key)}.orc"
-        )
+
+        file_path = self.make_file_path_from_key(key)
 
         if os.path.exists(file_path):
             if self.is_file_cache_expired(file_path):
@@ -89,20 +88,21 @@ class FileCache(CacheStrategy):
 
     def set_data(self, key: str, data: pd.DataFrame) -> None:
         """Save data to cache. The data will be stored as an ORC file."""
-        file_path = os.path.join(
-            self.directory, f"{self.generate_unique_consistent_filename(key)}.orc"
-        )
+        file_path = self.make_file_path_from_key(key)
 
         data.to_orc(file_path)
 
     def invalidate(self, key: str) -> None:
         """Remove data from cache"""
-        file_path = os.path.join(
-            self.directory, f"{self.generate_unique_consistent_filename(key)}.orc"
-        )
+        file_path = self.make_file_path_from_key(key)
 
         if os.path.exists(file_path):
             os.remove(file_path)
+
+    def make_file_path_from_key(self, key: str) -> str:
+        return os.path.join(
+            self.directory, f"{self.generate_unique_consistent_filename(key)}.orc"
+        )
 
     def generate_unique_consistent_filename(self, key: str) -> str:
         """Generate unique and consistent filename based on the key"""
@@ -112,8 +112,13 @@ class FileCache(CacheStrategy):
 
     @staticmethod
     def is_file_cache_expired(file_path: str) -> bool:
-        """Check if file cache is expired"""
-        return os.path.getmtime(file_path) + config.get_file_cache_ttl() < time.time()
+        """Check if file cache is expired. If TTL is 0 then cache never expires."""
+        file_ttl = config.get_file_cache_ttl()
+
+        if not file_ttl:
+            return False
+
+        return time.time() - os.path.getmtime(file_path) > file_ttl
 
 
 def get_cache_manager(cache_strategy: str | None) -> CacheStrategy:

@@ -6,8 +6,10 @@ import pandas as pd
 from ckan.tests.helpers import call_action
 
 import ckanext.charts.fetchers as fetchers
+import ckanext.charts.cache as cache
 import ckanext.charts.tests.helpers as helpers
 import ckanext.charts.const as const
+import ckanext.charts.config as config
 
 
 @pytest.mark.ckan_config("ckan.plugins", "charts_view datastore")
@@ -188,8 +190,14 @@ class TestFileSystemFetcherCache:
         assert fetcher.get_cached_data() is None
 
 
-class TestCalculateFileCacheTTL:
-    def test_calculate_file_cache_ttl(self):
+from freezegun import freeze_time
+from datetime import timedelta, datetime
+
+
+@pytest.mark.usefixtures("clean_file_cache")
+@pytest.mark.ckan_config(config.CONF_FILE_CACHE_TTL, 100)
+class TestCalculateFileExpiration:
+    def test_file_is_expired(self):
         fetcher = fetchers.FileSystemDataFetcher(
             helpers.get_file_path("sample.csv"), cache_strategy=const.CACHE_FILE
         )
@@ -199,3 +207,23 @@ class TestCalculateFileCacheTTL:
         fetcher.fetch_data()
 
         assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
+
+        file_path = cache.FileCache().make_file_path_from_key(fetcher.make_cache_key())
+
+        with freeze_time(datetime.now() + timedelta(seconds=101)):
+            assert cache.FileCache().is_file_cache_expired(file_path)
+
+    def test_file_is_not_expired(self):
+        fetcher = fetchers.FileSystemDataFetcher(
+            helpers.get_file_path("sample.csv"), cache_strategy=const.CACHE_FILE
+        )
+
+        assert fetcher.get_cached_data() is None
+
+        fetcher.fetch_data()
+
+        assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
+
+        file_path = cache.FileCache().make_file_path_from_key(fetcher.make_cache_key())
+
+        assert not cache.FileCache().is_file_cache_expired(file_path)
