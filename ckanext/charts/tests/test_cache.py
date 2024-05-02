@@ -1,15 +1,18 @@
 from __future__ import annotations
 
-import pytest
+from datetime import datetime, timedelta
+
 import pandas as pd
+import pytest
+from freezegun import freeze_time
 
 from ckan.tests.helpers import call_action
 
-import ckanext.charts.fetchers as fetchers
 import ckanext.charts.cache as cache
-import ckanext.charts.tests.helpers as helpers
-import ckanext.charts.const as const
 import ckanext.charts.config as config
+import ckanext.charts.const as const
+import ckanext.charts.fetchers as fetchers
+import ckanext.charts.tests.helpers as helpers
 
 
 @pytest.mark.ckan_config("ckan.plugins", "charts_view datastore")
@@ -47,7 +50,8 @@ class TestDataStoreFetcherCache:
         resource = helpers.create_resource_with_datastore()
 
         fetcher = fetchers.DatastoreDataFetcher(
-            resource["id"], cache_strategy=const.CACHE_FILE
+            resource["id"],
+            cache_strategy=const.CACHE_FILE,
         )
 
         assert fetcher.get_cached_data() is None
@@ -61,7 +65,8 @@ class TestDataStoreFetcherCache:
         resource = helpers.create_resource_with_datastore()
 
         fetcher = fetchers.DatastoreDataFetcher(
-            resource["id"], cache_strategy=const.CACHE_FILE
+            resource["id"],
+            cache_strategy=const.CACHE_FILE,
         )
 
         result = fetcher.fetch_data()
@@ -87,7 +92,8 @@ class TestDataStoreFetcherCache:
         resource = helpers.create_resource_with_datastore()
 
         fetcher = fetchers.DatastoreDataFetcher(
-            resource["id"], cache_strategy=const.CACHE_FILE
+            resource["id"],
+            cache_strategy=const.CACHE_FILE,
         )
 
         assert isinstance(fetcher.fetch_data(), pd.DataFrame)
@@ -160,7 +166,8 @@ class TestFileSystemFetcherCache:
 
     def test_hit_cache_file(self):
         fetcher = fetchers.FileSystemDataFetcher(
-            helpers.get_file_path("sample.csv"), cache_strategy=const.CACHE_FILE
+            helpers.get_file_path("sample.csv"),
+            cache_strategy=const.CACHE_FILE,
         )
 
         assert fetcher.get_cached_data() is None
@@ -180,7 +187,8 @@ class TestFileSystemFetcherCache:
 
     def test_invalidate_file_cache(self):
         fetcher = fetchers.FileSystemDataFetcher(
-            helpers.get_file_path("sample.csv"), cache_strategy=const.CACHE_FILE
+            helpers.get_file_path("sample.csv"),
+            cache_strategy=const.CACHE_FILE,
         )
 
         assert isinstance(fetcher.fetch_data(), pd.DataFrame)
@@ -190,16 +198,13 @@ class TestFileSystemFetcherCache:
         assert fetcher.get_cached_data() is None
 
 
-from freezegun import freeze_time
-from datetime import timedelta, datetime
-
-
 @pytest.mark.usefixtures("clean_file_cache")
 @pytest.mark.ckan_config(config.CONF_FILE_CACHE_TTL, 100)
 class TestCalculateFileExpiration:
     def test_file_is_expired(self):
         fetcher = fetchers.FileSystemDataFetcher(
-            helpers.get_file_path("sample.csv"), cache_strategy=const.CACHE_FILE
+            helpers.get_file_path("sample.csv"),
+            cache_strategy=const.CACHE_FILE,
         )
 
         assert fetcher.get_cached_data() is None
@@ -215,7 +220,8 @@ class TestCalculateFileExpiration:
 
     def test_file_is_not_expired(self):
         fetcher = fetchers.FileSystemDataFetcher(
-            helpers.get_file_path("sample.csv"), cache_strategy=const.CACHE_FILE
+            helpers.get_file_path("sample.csv"),
+            cache_strategy=const.CACHE_FILE,
         )
 
         assert fetcher.get_cached_data() is None

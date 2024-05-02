@@ -1,23 +1,20 @@
 from __future__ import annotations
 
-import time
 import hashlib
 import logging
 import os
 import tempfile
+import time
 from abc import ABC, abstractmethod
 
 import pandas as pd
 import pyarrow as pa
-import pyarrow.orc as orc
+from pyarrow import orc
 
 import ckan.plugins.toolkit as tk
 from ckan.lib.redis import connect_to_redis
 
-import ckanext.charts.exception as exception
-import ckanext.charts.config as config
-import ckanext.charts.const as const
-
+from ckanext.charts import config, const, exception
 
 log = logging.getLogger(__name__)
 
@@ -101,7 +98,8 @@ class FileCache(CacheStrategy):
 
     def make_file_path_from_key(self, key: str) -> str:
         return os.path.join(
-            self.directory, f"{self.generate_unique_consistent_filename(key)}.orc"
+            self.directory,
+            f"{self.generate_unique_consistent_filename(key)}.orc",
         )
 
     def generate_unique_consistent_filename(self, key: str) -> str:
@@ -127,11 +125,12 @@ def get_cache_manager(cache_strategy: str | None) -> CacheStrategy:
 
     if active_cache == const.CACHE_REDIS:
         return RedisCache()
-    elif active_cache == const.CACHE_FILE:
+
+    if active_cache == const.CACHE_FILE:
         return FileCache()
 
-    raise exception.CacheStrategyNotImplemented(
-        f"Cache strategy {active_cache} is not implemented"
+    raise exception.CacheStrategyNotImplementedError(
+        f"Cache strategy {active_cache} is not implemented",
     )
 
 
@@ -148,7 +147,7 @@ def invalidate_by_key(key: str) -> None:
     RedisCache().invalidate(key)
     FileCache().invalidate(key)
 
-    log.info(f"Chart cache for key {key} has been invalidated")
+    log.info("Chart cache for key %s has been invalidated", key)
 
 
 def drop_redis_cache() -> None:
@@ -173,8 +172,8 @@ def drop_file_cache() -> None:
 
         try:
             os.unlink(file_path)
-        except Exception as e:
-            log.error("Failed to delete %s. Reason: %s" % (file_path, e))
+        except Exception:
+            log.exception("Failed to delete file: %s", file_path)
 
 
 def get_file_cache_path() -> str:

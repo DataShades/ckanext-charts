@@ -7,17 +7,15 @@ import ckan.plugins.toolkit as tk
 from ckan.logic import parse_params
 from ckan.plugins import plugin_loaded
 
-import ckanext.charts.utils as utils
-import ckanext.charts.cache as cache
+from ckanext.charts import cache, utils
+from ckanext.charts.logic.schema import settings_schema
 
 charts = Blueprint("charts_view", __name__)
 
 
 @charts.route("/api/utils/charts/<resource_id>/view-form")
 def form(resource_id):
-    data, _ = tk.navl_validate(
-        parse_params(tk.request.args), utils.settings_schema(), {}
-    )
+    data, _ = tk.navl_validate(parse_params(tk.request.args), settings_schema(), {})
 
     settings = utils.settings_from_dict(data)
 

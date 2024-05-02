@@ -12,18 +12,10 @@ def create_resource_with_datastore():
 
     call_action(
         "datastore_create",
-        **{
-            "resource_id": resource["id"],
-            "fields": [
-                {"id": "name", "type": "text"},
-                {"id": "age", "type": "text"},
-            ],
-            "records": [
-                {"name": "Sunita", "age": "51"},
-                {"name": "Bowan", "age": "68"},
-            ],
-            "force": True,
-        },
+        resource_id=resource["id"],
+        fields=[{"id": "name", "type": "text"}, {"id": "age", "type": "text"}],
+        records=[{"name": "A", "age": "1"}, {"name": "B", "age": "2"}],
+        force=True,
     )
 
     return resource

@@ -1,16 +1,13 @@
 from __future__ import annotations
 
-import os
-
-import requests
-import pytest
 import pandas as pd
+import pytest
+import requests
 
 from ckan.tests.factories import Resource
 
 import ckanext.charts.fetchers as fetchers
 import ckanext.charts.tests.helpers as helpers
-import ckanext.charts.const as const
 from ckanext.charts.exception import DataFetchError
 
 
@@ -99,7 +96,7 @@ class TestHardcodedDataFetcher:
                 "col1": ["1", "2", "3", "4"],
                 "col2": ["a", "b", "c", "d"],
                 "col3": [42, 37, 69, 11],
-            }
+            },
         )
 
         result = fetcher.fetch_data()
@@ -111,7 +108,7 @@ class TestHardcodedDataFetcher:
     def test_malformed_data(self):
         with pytest.raises(DataFetchError):
             fetchers.HardcodedDataFetcher(
-                {"col1": ["1"], "col2": ["a", "b"]}
+                {"col1": ["1"], "col2": ["a", "b"]},
             ).fetch_data()
 
 
@@ -127,7 +124,8 @@ class TestFileSystemDataFetcher:
 
     def test_fetch_data_xml(self):
         fetcher = fetchers.FileSystemDataFetcher(
-            helpers.get_file_path("sample.xml"), file_format="xml"
+            helpers.get_file_path("sample.xml"),
+            file_format="xml",
         )
 
         result = fetcher.fetch_data()
@@ -137,7 +135,8 @@ class TestFileSystemDataFetcher:
 
     def test_fetch_data_xlsx(self):
         fetcher = fetchers.FileSystemDataFetcher(
-            helpers.get_file_path("sample.xlsx"), file_format="xlsx"
+            helpers.get_file_path("sample.xlsx"),
+            file_format="xlsx",
         )
 
         result = fetcher.fetch_data()
@@ -147,7 +146,8 @@ class TestFileSystemDataFetcher:
 
     def test_fetch_data_xls(self):
         fetcher = fetchers.FileSystemDataFetcher(
-            helpers.get_file_path("sample.xls"), file_format="xls"
+            helpers.get_file_path("sample.xls"),
+            file_format="xls",
         )
 
         result = fetcher.fetch_data()
@@ -157,7 +157,8 @@ class TestFileSystemDataFetcher:
 
     def test_wrong_file_format(self):
         fetcher = fetchers.FileSystemDataFetcher(
-            helpers.get_file_path("sample.xls"), file_format="xml"
+            helpers.get_file_path("sample.xls"),
+            file_format="xml",
         )
 
         with pytest.raises(DataFetchError):

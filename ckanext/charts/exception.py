@@ -1,5 +1,6 @@
 class DataFetchError(Exception):
     pass
 
-class CacheStrategyNotImplemented(Exception):
+
+class CacheStrategyNotImplementedError(Exception):
     pass

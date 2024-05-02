@@ -1,6 +1,5 @@
 import ckan.plugins.toolkit as tk
 
-
 CONF_CACHE_STRATEGY = "ckanext.charts.cache_strategy"
 CONF_REDIS_CACHE_TTL = "ckanext.charts.redis_cache_ttl"
 CONF_FILE_CACHE_TTL = "ckanext.charts.file_cache_ttl"

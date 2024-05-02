@@ -6,15 +6,14 @@ from io import BytesIO
 from typing import Any
 
 import lxml
-import requests
 import pandas as pd
+import requests
 import sqlalchemy as sa
 from sqlalchemy.exc import ProgrammingError
 
 from ckanext.datastore.backend.postgres import get_read_engine
 
-import ckanext.charts.exception as exception
-import ckanext.charts.cache as cache
+from ckanext.charts import cache, exception
 
 log = logging.getLogger(__name__)
 
@@ -42,7 +41,10 @@ class DatastoreDataFetcher(DataFetcherStrategy):
     """Fetch data from the DataStore"""
 
     def __init__(
-        self, resource_id: str, limit: int = 2000000, cache_strategy: str | None = None
+        self,
+        resource_id: str,
+        limit: int = 2000000,
+        cache_strategy: str | None = None,
     ):
         super().__init__(cache_strategy=cache_strategy)
 
@@ -70,8 +72,8 @@ class DatastoreDataFetcher(DataFetcherStrategy):
             ).drop(columns=["_id", "_full_text"])
         except ProgrammingError as e:
             raise exception.DataFetchError(
-                f"An error occurred during fetching data from DataStore: {e}"
-            )
+                f"An error occurred during fetching data from DataStore: {e}",
+            ) from e
 
         self.cache.set_data(self.make_cache_key(), df)
 
@@ -119,8 +121,8 @@ class URLDataFetcher(DataFetcherStrategy):
             ValueError,
         ) as e:
             raise exception.DataFetchError(
-                f"An error occurred during fetching data from URL: {e}"
-            )
+                f"An error occurred during fetching data from URL: {e}",
+            ) from e
 
         self.cache.set_data(self.make_cache_key(), df)
 
@@ -134,20 +136,21 @@ class URLDataFetcher(DataFetcherStrategy):
         try:
             response = requests.get(self.url)
             response.raise_for_status()
+        except requests.exceptions.HTTPError:
+            log.exception("HTTP error occurred")
+        except requests.exceptions.ConnectionError:
+            log.exception("Connection error occurred")
+        except requests.exceptions.Timeout:
+            log.exception("Timeout error occurred")
+        except requests.exceptions.RequestException:
+            log.exception("An error occurred during the request")
+        except Exception:
+            log.exception("An unexpected error occurred")
+        else:
             return response.content
-        except requests.exceptions.HTTPError as e:
-            log.error(f"HTTP error occurred: {e}")
-        except requests.exceptions.ConnectionError as e:
-            log.error(f"Connection error occurred: {e}")
-        except requests.exceptions.Timeout as e:
-            log.error(f"Timeout error occurred: {e}")
-        except requests.exceptions.RequestException as e:
-            log.error(f"An error occurred during the request: {e}")
-        except Exception as e:
-            log.error(f"An unexpected error occurred: {e}")
 
         raise exception.DataFetchError(
-            f"An error occurred during fetching data by URL: {self.url}"
+            f"An error occurred during fetching data by URL: {self.url}",
         )
 
 
@@ -175,7 +178,8 @@ class FileSystemDataFetcher(DataFetcherStrategy):
 
         if self.file_format not in self.SUPPORTED_FORMATS:
             raise exception.DataFetchError(
-                f"File format {self.file_format} is not supported. Only CSV files are supported."
+                f"File format {self.file_format} is not supported. "
+                "Only CSV files are supported.",
             )
 
         try:
@@ -192,8 +196,8 @@ class FileSystemDataFetcher(DataFetcherStrategy):
             ValueError,
         ) as e:
             raise exception.DataFetchError(
-                f"An error occurred during fetching data from file: {e}"
-            )
+                f"An error occurred during fetching data from file: {e}",
+            ) from e
 
         self.cache.set_data(self.make_cache_key(), df)
 
@@ -213,8 +217,8 @@ class HardcodedDataFetcher(DataFetcherStrategy):
             df = pd.DataFrame(self.data)
         except ValueError as e:
             raise exception.DataFetchError(
-                f"An error occurred during fetching hardcoded data: {e}"
-            )
+                f"An error occurred during fetching hardcoded data: {e}",
+            ) from e
 
         return df
 
@@ -224,4 +228,3 @@ class HardcodedDataFetcher(DataFetcherStrategy):
 
     def invalidate_cache(self) -> None:
         """Hardcoded data is not cached"""
-        pass

@@ -1,18 +1,15 @@
 from __future__ import annotations
 
-from math import log
 from typing import Any
 
-import ckan.types as types
 import ckan.plugins as p
 import ckan.plugins.toolkit as tk
 from ckan import types
 from ckan.common import CKANConfig
 
-from ckanext.charts import fetchers
-import ckanext.charts.cache as cache
-import ckanext.charts.utils as utils
 import ckanext.charts.config as conf
+from ckanext.charts import cache, fetchers, utils
+from ckanext.charts.logic.schema import settings_schema
 
 
 @tk.blanket.helpers
@@ -28,14 +25,12 @@ class ChartsViewPlugin(p.SingletonPlugin):
 
     # IConfigurable
 
-    def configure(self, config: "CKANConfig") -> None:
+    def configure(self, config: CKANConfig) -> None:
         # Update redis keys TTL
         cache.update_redis_expiration(config[conf.CONF_REDIS_CACHE_TTL])
 
         # Remove expired file cache
         cache.remove_expired_file_cache()
-
-        return
 
     # IConfigurer
 
@@ -50,7 +45,7 @@ class ChartsViewPlugin(p.SingletonPlugin):
         return {
             "name": "charts_view",
             "title": tk._("Chart"),
-            "schema": utils.settings_schema(),
+            "schema": settings_schema(),
             "icon": "chart-line",
             "iframed": False,
             "filterable": False,
@@ -68,7 +63,9 @@ class ChartsViewPlugin(p.SingletonPlugin):
         return False
 
     def setup_template_variables(
-        self, context: types.Context, data_dict: dict[str, Any]
+        self,
+        context: types.Context,
+        data_dict: dict[str, Any],
     ) -> dict[str, Any]:
         """
         The ``data_dict`` contains the following keys:
@@ -77,10 +74,8 @@ class ChartsViewPlugin(p.SingletonPlugin):
         :param resource: dict of the parent resource fields
         :param package: dict of the full parent dataset
         """
-        # this function receives non-valid view in case of validation error.
-        data, _errors = tk.navl_validate(
-            data_dict["resource_view"], utils.settings_schema(), {}
-        )
+
+        data, _ = tk.navl_validate(data_dict["resource_view"], settings_schema(), {})
 
         settings = utils.settings_from_dict(data)
 
@@ -101,10 +96,10 @@ class ChartsViewPlugin(p.SingletonPlugin):
     def get_signal_subscriptions(self) -> types.SignalMapping:
         return {
             tk.signals.ckanext.signal("ap_main:collect_config_sections"): [
-                self.collect_config_sections_subs
+                self.collect_config_sections_subs,
             ],
             tk.signals.ckanext.signal("ap_main:collect_config_schemas"): [
-                self.collect_config_schemas_subs
+                self.collect_config_schemas_subs,
             ],
         }
 
@@ -147,7 +142,7 @@ class ChartsViewPlugin(p.SingletonPlugin):
         ) -> None:
             """Invalidate cache after upload to DataStore"""
             cache.invalidate_by_key(
-                fetchers.DatastoreDataFetcher(resource_dict["id"]).make_cache_key()
+                fetchers.DatastoreDataFetcher(resource_dict["id"]).make_cache_key(),
             )
 
     # IResourceController
@@ -159,9 +154,5 @@ class ChartsViewPlugin(p.SingletonPlugin):
         resources: list[dict[str, Any]],
     ) -> None:
         cache.invalidate_by_key(
-            fetchers.DatastoreDataFetcher(resource["id"]).make_cache_key()
+            fetchers.DatastoreDataFetcher(resource["id"]).make_cache_key(),
         )
-
-
-# 1. show cache Sized
-# 2. use configurer

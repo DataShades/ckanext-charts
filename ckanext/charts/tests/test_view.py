@@ -21,5 +21,5 @@ class TestAllowedViews:
         resource = factories.Resource(package_id=dataset["id"], datastore_active=True)
 
         assert h.get_allowed_view_types(resource, dataset) == [
-            ("charts_view", "Chart", "chart-line")
+            ("charts_view", "Chart", "chart-line"),
         ]
