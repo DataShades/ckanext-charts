@@ -30,13 +30,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Setup cmake
-      uses: jwlawson/actions-setup-cmake@v2
-      with:
-        cmake-version: '3.16.x'
     - name: Install requirements
       # Install any extra requirements your extension has here (dev requirements, other extensions etc)
       run: |
+        pip install cmake
         pip install -r requirements.txt
         pip install -r dev-requirements.txt
         pip install -e .
