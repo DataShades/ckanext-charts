@@ -26,9 +26,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Install Pyarrow dependencies
+      run: sudo apt-get install -y build-essential ninja-build cmake
     - name: Install requirements
       # Install any extra requirements your extension has here (dev requirements, other extensions etc)
       run: |
+        pip install --upgrade pip
         pip install cmake
         pip install -r requirements.txt
         pip install -r dev-requirements.txt
