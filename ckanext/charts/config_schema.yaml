@@ -5,11 +5,21 @@ about: An extension config form schema
 fields:
   - field_name: ckanext.charts.cache_strategy
     label: Cache Strategy
-    validators: default(disk), one_of([disk, redis])
+    help_text: Choose the cache strategy for the charts extension.
     preset: select
     required: true
     choices:
-      - value: disk
-        label: Disk
+      - value: file
+        label: File
       - value: redis
         label: Redis
+
+  - field_name: ckanext.charts.redis_cache_ttl
+    label: Redis Cache TTL
+    help_text: Time to live for the cache in seconds. Set 0 to disable cache.
+    input_type: number
+
+  - field_name: ckanext.charts.file_cache_ttl
+    label: File Cache TTL
+    help_text: Time to live for the cache in seconds. Set 0 to disable cache.
+    input_type: number

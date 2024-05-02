@@ -40,8 +40,14 @@ if plugin_loaded("admin_panel"):
 
     class ConfigClearCacheView(MethodView):
         def post(self):
-            if "invalidate-cache" in tk.request.form:
-                cache.invalidate_cache()
+            if "invalidate-all-cache" in tk.request.form:
+                cache.invalidate_all_cache()
+
+            if "invalidate-redis-cache" in tk.request.form:
+                cache.drop_redis_cache()
+
+            if "invalidate-file-cache" in tk.request.form:
+                cache.drop_file_cache()
 
             tk.h.flash_success(tk._("Cache has been cleared"))
 

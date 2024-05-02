@@ -2,17 +2,15 @@ from __future__ import annotations
 
 from typing import Any
 
-import sqlalchemy as sa
-
 import ckan.plugins.toolkit as tk
 
-from ckanext.datastore.backend.postgres import get_read_engine
+import ckanext.charts.utils as utils
 
 
 def charts_plotly_datastore(settings: dict[str, Any], resource_id: str):
 
     import plotly.express as px
-    from ckanext.charts.fetchers import DatastoreDataFetcher, URLDataFetcher
+    from ckanext.charts.fetchers import DatastoreDataFetcher
 
     if settings.get("type") in ["line", "bar", "scatter"]:
         x, y = settings.get("x"), settings.get("y")
@@ -25,12 +23,6 @@ def charts_plotly_datastore(settings: dict[str, Any], resource_id: str):
 
         try:
             df = DatastoreDataFetcher(resource_id, limit).fetch_data()
-            # df = URLDataFetcher(
-            #     "https://cdn.wsform.com/wp-content/uploads/2020/06/size.csv"
-            # ).fetch_data()
-            # import ipdb
-
-            # ipdb.set_trace()
         except tk.ValidationError:
             return
 
@@ -49,9 +41,6 @@ def charts_plotly_datastore(settings: dict[str, Any], resource_id: str):
                 )
             except ValueError:
                 return
-
-        # df2 = px.data.gapminder()
-        # breakpoint()
 
         kwargs = dict(
             log_x=settings.get("log_x"),
@@ -73,3 +62,16 @@ def charts_plotly_datastore(settings: dict[str, Any], resource_id: str):
         func = getattr(px, settings["type"])
 
         return func(df, **kwargs)
+
+
+from ckanext.charts.cache import count_redis_cache_size, count_file_cache_size
+
+
+def get_redis_cache_size():
+    """Get the size of the Redis cache in a human-readable format."""
+    return utils.printable_file_size(count_redis_cache_size())
+
+
+def get_file_cache_size():
+    """Get the size of the file cache in a human-readable format."""
+    return utils.printable_file_size(count_file_cache_size())

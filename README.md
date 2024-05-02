@@ -11,6 +11,8 @@ With ckanext-charts, users can easily generate interactive and visually appealin
 
 ## Requirements
 
+Requires Redis 7+
+
 Compatibility with core CKAN versions:
 
 | CKAN version    | Compatible?   |

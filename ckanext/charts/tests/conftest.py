@@ -1,8 +1,8 @@
 import pytest
 
-from ckanext.charts.cache import drop_disk_cache
+from ckanext.charts.cache import drop_file_cache
 
 
 @pytest.fixture()
-def clean_disk_cache():
-    drop_disk_cache()
+def clean_file_cache():
+    drop_file_cache()

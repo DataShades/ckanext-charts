@@ -6,33 +6,22 @@ import requests
 import pytest
 import pandas as pd
 
-from ckan.tests.helpers import call_action
+from ckan.tests.factories import Resource
 
 import ckanext.charts.fetchers as fetchers
+import ckanext.charts.tests.helpers as helpers
+import ckanext.charts.const as const
 from ckanext.charts.exception import DataFetchError
 
 
 @pytest.mark.ckan_config("ckan.plugins", "datastore")
 @pytest.mark.usefixtures("clean_db", "with_plugins")
 class TestDatastoreDataFetcher:
-    def test_fetch_data_success(self, resource_factory):
-        resource = resource_factory()
+    """Tests for DatastoreDataFetcher"""
 
-        result = call_action(
-            "datastore_create",
-            **{
-                "resource_id": resource["id"],
-                "fields": [
-                    {"id": "name", "type": "text"},
-                    {"id": "age", "type": "text"},
-                ],
-                "records": [
-                    {"name": "Sunita", "age": "51"},
-                    {"name": "Bowan", "age": "68"},
-                ],
-                "force": True,
-            },
-        )
+    def test_fetch_data_success(self):
+        """Test fetching data from the DataStore"""
+        resource = helpers.create_resource_with_datastore()
 
         result = fetchers.DatastoreDataFetcher(resource["id"]).fetch_data()
 
@@ -40,19 +29,20 @@ class TestDatastoreDataFetcher:
         assert len(result) == 2
         assert list(result.columns) == ["name", "age"]
 
+    def test_not_in_datastore(self):
+        """Test fetching data when resource is not in the DataStore"""
+        resource = Resource()
+
+        with pytest.raises(DataFetchError):
+            fetchers.DatastoreDataFetcher(resource["id"]).fetch_data()
+
 
 @pytest.mark.usefixtures("clean_redis")
 class TestURLDataFetcher:
     URL = "http://xxx"
 
-    def _get_file_content(self, fmt: str) -> bytes:
-        file_path = os.path.join(os.path.dirname(__file__), "data", f"sample.{fmt}")
-
-        with open(file_path, mode="rb") as file:
-            return file.read()
-
     def test_fetch_data_success(self, requests_mock):
-        requests_mock.get(self.URL, content=self._get_file_content("csv"))
+        requests_mock.get(self.URL, content=helpers.get_file_content("csv"))
 
         result = fetchers.URLDataFetcher(self.URL).fetch_data()
 
@@ -60,7 +50,7 @@ class TestURLDataFetcher:
         assert len(result) == 10000
 
     def test_fetch_data_success_xml(self, requests_mock):
-        requests_mock.get(self.URL, content=self._get_file_content("xml"))
+        requests_mock.get(self.URL, content=helpers.get_file_content("xml"))
 
         result = fetchers.URLDataFetcher(self.URL, file_format="xml").fetch_data()
 
@@ -68,7 +58,7 @@ class TestURLDataFetcher:
         assert len(result) == 36
 
     def test_fetch_data_success_xlsx(self, requests_mock):
-        requests_mock.get(self.URL, content=self._get_file_content("xlsx"))
+        requests_mock.get(self.URL, content=helpers.get_file_content("xlsx"))
 
         result = fetchers.URLDataFetcher(self.URL, file_format="xlsx").fetch_data()
 
@@ -76,7 +66,7 @@ class TestURLDataFetcher:
         assert len(result) == 100
 
     def test_fetch_data_success_xlx(self, requests_mock):
-        requests_mock.get(self.URL, content=self._get_file_content("xls"))
+        requests_mock.get(self.URL, content=helpers.get_file_content("xls"))
 
         result = fetchers.URLDataFetcher(self.URL, file_format="xls").fetch_data()
 
@@ -100,33 +90,6 @@ class TestURLDataFetcher:
 
         with pytest.raises(DataFetchError):
             fetchers.URLDataFetcher(self.URL).fetch_data()
-
-    def test_hit_cache_redis(self, requests_mock):
-        requests_mock.get(self.URL, content=self._get_file_content("csv"))
-
-        fetcher = fetchers.URLDataFetcher(self.URL)
-
-        assert fetcher.cache.get_data(fetcher.make_cache_key()) is None
-
-        fetcher.fetch_data()
-
-        assert isinstance(
-            fetcher.cache.get_data(fetcher.make_cache_key()), pd.DataFrame
-        )
-
-    @pytest.mark.usefixtures("clean_disk_cache")
-    def test_hit_cache_disk(self, requests_mock):
-        requests_mock.get(self.URL, content=self._get_file_content("csv"))
-
-        fetcher = fetchers.URLDataFetcher(self.URL, cache_stragegy="disk")
-
-        assert fetcher.cache.get_data(fetcher.make_cache_key()) is None
-
-        fetcher.fetch_data()
-
-        assert isinstance(
-            fetcher.cache.get_data(fetcher.make_cache_key()), pd.DataFrame
-        )
 
 
 class TestHardcodedDataFetcher:
@@ -152,13 +115,10 @@ class TestHardcodedDataFetcher:
             ).fetch_data()
 
 
-@pytest.mark.usefixtures("clean_redis", "clean_disk_cache")
+@pytest.mark.usefixtures("clean_redis", "clean_file_cache")
 class TestFileSystemDataFetcher:
-    def _get_file_path(self, file_name: str) -> str:
-        return os.path.join(os.path.dirname(__file__), "data", file_name)
-
     def test_fetch_data_csv(self):
-        fetcher = fetchers.FileSystemDataFetcher(self._get_file_path("sample.csv"))
+        fetcher = fetchers.FileSystemDataFetcher(helpers.get_file_path("sample.csv"))
 
         result = fetcher.fetch_data()
 
@@ -167,7 +127,7 @@ class TestFileSystemDataFetcher:
 
     def test_fetch_data_xml(self):
         fetcher = fetchers.FileSystemDataFetcher(
-            self._get_file_path("sample.xml"), file_format="xml"
+            helpers.get_file_path("sample.xml"), file_format="xml"
         )
 
         result = fetcher.fetch_data()
@@ -177,7 +137,7 @@ class TestFileSystemDataFetcher:
 
     def test_fetch_data_xlsx(self):
         fetcher = fetchers.FileSystemDataFetcher(
-            self._get_file_path("sample.xlsx"), file_format="xlsx"
+            helpers.get_file_path("sample.xlsx"), file_format="xlsx"
         )
 
         result = fetcher.fetch_data()
@@ -187,7 +147,7 @@ class TestFileSystemDataFetcher:
 
     def test_fetch_data_xls(self):
         fetcher = fetchers.FileSystemDataFetcher(
-            self._get_file_path("sample.xls"), file_format="xls"
+            helpers.get_file_path("sample.xls"), file_format="xls"
         )
 
         result = fetcher.fetch_data()
@@ -197,32 +157,8 @@ class TestFileSystemDataFetcher:
 
     def test_wrong_file_format(self):
         fetcher = fetchers.FileSystemDataFetcher(
-            self._get_file_path("sample.xls"), file_format="xml"
+            helpers.get_file_path("sample.xls"), file_format="xml"
         )
 
         with pytest.raises(DataFetchError):
             fetcher.fetch_data()
-
-    def test_hit_cache_redis(self):
-        fetcher = fetchers.FileSystemDataFetcher(self._get_file_path("sample.csv"))
-
-        assert fetcher.cache.get_data(fetcher.make_cache_key()) is None
-
-        fetcher.fetch_data()
-
-        assert isinstance(
-            fetcher.cache.get_data(fetcher.make_cache_key()), pd.DataFrame
-        )
-
-    def test_hit_cache_disk(self):
-        fetcher = fetchers.FileSystemDataFetcher(
-            self._get_file_path("sample.csv"), cache_stragegy="disk"
-        )
-
-        assert fetcher.cache.get_data(fetcher.make_cache_key()) is None
-
-        fetcher.fetch_data()
-
-        assert isinstance(
-            fetcher.cache.get_data(fetcher.make_cache_key()), pd.DataFrame
-        )

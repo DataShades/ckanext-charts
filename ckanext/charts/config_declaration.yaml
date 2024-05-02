@@ -5,3 +5,19 @@ groups:
       - key: ckanext.charts.cache_strategy
         description: Charts cache strategy
         default: redis
+        editable: true
+        validators: OneOf(["file","redis"])
+
+      - key: ckanext.charts.redis_cache_ttl
+        description: Redis cache TTL
+        default: 3600
+        editable: true
+        type: int
+        validators: ignore_empty int_validator
+
+      - key: ckanext.charts.file_cache_ttl
+        description: File cache TTL
+        default: 3600
+        editable: true
+        type: int
+        validators: ignore_empty int_validator

@@ -1,13 +1,18 @@
 from __future__ import annotations
 
+from math import log
 from typing import Any
 
+import ckan.types as types
 import ckan.plugins as p
 import ckan.plugins.toolkit as tk
 from ckan import types
 from ckan.common import CKANConfig
 
+from ckanext.charts import fetchers
+import ckanext.charts.cache as cache
 import ckanext.charts.utils as utils
+import ckanext.charts.config as conf
 
 
 @tk.blanket.helpers
@@ -18,6 +23,19 @@ class ChartsViewPlugin(p.SingletonPlugin):
     p.implements(p.IResourceView)
     p.implements(p.IBlueprint)
     p.implements(p.ISignal)
+    p.implements(p.IResourceController, inherit=True)
+    p.implements(p.IConfigurable)
+
+    # IConfigurable
+
+    def configure(self, config: "CKANConfig") -> None:
+        # Update redis keys TTL
+        cache.update_redis_expiration(config[conf.CONF_REDIS_CACHE_TTL])
+
+        # Remove expired file cache
+        cache.remove_expired_file_cache()
+
+        return
 
     # IConfigurer
 
@@ -40,7 +58,14 @@ class ChartsViewPlugin(p.SingletonPlugin):
         }
 
     def can_view(self, data_dict: dict[str, Any]) -> bool:
-        return data_dict["resource"].get("datastore_active")
+        if data_dict["resource"].get("datastore_active"):
+            return True
+
+        # TODO: Add support for XML, XLS, XLSX, and other formats tabular data?
+        # if data_dict["resource"]["format"].lower() == "xml":
+        #     return True
+
+        return False
 
     def setup_template_variables(
         self, context: types.Context, data_dict: dict[str, Any]
@@ -99,3 +124,44 @@ class ChartsViewPlugin(p.SingletonPlugin):
     @staticmethod
     def collect_config_schemas_subs(sender: None):
         return ["ckanext.charts:config_schema.yaml"]
+
+    # IXloader & IDataPusher
+
+    if p.plugin_loaded("xloader") or p.plugin_loaded("datapusher"):
+        if p.plugin_loaded("xloader"):
+            from ckanext.xloader.interfaces import IXloader
+
+            pusher_interface = IXloader
+        else:
+            from ckanext.datapusher.interfaces import IDataPusher
+
+            pusher_interface = IDataPusher
+
+        p.implements(pusher_interface, inherit=True)
+
+        def after_upload(
+            self,
+            context: types.Context,
+            resource_dict: dict[str, Any],
+            dataset_dict: dict[str, Any],
+        ) -> None:
+            """Invalidate cache after upload to DataStore"""
+            cache.invalidate_by_key(
+                fetchers.DatastoreDataFetcher(resource_dict["id"]).make_cache_key()
+            )
+
+    # IResourceController
+
+    def before_resource_delete(
+        self,
+        context: types.Context,
+        resource: dict[str, Any],
+        resources: list[dict[str, Any]],
+    ) -> None:
+        cache.invalidate_by_key(
+            fetchers.DatastoreDataFetcher(resource["id"]).make_cache_key()
+        )
+
+
+# 1. show cache Sized
+# 2. use configurer

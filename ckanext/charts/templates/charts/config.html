@@ -2,8 +2,19 @@
 
 {% block before_form %}
     <form method="POST" action="{{ h.url_for('charts_view_admin.clear_cache') }}" class="mb-3">
-        <button type="submit" name="invalidate-cache" value="clear_cache" class="btn btn-primary">
-            </i>{{ _('Invalidate cache') }}
+        <button type="submit" name="invalidate-all-cache" value="clear_cache" class="btn btn-primary">
+            </i>{{ _('Invalidate ALL cache') }}
+        </button>
+
+        <button type="submit" name="invalidate-redis-cache" value="clear_cache" class="btn btn-primary">
+            </i>{{ _('Invalidate Redis cache') }}
+        </button>
+
+        <button type="submit" name="invalidate-file-cache" value="clear_cache" class="btn btn-primary">
+            </i>{{ _('Invalidate File cache') }}
         </button>
     </form>
+
+    <p><b>{{ _("Redis cache size") }}: <span><i>{{ h.get_redis_cache_size() }}</i></span></b></p>
+    <p><b>{{ _("File cache size") }}: <span><i>{{ h.get_file_cache_size() }}</i></span></b></p>
 {% endblock %}
