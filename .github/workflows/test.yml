@@ -2,7 +2,7 @@ name: Tests
 on: [push, pull_request]
 jobs:
   test:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     container:
       image: openknowledge/ckan-dev:2.10.1
     services:
@@ -25,7 +25,7 @@ jobs:
       CKAN_REDIS_URL: redis://redis:6379/1
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Install Pyarrow dependencies
       run: apt-get install -y build-essential ninja-build cmake
     - name: Install requirements
