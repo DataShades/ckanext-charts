@@ -1,7 +1,7 @@
-{% set figure = h.charts_plotly_datastore(settings, resource_id) %}
+{% asset "charts/plotly" %}
 
-{% if figure %}
-    {{ figure.to_html(full_html=false, include_plotlyjs="cdn", auto_play=false, config={"displaylogo": false}) | safe }}
+{% if chart %}
+    <div id="chart-container" data-module="charts-render-plotly" data-module-config="{{ chart }}"></div>
 {% else %}
     <p class="text-muted">
         {{ _("Cannot build chart with current settings") }}

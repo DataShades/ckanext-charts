@@ -8,13 +8,14 @@ from ckan import types
 from ckan.common import CKANConfig
 
 import ckanext.charts.config as conf
-from ckanext.charts import cache, fetchers, utils
+from ckanext.charts import cache, exception, fetchers, utils
 from ckanext.charts.logic.schema import settings_schema
 
 
 @tk.blanket.helpers
 @tk.blanket.blueprints
 @tk.blanket.config_declarations
+@tk.blanket.validators
 class ChartsViewPlugin(p.SingletonPlugin):
     p.implements(p.IConfigurer)
     p.implements(p.IResourceView)
@@ -75,15 +76,31 @@ class ChartsViewPlugin(p.SingletonPlugin):
         :param package: dict of the full parent dataset
         """
 
-        data, _ = tk.navl_validate(data_dict["resource_view"], settings_schema(), {})
+        settings, _ = tk.navl_validate(
+            data_dict["resource_view"],
+            settings_schema(),
+            {},
+        )
 
-        settings = utils.settings_from_dict(data)
+        # settings = utils.settings_from_dict(data["__extras"])
 
-        return {
+        data = {
             "settings": settings,
             "column_options": utils.get_column_options(data_dict["resource"]["id"]),
             "resource_id": data_dict["resource"]["id"],
         }
+
+        try:
+            form_builder = utils.get_chart_form_builder(
+                settings["engine"],
+                settings["type"],
+            )
+        except exception.ChartTypeNotImplementedError:
+            pass
+        else:
+            data.update({"form_builder": form_builder})
+
+        return data
 
     def view_template(self, context: types.Context, data_dict: dict[str, Any]) -> str:
         return "charts/charts_view.html"

@@ -4,3 +4,7 @@ class DataFetchError(Exception):
 
 class CacheStrategyNotImplementedError(Exception):
     pass
+
+
+class ChartTypeNotImplementedError(Exception):
+    pass

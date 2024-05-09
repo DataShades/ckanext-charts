@@ -13,7 +13,7 @@ from sqlalchemy.exc import ProgrammingError
 
 from ckanext.datastore.backend.postgres import get_read_engine
 
-from ckanext.charts import cache, exception
+from ckanext.charts import cache, config, exception
 
 log = logging.getLogger(__name__)
 
@@ -58,10 +58,11 @@ class DatastoreDataFetcher(DataFetcherStrategy):
         Returns:
             pd.DataFrame: Data from the DataStore
         """
-        cached_df = self.get_cached_data()
+        if config.is_cache_enabled():
+            cached_df = self.get_cached_data()
 
-        if cached_df is not None:
-            return cached_df
+            if cached_df is not None:
+                return cached_df
 
         try:
             df = pd.read_sql_query(
@@ -75,7 +76,8 @@ class DatastoreDataFetcher(DataFetcherStrategy):
                 f"An error occurred during fetching data from DataStore: {e}",
             ) from e
 
-        self.cache.set_data(self.make_cache_key(), df)
+        if config.is_cache_enabled():
+            self.cache.set_data(self.make_cache_key(), df)
 
         return df
 
@@ -100,10 +102,11 @@ class URLDataFetcher(DataFetcherStrategy):
         self.timeout = timeout
 
     def fetch_data(self) -> pd.DataFrame:
-        cached_df = self.get_cached_data()
+        if config.is_cache_enabled():
+            cached_df = self.get_cached_data()
 
-        if cached_df is not None:
-            return cached_df
+            if cached_df is not None:
+                return cached_df
 
         data = self.make_request()
 
@@ -124,7 +127,8 @@ class URLDataFetcher(DataFetcherStrategy):
                 f"An error occurred during fetching data from URL: {e}",
             ) from e
 
-        self.cache.set_data(self.make_cache_key(), df)
+        if config.is_cache_enabled():
+            self.cache.set_data(self.make_cache_key(), df)
 
         return df
 
@@ -171,10 +175,11 @@ class FileSystemDataFetcher(DataFetcherStrategy):
     def fetch_data(self) -> pd.DataFrame:
         """Fetch data from the file system"""
 
-        cached_df = self.get_cached_data()
+        if config.is_cache_enabled():
+            cached_df = self.get_cached_data()
 
-        if cached_df is not None:
-            return cached_df
+            if cached_df is not None:
+                return cached_df
 
         if self.file_format not in self.SUPPORTED_FORMATS:
             raise exception.DataFetchError(
@@ -199,7 +204,8 @@ class FileSystemDataFetcher(DataFetcherStrategy):
                 f"An error occurred during fetching data from file: {e}",
             ) from e
 
-        self.cache.set_data(self.make_cache_key(), df)
+        if config.is_cache_enabled():
+            self.cache.set_data(self.make_cache_key(), df)
 
         return df
 

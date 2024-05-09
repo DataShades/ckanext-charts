@@ -2,8 +2,10 @@ chartjs:
   filter: rjsmin
   output: ckanext-charts/%(version)s-chartjs.js
   contents:
-    - vendor/chart.js
+    - js/vendor/charts.min.js
+
     - js/charts-chartjs.js
+    - js/charts-render-chartjs.js
   extra:
     preload:
       - base/main
@@ -12,17 +14,17 @@ plotly:
   filter: rjsmin
   output: ckanext-charts/%(version)s-chartjs-plotly.js
   contents:
-    - vendor/plotly.js
-    - vendor/jsoneditor.min.js
+    - js/vendor/plotly.min.js
 
-    - js/charts-form.js
-
+    # - js/charts-form.js
+    - js/charts-render-plotly.js
   extra:
     preload:
       - base/main
 
-# charts-css:
-#   filter: cssrewrite
-#   output: ckanext-charts/%(version)s-charts.css
-#   contents:
-#     - css/charts.css
+
+charts-css:
+  filter: cssrewrite
+  output: ckanext-charts/%(version)s-charts.css
+  contents:
+    - css/charts.css

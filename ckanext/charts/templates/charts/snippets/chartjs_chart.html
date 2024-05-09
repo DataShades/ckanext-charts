@@ -1,0 +1,9 @@
+{% asset "charts/chartjs" %}
+
+{% if chart %}
+    <canvas id="chart-container" data-module="charts-render-chartjs" data-module-config="{{ chart }}"></canvas>
+{% else %}
+    <p class="text-muted">
+        {{ _("Cannot build chart with current settings") }}
+    </p>
+{% endif %}

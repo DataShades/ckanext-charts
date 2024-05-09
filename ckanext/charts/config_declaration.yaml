@@ -21,3 +21,17 @@ groups:
         editable: true
         type: int
         validators: ignore_empty int_validator
+
+      - key: ckanext.charts.enable_cache
+        description: Enable cache
+        default: true
+        editable: true
+        type: bool
+        validators: ignore_empty boolean_validator
+
+      - key: ckanext.charts.use_serverside_rendering
+        description: Use server-side rendering if possible
+        default: false
+        editable: true
+        type: bool
+        validators: ignore_empty boolean_validator

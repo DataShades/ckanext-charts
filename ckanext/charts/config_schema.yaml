@@ -23,3 +23,25 @@ fields:
     label: File Cache TTL
     help_text: Time to live for the File cache in seconds. Set 0 to disable cache.
     input_type: number
+
+  - field_name: ckanext.charts.enable_cache
+    label: Enable Cache
+    help_text: Enable or disable the cache.
+    preset: select
+    required: true
+    choices:
+      - value: true
+        label: True
+      - value: false
+        label: False
+
+  - field_name: ckanext.charts.use_serverside_rendering
+    label: Use Server-side Rendering
+    help_text: Use server-side rendering if possible.
+    preset: select
+    required: true
+    choices:
+      - value: true
+        label: True
+      - value: false
+        label: False
