@@ -11,7 +11,7 @@ def float_validator(value):
 
 
 def validate_chart_extras(key, data, errors, context):
-    settings = data[("__extras",)]
+    settings = data.get(("__extras",), {})
 
     if "engine" not in settings:
         settings, _ = tk.navl_validate(settings, default_schema(), {})

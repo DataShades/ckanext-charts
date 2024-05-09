@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import json
-
 import pytest
 
-import ckanext.charts.chart_builders as builders
+import ckanext.charts.exception as exception
+import ckanext.charts.utils as utils
 
 
 @pytest.mark.ckan_config("ckan.plugins", "datastore")
@@ -12,50 +11,87 @@ import ckanext.charts.chart_builders as builders
 class TestPlotlyBuilder:
     """Tests for PlotlyBuilder"""
 
-    def test_bar_as_html(self, data_frame):
-        builder = builders.PlotlyBuilder(
+    def test_build_bar(self, data_frame):
+        result = utils.build_chart_for_data(
+            {
+                "type": "Bar",
+                "engine": "plotly",
+                "x": "name",
+                "y": "age",
+            },
             data_frame,
-            {"x": "name", "y": "age", "chart_type": "bar"},
         )
 
-        result = builder.to_html()
-
-        assert "Alice" in result
-        assert "</html>" in result
-        assert isinstance(result, str)
-
-    def test_bar_as_json(self, data_frame):
-        builder = builders.PlotlyBuilder(
-            data_frame,
-            {"x": "name", "y": "age", "chart_type": "bar"},
-        )
-
-        result = json.loads(builder.to_json())
-
+        assert result
         assert "data" in result
         assert "layout" in result
 
-    def test_bar_with_color(self, data_frame):
-        builder = builders.PlotlyBuilder(
+    def test_horizontal_bar(self, data_frame):
+        result = utils.build_chart_for_data(
+            {
+                "type": "Horizontal Bar",
+                "engine": "plotly",
+                "x": "age",
+                "y": "name",
+            },
             data_frame,
-            {"x": "name", "y": "age", "chart_type": "bar", "color": "name"},
         )
 
-        assert json.loads(builder.to_json())
+        assert result
+        assert "data" in result
+        assert "layout" in result
 
-    def test_bar_with_missing_color_column(self, data_frame):
+    def test_build_line(self, data_frame):
+        result = utils.build_chart_for_data(
+            {
+                "type": "Line",
+                "engine": "plotly",
+                "x": "name",
+                "y": "age",
+            },
+            data_frame,
+        )
+
+        assert result
+        assert "data" in result
+        assert "layout" in result
+
+    def test_build_scatter(self, data_frame):
+        result = utils.build_chart_for_data(
+            {
+                "type": "Scatter",
+                "engine": "plotly",
+                "x": "name",
+                "y": "age",
+            },
+            data_frame,
+        )
+
+        assert result
+        assert "data" in result
+        assert "layout" in result
+
+    def test_build_pie(self, data_frame):
+        result = utils.build_chart_for_data(
+            {
+                "type": "Pie",
+                "engine": "plotly",
+                "labels": "name",
+                "values": "age",
+            },
+            data_frame,
+        )
+
+        assert result
+        assert "data" in result
+        assert "layout" in result
+
+    def test_not_supported_chart_type(self, data_frame):
         with pytest.raises(
-            ValueError,
-            match="Column wrong_column does not exist in the dataframe",
+            exception.ChartTypeNotImplementedError,
+            match="Chart type not implemented",
         ):
-            builders.PlotlyBuilder(
+            utils.build_chart_for_data(
+                {"type": "Unknown", "engine": "plotly"},
                 data_frame,
-                {"x": "name", "y": "age", "chart_type": "bar", "color": "wrong_column"},
             )
-
-    def test_columns(self, data_frame):
-        builder = builders.PlotlyBuilder(data_frame, {})
-
-        result = builder.columns()
-
-        assert result == ["name", "age"]

@@ -19,17 +19,6 @@ class PlotlyBuilder(BaseChartBuilder):
 
         self.settings = self.drop_view_fields(self.drop_empty_values(self.settings))
 
-        if self.settings.pop("sort_x", False):
-            self.df.sort_values(by=self.settings["x"], inplace=True)
-
-        if self.settings.pop("sort_y", False):
-            self.df.sort_values(by=self.settings["y"], inplace=True)
-
-        if limit := self.settings.pop("limit", 0):
-            self.df = self.df.head(int(limit))
-
-        self.settings.pop("query", None)
-
     def drop_view_fields(self, settings: dict[str, Any]) -> dict[str, Any]:
         view_fields = ["title", "notes", "engine", "type"]
 
@@ -91,6 +80,11 @@ class PlotlyScatterBuilder(PlotlyBuilder):
 
 
 class BasePlotlyForm(ABC):
+    """
+    TODO: move some of the common methods to the BaseChartForm class, that
+    will be used by all chart form builders.
+    """
+
     def __init__(self, resource_id: str) -> None:
         try:
             self.df = fetchers.DatastoreDataFetcher(resource_id).fetch_data()
@@ -104,10 +98,16 @@ class BasePlotlyForm(ABC):
 
     @abstractmethod
     def get_form_fields(self) -> list[dict[str, Any]]:
-        pass
+        """The list for a specific chart could be defined similar to a scheming
+        dataset schema fields."""
 
     def get_expanded_form_fields(self):
-        return self.expand_schema_fields(self.drop_validators(self.get_form_fields()))
+        """Expands the presets."""
+        return self.expand_schema_fields(
+            self.drop_validators(
+                self.get_form_fields(),
+            ),
+        )
 
     def expand_schema_fields(
         self,
@@ -334,6 +334,8 @@ class BasePlotlyForm(ABC):
         return {
             "field_name": "limit",
             "label": "Limit",
+            "form_snippet": "chart_text.html",
+            "input_type": "number",
             "validators": [
                 self.get_validator("default")(100),
                 self.get_validator("int_validator"),

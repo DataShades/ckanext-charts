@@ -12,27 +12,10 @@ from ckanext.charts import cache, exception, utils
 charts = Blueprint("charts_view", __name__)
 
 
-# @charts.route("/api/utils/charts/<resource_id>/view-form")
-# def form(resource_id):
-#     import ipdb; ipdb.set_trace()
-#     data, _ = tk.navl_validate(parse_params(tk.request.args), settings_schema(), {})
-
-#     # settings = utils.settings_from_dict(data)
-#     settings = data["__extras"]
-
-#     return tk.render_snippet(
-#         "charts/charts_form.html",
-#         {
-#             "errors": {},
-#             "settings": settings,
-#             "column_options": utils.get_column_options(resource_id),
-#             "resource_id": resource_id,
-#         },
-#     )
-
-
 @charts.route("/api/utils/charts/<resource_id>/update-chart")
 def update_chart(resource_id: str):
+    """TODO: update_chart and update_form are very similar, consider refactoring"""
+
     data = parse_params(tk.request.args)
 
     if "engine" not in data or "type" not in data:
@@ -55,7 +38,7 @@ def update_chart(resource_id: str):
     try:
         return tk.render_snippet(
             f"charts/snippets/{settings['engine']}_chart.html",
-            {"chart": utils.build_chart(settings, resource_id)},
+            {"chart": utils.build_chart_for_resource(settings, resource_id)},
         )
     except exception.ChartTypeNotImplementedError:
         return tk.render("charts/snippets/unknown_chart.html")

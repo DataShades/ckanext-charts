@@ -34,14 +34,3 @@ fields:
         label: True
       - value: false
         label: False
-
-  - field_name: ckanext.charts.use_serverside_rendering
-    label: Use Server-side Rendering
-    help_text: Use server-side rendering if possible.
-    preset: select
-    required: true
-    choices:
-      - value: true
-        label: True
-      - value: false
-        label: False

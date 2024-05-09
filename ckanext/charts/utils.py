@@ -3,6 +3,8 @@ from __future__ import annotations
 import math
 from typing import Any
 
+import pandas as pd
+
 import ckan.plugins.toolkit as tk
 
 from ckanext.charts.chart_builders import ChartJSBuilder, PlotlyBuilder
@@ -39,24 +41,24 @@ def get_chart_form_builder(engine: str, chart_type: str):
     raise NotImplementedError(f"Engine {engine} is not supported")
 
 
-def build_chart(settings: dict[str, Any], resource_id: str):
-    from ckanext.charts.chart_builders import ChartJSBuilder, PlotlyBuilder
-    from ckanext.charts.fetchers import DatastoreDataFetcher
+def build_chart_for_data(settings: dict[str, Any], data: pd.DataFrame):
+    """Build chart for the given dataframe"""
+    return _build_chart(settings, data)
 
+
+def build_chart_for_resource(settings: dict[str, Any], resource_id: str):
+    """Build chart for the given resource ID"""
     settings.pop("__extras", None)
-
-    # x, y = settings.get("x"), settings.get("y")
-
-    # if not x or not y:
-    #     return None
-
-    # limit = settings.get("limit", 2000000)
 
     try:
         df = DatastoreDataFetcher(resource_id).fetch_data()
     except tk.ValidationError:
         return None
 
+    return _build_chart(settings, df)
+
+
+def _build_chart(settings: dict[str, Any], dataframe: pd.DataFrame) -> str | None:
     # TODO: rewrite it to pick the correct builder based on the engine more eloquently
     if settings["engine"] == "plotly":
         builder = PlotlyBuilder.get_builder_for_type(settings["type"])
@@ -65,6 +67,6 @@ def build_chart(settings: dict[str, Any], resource_id: str):
     else:
         return None
 
-    result = builder(df, settings)
+    result = builder(dataframe, settings)
 
     return result.to_json()
