@@ -1,6 +1,7 @@
 import ckan.plugins.toolkit as tk
 
-from ckanext.charts.logic.schema import default_schema
+from ckanext.charts import utils
+from ckanext.charts.chart_builders.plotly import PlotlyBarForm
 
 
 def float_validator(value):
@@ -12,10 +13,20 @@ def float_validator(value):
 
 def validate_chart_extras(key, data, errors, context):
     settings = data.get(("__extras",), {})
+    resource_id = data.get(("resource_id",)) or settings["resource_id"]
 
-    if "engine" not in settings:
-        settings, _ = tk.navl_validate(settings, default_schema(), {})
-        data[("__extras",)] = settings
+    # use plotly bar as default settings
+    if "engine" not in settings or "type" not in settings:
+        builder = PlotlyBarForm
+    else:
+        builder = utils.get_chart_form_builder(settings["engine"], settings["type"])
 
-    for k, v in data[("__extras",)].items():
+    settings, _ = tk.navl_validate(
+        settings, builder(resource_id).get_validation_schema(), {}
+    )
+
+    for k, v in settings.items():
+        data[(k,)] = v
+
+    for k, v in settings.pop("__extras", {}).items():
         data[(k,)] = v

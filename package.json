@@ -5,14 +5,25 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "copy-vendors": "cp node_modules/chart.js/dist/chart.js ckanext/charts/assets/vendor/",
-    "postinstall": "npm run copy-vendors"
+    "copy-vendors": "cp node_modules/chart.js/dist/chart.js node_modules/plotly.js-dist/plotly.js ckanext/charts/assets/js/vendor/",
+    "minify-js": "terser ckanext/charts/assets/js/vendor/chart.js -o ckanext/charts/assets/js/vendor/chartjs.min.js && terser ckanext/charts/assets/js/vendor/plotly.js -o ckanext/charts/assets/js/vendor/plotly.min.js",
+    "remove-unminifed": "rm ckanext/charts/assets/js/vendor/chart.js ckanext/charts/assets/js/vendor/plotly.js",
+    "postinstall": "npm run copy-vendors && npm run minify-js && npm run remove-unminifed",
+    "dev": "DEBUG=1 gulp watch",
+    "build": "gulp build"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "chart.js": "^4.4.0",
-    "plotly.js-dist": "^2.28.0"
+    "gulp": "^5.0.0",
+    "gulp-if": "^3.0.0",
+    "gulp-sass": "^5.1.0",
+    "gulp-sourcemaps": "^3.0.0",
+    "gulp-touch-fd": "^2.0.0",
+    "plotly.js-dist": "^2.28.0",
+    "sass": "^1.77.1",
+    "terser": "^5.31.0"
   }
 }

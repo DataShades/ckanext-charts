@@ -1,33 +1,25 @@
 <div class="charts-view--form">
-    {#}
     <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
         {% for tab in builder.get_form_tabs() %}
-        <li class="nav-item" role="presentation">
-            <button class="nav-link {{ 'active' if loop.index == 1 }}" id="pills-{{ tab }}-tab" data-bs-toggle="pill"
-                data-bs-target="#pills-{{ tab }}" type="button" role="tab" aria-controls="pills-{{ tab }}"
-                aria-selected="true">{{ tab }}</button>
-        </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {{ 'active' if loop.index == 1 }}" id="pills-{{ tab }}-tab" data-bs-toggle="pill"
+                    data-bs-target="#pills-{{ tab }}" type="button" role="tab" aria-controls="pills-{{ tab }}"
+                    aria-selected="true">{{ tab }}</button>
+            </li>
         {% endfor %}
     </ul>
-    {#}
 
-    {#}
     <button class="btn btn-default" id="chart-clear" type="button" style="position: absolute; right: 0; top: 0;">{{ _("Clear") }}</button>
-    {#}
 
     <div class="tab-content" id="pills-tabContent" style="display: block;"
         hx-get="{{ h.url_for('charts_view.update_chart', resource_id=resource_id) }}" hx-trigger="load, submit, change"
         hx-include="closest form" hx-target="#charts-view--preview">
-        {% snippet 'charts/snippets/render_fields.html', fields=form_fields, data=data, errors=errors %}
 
-        {#}
-        <div class="tab-pane fade show active" id="pills-general" role="tabpanel" aria-labelledby="pills-general-tab">
-            {{ form.input('title', id='field-title', label=_('Title'), placeholder=_('eg. My View'), value=data.title,
-            error=errors.title, classes=['control-full', 'control-large'], is_required=true) }}
-            {{ form.markdown('description', id='field-description', label=_('Description'), placeholder=_('eg.
-            Information about my view'), value=data.description, error=errors.description) }}
-        </div>
-        {#}
+        {% for tab in builder.get_form_tabs() %}
+            <div class="tab-pane fade show {{ 'active' if loop.index == 1 }}" id="pills-{{ tab }}" role="tabpanel" aria-labelledby="pills-{{ tab }}-tab">
+                {% snippet 'charts/snippets/render_fields.html', fields=builder.get_fields_by_tab(tab), data=data, errors=errors %}
+            </div>
+        {% endfor %}
     </div>
 
     <input type="hidden" name="resource_id" value="{{ resource_id }}">

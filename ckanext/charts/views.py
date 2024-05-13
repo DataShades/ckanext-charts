@@ -14,31 +14,19 @@ charts = Blueprint("charts_view", __name__)
 
 @charts.route("/api/utils/charts/<resource_id>/update-chart")
 def update_chart(resource_id: str):
-    """TODO: update_chart and update_form are very similar, consider refactoring"""
-
     data = parse_params(tk.request.args)
 
-    if "engine" not in data or "type" not in data:
-        return tk.render("charts/snippets/unknown_chart.html")
-
     try:
-        form_builder = utils.get_chart_form_builder(
-            data["engine"],
-            data["type"],
-        )
+        builder = _get_form_builder(data)
     except exception.ChartTypeNotImplementedError:
         return tk.render("charts/snippets/unknown_chart.html")
 
-    settings, _ = tk.navl_validate(
-        data,
-        form_builder(resource_id).get_validation_schema(),
-        {},
-    )
+    data, _ = tk.navl_validate(data, builder.get_validation_schema(), {})
 
     try:
         return tk.render_snippet(
-            f"charts/snippets/{settings['engine']}_chart.html",
-            {"chart": utils.build_chart_for_resource(settings, resource_id)},
+            f"charts/snippets/{data['engine']}_chart.html",
+            {"chart": utils.build_chart_for_resource(data, resource_id)},
         )
     except exception.ChartTypeNotImplementedError:
         return tk.render("charts/snippets/unknown_chart.html")
@@ -47,34 +35,33 @@ def update_chart(resource_id: str):
 @charts.route("/api/utils/charts/update-form")
 def update_form():
     data = parse_params(tk.request.args)
-    resource_id = tk.get_or_bust(data, "resource_id")
-
-    if "engine" not in data or "type" not in data:
-        return tk.render("charts/snippets/unknown_chart.html")
 
     try:
-        form_builder = utils.get_chart_form_builder(
-            data["engine"],
-            data["type"],
-        )
+        builder = _get_form_builder(data)
     except exception.ChartTypeNotImplementedError:
         return tk.render("charts/snippets/unknown_chart.html")
 
-    builder = form_builder(resource_id)
     data, errors = tk.navl_validate(data, builder.get_validation_schema(), {})
 
-    try:
-        return tk.render_snippet(
-            "charts/snippets/charts_form_fields.html",
-            {
-                "form_fields": builder.get_expanded_form_fields(),
-                "resource_id": resource_id,
-                "data": data,
-                "errors": errors,
-            },
-        )
-    except exception.ChartTypeNotImplementedError:
-        return tk.render("charts/snippets/unknown_form.html")
+    return tk.render_snippet(
+        "charts/snippets/charts_form_fields.html",
+        {
+            "builder": builder,
+            "resource_id": data["resource_id"],
+            "data": data,
+            "errors": errors,
+        },
+    )
+
+
+def _get_form_builder(data: dict):
+    """Get form builder for the given engine and chart type"""
+    if "engine" not in data or "type" not in data:
+        raise exception.ChartTypeNotImplementedError
+
+    builder = utils.get_chart_form_builder(data["engine"], data["type"])
+
+    return builder(data["resource_id"])
 
 
 if plugin_loaded("admin_panel"):

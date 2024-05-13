@@ -1,0 +1,10 @@
+@import "variables";
+@import "mixins";
+
+.row.wrapper.charts-view {
+
+    .dataset-resource-form {
+        position: relative;
+        padding: 0;
+    }
+}

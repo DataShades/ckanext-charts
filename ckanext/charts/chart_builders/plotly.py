@@ -20,7 +20,17 @@ class PlotlyBuilder(BaseChartBuilder):
         self.settings = self.drop_view_fields(self.drop_empty_values(self.settings))
 
     def drop_view_fields(self, settings: dict[str, Any]) -> dict[str, Any]:
-        view_fields = ["title", "notes", "engine", "type"]
+        view_fields = (
+            "title",
+            "description",
+            "engine",
+            "type",
+            "id",
+            "notes",
+            "package_id",
+            "resource_id",
+            "view_type"
+        )
 
         return {k: v for k, v in settings.items() if k not in view_fields}
 
@@ -142,6 +152,11 @@ class BasePlotlyForm(ABC):
 
     def get_form_tabs(self) -> list[str]:
         return ["General", "Structure", "Data", "Styles"]
+
+    def get_fields_by_tab(self, tab: str) -> list[dict[str, Any]]:
+        fields = self.get_expanded_form_fields()
+
+        return [field for field in fields if field["group"] == tab]
 
     def column_field(self, choices: list[dict[str, str]]) -> dict[str, Any]:
         return {

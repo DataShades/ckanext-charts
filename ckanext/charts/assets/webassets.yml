@@ -2,7 +2,7 @@ chartjs:
   filter: rjsmin
   output: ckanext-charts/%(version)s-chartjs.js
   contents:
-    - js/vendor/charts.min.js
+    - js/vendor/chartjs.min.js
 
     - js/charts-chartjs.js
     - js/charts-render-chartjs.js

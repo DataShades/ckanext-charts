@@ -4,10 +4,10 @@
 {% asset "charts/chartjs" %}
 {% asset "charts/charts-css" %}
 
-{% set builder = form_builder(resource_id) %}
-
+{{ settings }}
 <div class="charts-view--form">
-    {% snippet "charts/snippets/charts_form_fields.html", resource_id=resource_id, data=settings.__extras, form_fields=builder.get_expanded_form_fields(), errors=errors %}
+    {% snippet "charts/snippets/charts_form_fields.html", resource_id=resource_id, data=settings,
+    builder=form_builder(resource_id), errors=errors %}
 </div>
 
 <div class="charts-view--preview" id="charts-view--preview" style="min-height: 450px;"></div>

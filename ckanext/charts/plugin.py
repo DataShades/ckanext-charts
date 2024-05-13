@@ -77,28 +77,33 @@ class ChartsViewPlugin(p.SingletonPlugin):
         """
 
         settings, _ = tk.navl_validate(
-            data_dict["resource_view"],
-            settings_schema(),
-            {},
+            data_dict["resource_view"], settings_schema(), {}
         )
-
-        # settings = utils.settings_from_dict(data["__extras"])
 
         data = {
             "settings": settings,
-            "column_options": utils.get_column_options(data_dict["resource"]["id"]),
             "resource_id": data_dict["resource"]["id"],
         }
 
-        try:
-            form_builder = utils.get_chart_form_builder(
-                settings["engine"],
-                settings["type"],
-            )
-        except exception.ChartTypeNotImplementedError:
-            pass
+        # view create or edit
+        if "resource_view" in context:
+            try:
+                form_builder = utils.get_chart_form_builder(
+                    settings["engine"], settings["type"]
+                )
+            except exception.ChartTypeNotImplementedError:
+                pass
+            else:
+                data.update({"form_builder": form_builder})
+        # view show
         else:
-            data.update({"form_builder": form_builder})
+            data.update(
+                {
+                    "chart": utils.build_chart_for_resource(
+                        settings, data_dict["resource"]["id"]
+                    )
+                }
+            )
 
         return data
 
