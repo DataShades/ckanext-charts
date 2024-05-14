@@ -194,11 +194,15 @@ class BasePlotlyForm(ABC):
 
     def description_field(self) -> dict[str, Any]:
         return {
-            "field_name": "notes",
+            "field_name": "description",
             "label": "Description",
             "form_snippet": "markdown.html",
             "form_placeholder": "Information about my view",
             "group": "General",
+            "validators": [
+                self.get_validator("ignore_empty"),
+                self.get_validator("unicode_safe"),
+            ],
         }
 
     def engine_field(self) -> dict[str, Any]:
