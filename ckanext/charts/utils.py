@@ -7,7 +7,6 @@ import pandas as pd
 
 import ckan.plugins.toolkit as tk
 
-import ckanext.charts.exception as exception
 from ckanext.charts.chart_builders import ChartJSBuilder, PlotlyBuilder
 from ckanext.charts.fetchers import DatastoreDataFetcher
 

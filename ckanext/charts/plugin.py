@@ -10,6 +10,7 @@ from ckan.common import CKANConfig
 import ckanext.charts.config as conf
 from ckanext.charts import cache, exception, fetchers, utils
 from ckanext.charts.logic.schema import settings_schema
+from ckanext.charts.chart_builders import PlotlyBarForm
 
 
 @tk.blanket.helpers
@@ -76,34 +77,43 @@ class ChartsViewPlugin(p.SingletonPlugin):
         :param package: dict of the full parent dataset
         """
 
-        settings, _ = tk.navl_validate(
-            data_dict["resource_view"], settings_schema(), {}
-        )
-
         data = {
-            "settings": settings,
+            "settings": {},
             "resource_id": data_dict["resource"]["id"],
+            "form_builder": PlotlyBarForm,
         }
 
+        data_dict["resource_view"]["resource_id"] = data_dict["resource"]["id"]
+
+        try:
+            settings, _ = tk.navl_validate(
+                data_dict["resource_view"], settings_schema(), {}
+            )
+        except exception.ChartTypeNotImplementedError:
+            return data
+
         # view create or edit
-        if "resource_view" in context:
+        if "resource_view" in context or "for_view" in context:
             try:
                 form_builder = utils.get_chart_form_builder(
-                    settings["engine"], settings["type"]
+                    settings["engine"],
+                    settings["type"],
                 )
             except exception.ChartTypeNotImplementedError:
-                pass
-            else:
-                data.update({"form_builder": form_builder})
+                form_builder = PlotlyBarForm
+
+            data.update({"form_builder": form_builder})
         # view show
         else:
             data.update(
                 {
                     "chart": utils.build_chart_for_resource(
                         settings, data_dict["resource"]["id"]
-                    )
-                }
+                    ),
+                },
             )
+
+        data.update({"settings": settings})
 
         return data
 

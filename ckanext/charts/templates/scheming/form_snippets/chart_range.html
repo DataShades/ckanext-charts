@@ -1,6 +1,6 @@
 <div class="form-group control-full control-large">
-    <label for="vol">{{ _("Opacity")}}</label>
+    <label for="vol">{{ field.label }}</label>
     <div class="controls ">
-        <input type="range" id="opacity" name="opacity" min="{{ field.min or 0}}" max="{{ field.max or 1}}" step="{{ field.step or 0.1}}" value="{{ data[field.field_name] }}">
+        <input type="range" id="{{ field.field_name }}" name="{{ field.field_name }}" min="{{ field.min or 0}}" max="{{ field.max or 1}}" step="{{ field.step or 0.1}}" value="{{ data[field.field_name] }}">
     </div>
 </div>

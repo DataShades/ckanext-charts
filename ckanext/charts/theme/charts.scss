@@ -7,4 +7,10 @@
         position: relative;
         padding: 0;
     }
+
+    label.no-dots {
+        &:after {
+            display: none;
+        }
+    }
 }

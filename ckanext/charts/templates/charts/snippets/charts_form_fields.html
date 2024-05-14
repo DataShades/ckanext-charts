@@ -1,27 +1,37 @@
+{% set active_tab = active_tab or "General" %}
+{% set form_tabs = builder.get_form_tabs() %}
+
 <div class="charts-view--form">
     <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-        {% for tab in builder.get_form_tabs() %}
-            <li class="nav-item" role="presentation">
-                <button class="nav-link {{ 'active' if loop.index == 1 }}" id="pills-{{ tab }}-tab" data-bs-toggle="pill"
-                    data-bs-target="#pills-{{ tab }}" type="button" role="tab" aria-controls="pills-{{ tab }}"
-                    aria-selected="true">{{ tab }}</button>
-            </li>
+        {% for tab in form_tabs %}
+        <li class="nav-item" role="presentation">
+            <button class="nav-link {{ 'active' if tab == active_tab }}" id="pills-{{ tab }}-tab" data-bs-toggle="pill"
+                data-bs-target="#pills-{{ tab }}" type="button" role="tab" aria-controls="pills-{{ tab }}" {% if
+                tab==active_tab %}aria-selected="true" {% endif %}>{{ tab }}</button>
+        </li>
         {% endfor %}
     </ul>
 
-    <button class="btn btn-default" id="chart-clear" type="button" style="position: absolute; right: 0; top: 0;">{{ _("Clear") }}</button>
+    <button class="btn btn-default" id="chart-clear" type="button" style="position: absolute; right: 0; top: 0;"
+        hx-get="{{ h.url_for('charts_view.clear_chart', resource_id=resource_id) }}" hx-trigger="click"
+        hx-include="closest form" hx-target=".charts-view--form" hx-swap="outerHTML">
+        {{ _("Clear") }}
+    </button>
 
     <div class="tab-content" id="pills-tabContent" style="display: block;"
         hx-get="{{ h.url_for('charts_view.update_chart', resource_id=resource_id) }}" hx-trigger="load, submit, change"
         hx-include="closest form" hx-target="#charts-view--preview">
 
-        {% for tab in builder.get_form_tabs() %}
-            <div class="tab-pane fade show {{ 'active' if loop.index == 1 }}" id="pills-{{ tab }}" role="tabpanel" aria-labelledby="pills-{{ tab }}-tab">
-                {% snippet 'charts/snippets/render_fields.html', fields=builder.get_fields_by_tab(tab), data=data, errors=errors %}
-            </div>
+        {% for tab in form_tabs %}
+        <div class="tab-pane fade {{ 'show active' if tab == active_tab }}" id="pills-{{ tab }}" role="tabpanel"
+            aria-labelledby="pills-{{ tab }}-tab">
+            {% snippet 'charts/snippets/render_fields.html', fields=builder.get_fields_by_tab(tab), data=data,
+            errors=errors %}
+        </div>
         {% endfor %}
     </div>
 
     <input type="hidden" name="resource_id" value="{{ resource_id }}">
-    <input type="hidden" name="{{ g.csrf_field_name }}" value="{{ csrf_token() }}" hx-swap-oob='outerHTML:[name="{{ g.csrf_field_name }}"]' />
+    <input type="hidden" name="{{ g.csrf_field_name }}" value="{{ csrf_token() }}"
+        hx-swap-oob='outerHTML:[name="{{ g.csrf_field_name }}"]' />
 </div>

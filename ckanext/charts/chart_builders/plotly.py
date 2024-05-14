@@ -9,7 +9,7 @@ import plotly.express as px
 import ckan.plugins.toolkit as tk
 from ckan import types
 
-from ckanext.charts import fetchers
+from ckanext.charts import fetchers, exception
 from ckanext.charts.chart_builders.base import BaseChartBuilder
 
 
@@ -20,19 +20,23 @@ class PlotlyBuilder(BaseChartBuilder):
         self.settings = self.drop_view_fields(self.drop_empty_values(self.settings))
 
     def drop_view_fields(self, settings: dict[str, Any]) -> dict[str, Any]:
-        view_fields = (
-            "title",
-            "description",
-            "engine",
-            "type",
-            "id",
-            "notes",
-            "package_id",
-            "resource_id",
-            "view_type"
-        )
-
-        return {k: v for k, v in settings.items() if k not in view_fields}
+        """Drop fields not related to chart settings."""
+        return {
+            k: v
+            for k, v in settings.items()
+            if k
+            not in (
+                "title",
+                "description",
+                "engine",
+                "type",
+                "id",
+                "notes",
+                "package_id",
+                "resource_id",
+                "view_type",
+            )
+        }
 
     @classmethod
     def get_supported_forms(cls) -> list[type[Any]]:
@@ -83,7 +87,10 @@ class PlotlyLineBuilder(PlotlyBuilder):
 
 class PlotlyScatterBuilder(PlotlyBuilder):
     def to_json(self) -> Any:
-        return px.scatter(self.df, **self.settings).to_json()
+        try:
+            return px.scatter(self.df, **self.settings).to_json()
+        except Exception as e:
+            raise exception.ChartBuildError from e
 
     def to_html(self) -> str:
         return px.scatter(self.df, **self.settings).to_html()
@@ -179,6 +186,10 @@ class BasePlotlyForm(ABC):
             "preset": "title",
             "form_placeholder": "Chart title",
             "group": "General",
+            "validators": [
+                self.get_validator("ignore_empty"),
+                self.get_validator("unicode_safe"),
+            ],
         }
 
     def description_field(self) -> dict[str, Any]:
@@ -233,14 +244,23 @@ class BasePlotlyForm(ABC):
             "choices": choices,
             "group": "Data",
             "validators": [
-                self.get_validator("ignore_empty"),
+                self.get_validator("charts_if_empty_same_as")("values"),
                 self.get_validator("unicode_safe"),
             ],
         }
 
     def y_axis_field(self, choices: list[dict[str, str]]) -> dict[str, Any]:
         field = self.column_field(choices)
-        field.update({"field_name": "y", "label": "Y Axis"})
+        field.update(
+            {
+                "field_name": "y",
+                "label": "Y Axis",
+                "validators": [
+                    self.get_validator("charts_if_empty_same_as")("names"),
+                    self.get_validator("unicode_safe"),
+                ],
+            }
+        )
 
         return field
 
@@ -397,13 +417,31 @@ class PlotlyPieForm(BasePlotlyForm):
 
     def values_field(self, choices: list[dict[str, str]]) -> dict[str, Any]:
         field = self.column_field(choices)
-        field.update({"field_name": "values", "label": "Values"})
+        field.update(
+            {
+                "field_name": "values",
+                "label": "Values",
+                "validators": [
+                    self.get_validator("charts_if_empty_same_as")("y"),
+                    self.get_validator("unicode_safe"),
+                ],
+            },
+        )
 
         return field
 
     def names_field(self, choices: list[dict[str, str]]) -> dict[str, Any]:
         field = self.column_field(choices)
-        field.update({"field_name": "names", "label": "Names"})
+        field.update(
+            {
+                "field_name": "names",
+                "label": "Names",
+                "validators": [
+                    self.get_validator("charts_if_empty_same_as")("x"),
+                    self.get_validator("unicode_safe"),
+                ],
+            },
+        )
 
         return field
 
@@ -482,6 +520,10 @@ class PlotlyScatterForm(BasePlotlyForm):
             "max": 100,
             "step": 1,
             "group": "Structure",
+            "validators": [
+                self.get_validator("default")(100),
+                self.get_validator("int_validator"),
+            ],
         }
 
     def get_form_fields(self):
@@ -504,10 +546,10 @@ class PlotlyScatterForm(BasePlotlyForm):
             self.log_y_field(),
             self.sort_x_field(),
             self.sort_y_field(),
-            self.color_field(columns),
-            self.animation_frame_field(columns),
-            self.opacity_field(),
             self.size_field(columns),
             self.size_max_field(),
             self.limit_field(),
+            self.color_field(columns),
+            self.animation_frame_field(columns),
+            self.opacity_field(),
         ]

@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from abc import ABC, abstractmethod
 from io import BytesIO
-from typing import Any
+from typing import Any, cast
 
 import lxml
 import pandas as pd
@@ -71,6 +71,10 @@ class DatastoreDataFetcher(DataFetcherStrategy):
                 .limit(self.limit),
                 get_read_engine(),
             ).drop(columns=["_id", "_full_text"])
+
+            # TODO: hack... Convert all columns to numeric if possible
+            df = cast(pd.DataFrame, df.apply(pd.to_numeric, errors='coerce').fillna(df))
+
         except ProgrammingError as e:
             raise exception.DataFetchError(
                 f"An error occurred during fetching data from DataStore: {e}",

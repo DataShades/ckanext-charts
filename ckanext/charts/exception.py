@@ -8,3 +8,7 @@ class CacheStrategyNotImplementedError(Exception):
 
 class ChartTypeNotImplementedError(Exception):
     pass
+
+
+class ChartBuildError(Exception):
+    pass

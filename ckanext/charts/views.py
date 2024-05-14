@@ -19,9 +19,14 @@ def update_chart(resource_id: str):
     try:
         builder = _get_form_builder(data)
     except exception.ChartTypeNotImplementedError:
-        return tk.render("charts/snippets/unknown_chart.html")
+        return tk.render("charts/snippets/error_chart.html")
 
-    data, _ = tk.navl_validate(data, builder.get_validation_schema(), {})
+    data, errors = tk.navl_validate(data, builder.get_validation_schema(), {})
+
+    if errors:
+        return tk.render_snippet(
+            "charts/snippets/error_chart.html", {"error_msg": errors}
+        )
 
     try:
         return tk.render_snippet(
@@ -29,17 +34,23 @@ def update_chart(resource_id: str):
             {"chart": utils.build_chart_for_resource(data, resource_id)},
         )
     except exception.ChartTypeNotImplementedError:
-        return tk.render("charts/snippets/unknown_chart.html")
+        return tk.render("charts/snippets/error_chart.html")
+    except exception.ChartBuildError:
+        return tk.render(
+            "charts/snippets/error_chart.html",
+            {"error_msg": tk._("Error building chart")},
+        )
 
 
 @charts.route("/api/utils/charts/update-form")
 def update_form():
     data = parse_params(tk.request.args)
+    resource_id = data["resource_id"]
 
     try:
         builder = _get_form_builder(data)
     except exception.ChartTypeNotImplementedError:
-        return tk.render("charts/snippets/unknown_chart.html")
+        return tk.render("charts/snippets/error_chart.html")
 
     data, errors = tk.navl_validate(data, builder.get_validation_schema(), {})
 
@@ -47,9 +58,30 @@ def update_form():
         "charts/snippets/charts_form_fields.html",
         {
             "builder": builder,
-            "resource_id": data["resource_id"],
+            "resource_id": resource_id,
             "data": data,
             "errors": errors,
+            "active_tab": "Structure",
+        },
+    )
+
+
+@charts.route("/api/utils/charts/<resource_id>/clear-chart")
+def clear_chart(resource_id: str):
+    builder = _get_form_builder(
+        {"engine": "plotly", "type": "Bar", "resource_id": resource_id}
+    )
+
+    data, errors = tk.navl_validate({}, builder.get_validation_schema(), {})
+
+    return tk.render_snippet(
+        "charts/snippets/charts_form_fields.html",
+        {
+            "builder": builder,
+            "resource_id": resource_id,
+            "data": data,
+            "errors": errors,
+            "active_tab": "General",
         },
     )
 
