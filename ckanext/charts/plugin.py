@@ -52,6 +52,7 @@ class ChartsViewPlugin(p.SingletonPlugin):
             "iframed": False,
             "filterable": False,
             "preview_enabled": False,
+            "requires_datastore": True
         }
 
     def can_view(self, data_dict: dict[str, Any]) -> bool:
