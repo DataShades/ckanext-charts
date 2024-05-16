@@ -52,7 +52,7 @@ class ChartsViewPlugin(p.SingletonPlugin):
             "iframed": False,
             "filterable": False,
             "preview_enabled": False,
-            "requires_datastore": True
+            "requires_datastore": True,
         }
 
     def can_view(self, data_dict: dict[str, Any]) -> bool:
@@ -106,13 +106,15 @@ class ChartsViewPlugin(p.SingletonPlugin):
             data.update({"form_builder": form_builder})
         # view show
         else:
-            data.update(
-                {
-                    "chart": utils.build_chart_for_resource(
-                        settings, data_dict["resource"]["id"]
-                    ),
-                },
-            )
+            try:
+                chart = utils.build_chart_for_resource(
+                    settings, data_dict["resource"]["id"]
+                )
+            except exception.ChartBuildError as e:
+                data["error_msg"] = e
+                return data
+
+            data["chart"] = chart
 
         data.update({"settings": settings})
 

@@ -35,10 +35,10 @@ def update_chart(resource_id: str):
         )
     except exception.ChartTypeNotImplementedError:
         return tk.render("charts/snippets/error_chart.html")
-    except exception.ChartBuildError:
+    except exception.ChartBuildError as e:
         return tk.render(
             "charts/snippets/error_chart.html",
-            {"error_msg": tk._("Error building chart")},
+            {"error_msg": tk._(f"Error building chart: {e}")},
         )
 
 

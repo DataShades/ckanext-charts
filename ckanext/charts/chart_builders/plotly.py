@@ -90,7 +90,7 @@ class PlotlyScatterBuilder(PlotlyBuilder):
         try:
             return px.scatter(self.df, **self.settings).to_json()
         except Exception as e:
-            raise exception.ChartBuildError from e
+            raise exception.ChartBuildError(f"Error building the chart: {e}")
 
     def to_html(self) -> str:
         return px.scatter(self.df, **self.settings).to_html()
