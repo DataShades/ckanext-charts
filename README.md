@@ -124,7 +124,7 @@ class ObservableBarForm(BaseChartForm):
         ]
 ```
 
-Another step is to register JS/CSS vendor libraries of the chart you want to use. Refer to (CKAN documentation)[https://docs.ckan.org/en/latest/theming/webassets.html] to read about adding CSS and JavaScript files using Webassets.
+Another step is to register JS/CSS vendor libraries of the chart you want to use. Refer to [CKAN documentation](https://docs.ckan.org/en/latest/theming/webassets.html) to read about adding CSS and JavaScript files using Webassets.
 
 You also will need a CKAN JS module, that will be responsible for rendering the Chart. This module must be registered inside a `webassets.yml` as well.
 ```js
@@ -175,6 +175,8 @@ And an HTML file, that will provide a proper container and include your JS modul
 ```
 
 Note, that we should add `{% asset "charts/observable" %}` not only here, but in `charts_form.html` too.
+
+The reason for having a separate `HTML` file and `JS` module is that different libraries may require different types of container elements (such as div, canvas, etc.) to initialize or may need additional boilerplate code to build a chart. There's no easy way to abstract this, so you have to implement these things yourself.
 
 ## Developer installation
 
