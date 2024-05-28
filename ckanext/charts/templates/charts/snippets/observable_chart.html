@@ -1,0 +1,9 @@
+{% asset "charts/observable" %}
+
+{% if chart %}
+    <div id="chart-container" data-module="charts-render-observable" data-module-config="{{ chart }}"></div>
+{% else %}
+    <p class="text-muted">
+        {{ _("Cannot build chart with current settings") }}
+    </p>
+{% endif %}

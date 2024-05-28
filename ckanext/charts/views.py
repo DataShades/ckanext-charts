@@ -47,6 +47,11 @@ def update_form():
     data = parse_params(tk.request.args)
     resource_id = data["resource_id"]
 
+    # if we're changing the engine, drop the chart type, cause we don't know
+    # the list of supported types for the new engine
+    if data.pop("reset_engine", False):
+        data["type"] = ""
+
     try:
         builder = _get_form_builder(data)
     except exception.ChartTypeNotImplementedError:

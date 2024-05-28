@@ -7,7 +7,7 @@ import pandas as pd
 
 import ckan.plugins.toolkit as tk
 
-from ckanext.charts.chart_builders import ChartJSBuilder, PlotlyBuilder
+from ckanext.charts.chart_builders import get_chart_engines
 from ckanext.charts.fetchers import DatastoreDataFetcher
 
 
@@ -32,13 +32,12 @@ def printable_file_size(size_bytes: int) -> str:
 
 
 def get_chart_form_builder(engine: str, chart_type: str):
-    if engine == "plotly":
-        return PlotlyBuilder.get_form_for_type(chart_type)
+    builders = get_chart_engines()
 
-    if engine == "chartjs":
-        return ChartJSBuilder.get_form_for_type(chart_type)
+    if engine not in builders:
+        raise NotImplementedError(f"Engine {engine} is not supported")
 
-    raise NotImplementedError(f"Engine {engine} is not supported")
+    return builders[engine].get_form_for_type(chart_type)
 
 
 def build_chart_for_data(settings: dict[str, Any], data: pd.DataFrame):
@@ -59,14 +58,12 @@ def build_chart_for_resource(settings: dict[str, Any], resource_id: str):
 
 
 def _build_chart(settings: dict[str, Any], dataframe: pd.DataFrame) -> str | None:
-    # TODO: rewrite it to pick the correct builder based on the engine more eloquently
-    if settings["engine"] == "plotly":
-        builder = PlotlyBuilder.get_builder_for_type(settings["type"])
-    elif settings["engine"] == "chartjs":
-        builder = ChartJSBuilder.get_builder_for_type(settings["type"])
-    else:
+    """Get chart config for the given settings and dataframe"""
+    builders = get_chart_engines()
+
+    if settings["engine"] not in builders:
         return None
 
-    result = builder(dataframe, settings)
+    builder = builders[settings["engine"]].get_builder_for_type(settings["type"])
 
-    return result.to_json()
+    return builder(dataframe, settings).to_json()

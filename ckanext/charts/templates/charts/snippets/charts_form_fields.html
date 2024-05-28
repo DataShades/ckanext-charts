@@ -4,11 +4,14 @@
 <div class="charts-view--form">
     <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
         {% for tab in form_tabs %}
-        <li class="nav-item" role="presentation">
-            <button class="nav-link {{ 'active' if tab == active_tab }}" id="pills-{{ tab }}-tab" data-bs-toggle="pill"
-                data-bs-target="#pills-{{ tab }}" type="button" role="tab" aria-controls="pills-{{ tab }}" {% if
-                tab==active_tab %}aria-selected="true" {% endif %}>{{ tab }}</button>
-        </li>
+            {% set tab_fields = builder.get_fields_by_tab(tab) %}
+            {% if tab_fields %}
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link {{ 'active' if tab == active_tab }}" id="pills-{{ tab }}-tab" data-bs-toggle="pill"
+                        data-bs-target="#pills-{{ tab }}" type="button" role="tab" aria-controls="pills-{{ tab }}" {% if
+                        tab==active_tab %}aria-selected="true" {% endif %}>{{ tab }}</button>
+                </li>
+            {% endif %}
         {% endfor %}
     </ul>
 
@@ -23,11 +26,15 @@
         hx-include="closest form" hx-target="#charts-view--preview">
 
         {% for tab in form_tabs %}
-        <div class="tab-pane fade {{ 'show active' if tab == active_tab }}" id="pills-{{ tab }}" role="tabpanel"
-            aria-labelledby="pills-{{ tab }}-tab">
-            {% snippet 'charts/snippets/render_fields.html', fields=builder.get_fields_by_tab(tab), data=data,
-            errors=errors %}
-        </div>
+            {% set tab_fields = builder.get_fields_by_tab(tab) %}
+
+            {% if tab_fields %}
+                <div class="tab-pane fade {{ 'show active' if tab == active_tab }}" id="pills-{{ tab }}" role="tabpanel"
+                    aria-labelledby="pills-{{ tab }}-tab">
+                    {% snippet 'charts/snippets/render_fields.html', fields=builder.get_fields_by_tab(tab), data=data,
+                    errors=errors %}
+                </div>
+            {% endif %}
         {% endfor %}
     </div>
 

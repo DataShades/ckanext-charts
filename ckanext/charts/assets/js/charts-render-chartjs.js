@@ -9,9 +9,6 @@ ckan.module("charts-render-chartjs", function ($, _) {
         initialize: function () {
             $.proxyAll(this, /_/);
 
-            console.log(this.options.config);
-
-
             if (!this.options.config) {
                 console.error("No configuration provided");
                 return;

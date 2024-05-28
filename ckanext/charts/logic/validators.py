@@ -5,7 +5,7 @@ from typing import Any, Callable
 import ckan.plugins.toolkit as tk
 
 from ckanext.charts import utils
-from ckanext.charts.chart_builders.plotly import PlotlyBarForm
+from ckanext.charts.chart_builders import DEFAULT_CHART_FORM
 
 
 def float_validator(value):
@@ -33,9 +33,8 @@ def validate_chart_extras(key, data, errors, context):
     """Use a custom validation schema for specific chart types."""
     settings = _extract_setting(data)
 
-    # use plotly bar as default settings
     if "engine" not in settings or "type" not in settings:
-        builder = PlotlyBarForm
+        builder = DEFAULT_CHART_FORM
     else:
         builder = utils.get_chart_form_builder(settings["engine"], settings["type"])
 

@@ -10,7 +10,7 @@ from ckan.common import CKANConfig
 import ckanext.charts.config as conf
 from ckanext.charts import cache, exception, fetchers, utils
 from ckanext.charts.logic.schema import settings_schema
-from ckanext.charts.chart_builders import PlotlyBarForm
+from ckanext.charts.chart_builders import DEFAULT_CHART_FORM
 
 
 @tk.blanket.helpers
@@ -81,7 +81,7 @@ class ChartsViewPlugin(p.SingletonPlugin):
         data = {
             "settings": {},
             "resource_id": data_dict["resource"]["id"],
-            "form_builder": PlotlyBarForm,
+            "form_builder": DEFAULT_CHART_FORM,
         }
 
         data_dict["resource_view"]["resource_id"] = data_dict["resource"]["id"]
@@ -101,7 +101,7 @@ class ChartsViewPlugin(p.SingletonPlugin):
                     settings["type"],
                 )
             except exception.ChartTypeNotImplementedError:
-                form_builder = PlotlyBarForm
+                form_builder = DEFAULT_CHART_FORM
 
             data.update({"form_builder": form_builder})
         # view show

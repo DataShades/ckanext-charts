@@ -1,23 +1,32 @@
-chartjs:
-  filter: rjsmin
-  output: ckanext-charts/%(version)s-chartjs.js
-  contents:
-    - js/vendor/chartjs.min.js
+# chartjs:
+#   filter: rjsmin
+#   output: ckanext-charts/%(version)s-chartjs.js
+#   contents:
+#     - js/vendor/chartjs.min.js
 
-    - js/charts-chartjs.js
-    - js/charts-render-chartjs.js
+#     - js/charts-chartjs.js
+#     - js/charts-render-chartjs.js
+#   extra:
+#     preload:
+#       - base/main
+
+plotly:
+  filter: rjsmin
+  output: ckanext-charts/%(version)s-plotly.js
+  contents:
+    - js/vendor/plotly.min.js
+    - js/charts-render-plotly.js
   extra:
     preload:
       - base/main
 
-plotly:
+observable:
   filter: rjsmin
-  output: ckanext-charts/%(version)s-chartjs-plotly.js
+  output: ckanext-charts/%(version)s-observable.js
   contents:
-    - js/vendor/plotly.min.js
-
-    # - js/charts-form.js
-    - js/charts-render-plotly.js
+    - js/vendor/d3.min.js
+    - js/vendor/observable.min.js
+    - js/charts-render-observable.js
   extra:
     preload:
       - base/main
