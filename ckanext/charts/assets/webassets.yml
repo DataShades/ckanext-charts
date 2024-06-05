@@ -1,14 +1,12 @@
-# chartjs:
-#   filter: rjsmin
-#   output: ckanext-charts/%(version)s-chartjs.js
-#   contents:
-#     - js/vendor/chartjs.min.js
-
-#     - js/charts-chartjs.js
-#     - js/charts-render-chartjs.js
-#   extra:
-#     preload:
-#       - base/main
+chartjs:
+  filter: rjsmin
+  output: ckanext-charts/%(version)s-chartjs.js
+  contents:
+    - js/vendor/chartjs.min.js
+    - js/charts-render-chartjs.js
+  extra:
+    preload:
+      - base/main
 
 plotly:
   filter: rjsmin
