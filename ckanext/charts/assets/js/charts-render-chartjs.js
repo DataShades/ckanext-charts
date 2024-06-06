@@ -9,13 +9,19 @@ ckan.module("charts-render-chartjs", function ($, _) {
         initialize: function () {
             $.proxyAll(this, /_/);
 
+            if (window.charts_chartjs) {
+                window.charts_chartjs.destroy();
+            }
+
             console.log(this.options.config);
+
             if (!this.options.config) {
                 console.error("No configuration provided");
                 return;
             }
 
-            new Chart(this.el[0].getContext("2d"), this.options.config);
+            var chart = new Chart(this.el[0].getContext("2d"), this.options.config);
+            window.charts_chartjs = chart;
         }
     };
 });

@@ -1,0 +1,55 @@
+{% import 'macros/form.html' as form %}
+{% from "macros/form/attributes.html" import attributes %}
+
+{%- set options=[] -%}
+
+{%- set form_restrict_choices_to = field.get('form_restrict_choices_to') -%}
+
+{%- if not h.scheming_field_required(field) or field.get('form_include_blank_choice', false) -%}
+    {%- do options.append({'value': '', 'text': ''}) -%}
+{%- endif -%}
+
+{%- for c in h.scheming_field_choices(field) -%}
+    {%- if not form_restrict_choices_to or c.value in form_restrict_choices_to -%}
+        {%- do options.append({'value': c.value|string, 'text': h.scheming_language_text(c.label) }) -%}
+    {%- endif -%}
+{%- endfor -%}
+
+{%- if field.get('sorted_choices') -%}
+    {%- set options = options|sort(case_sensitive=false, attribute='text') -%}
+{%- endif -%}
+
+{%- if data[field.field_name] -%}
+    {%- set option_selected = data[field.field_name] -%}
+{%- else -%}
+    {%- set option_selected = None -%}
+{%- endif -%}
+
+{% set errors = errors[field.field_name] %}
+{% set name = field.field_name %}
+{% set id = 'field-' + field.field_name %}
+{% set field_label = h.scheming_language_text(field.label) %}
+{% set attrs = dict({"class": "tom-select"}, **(field.get('form_attrs', {}))) %}
+{% set is_required = h.scheming_field_required(field) %}
+
+
+<div class="form-group control-medium control-select">
+    <label class="form-label" for="{{ for }}">
+        {% if is_required %}<span title="{{ _("This field is required") }}" class="control-required">*</span> {% endif %}
+        {{ field_label or _('Custom') }}
+    </label>
+
+    <div class="controls ">
+        <select id="{{ id or name }}" name="{{ name }}" {{ attributes(attrs) }}>
+            {% for option in options %}
+                <option value="{{ option.value }}"{% if option.value in option_selected %} selected{% endif %}>{{ option.text or option.value }}</option>
+            {% endfor %}
+        </select>
+
+        {%- if field.help_text -%}
+            {% set text = h.scheming_language_text(field.help_text) %}
+            {{- form.info(text=text|safe if field.get('help_allow_html', false) else text, inline=field.get('help_inline', false)) -}}
+        {%- endif -%}
+    </div>
+    {% if errors and errors is iterable %}<span class="error-block">{{ errors|join(', ') }}</span>{% endif %}
+</div>

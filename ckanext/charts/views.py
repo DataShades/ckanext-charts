@@ -16,6 +16,8 @@ charts = Blueprint("charts_view", __name__)
 def update_chart(resource_id: str):
     data = parse_params(tk.request.args)
 
+    print(data)
+
     try:
         builder = _get_form_builder(data)
     except exception.ChartTypeNotImplementedError:

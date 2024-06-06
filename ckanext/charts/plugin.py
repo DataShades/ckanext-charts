@@ -85,10 +85,11 @@ class ChartsViewPlugin(p.SingletonPlugin):
         }
 
         data_dict["resource_view"]["resource_id"] = data_dict["resource"]["id"]
+        context["_for_show"] = True
 
         try:
             settings, _ = tk.navl_validate(
-                data_dict["resource_view"], settings_schema(), {}
+                data_dict["resource_view"], settings_schema(), context
             )
         except exception.ChartTypeNotImplementedError:
             return data

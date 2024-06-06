@@ -149,11 +149,15 @@ class BaseChartForm(ABC):
 
         return fields
 
-    def get_validation_schema(self) -> dict[str, Any]:
+    def get_validation_schema(self, for_show: bool = False) -> dict[str, Any]:
         fields = self.get_form_fields()
 
         return {
-            field["field_name"]: field["validators"]
+            field["field_name"]: (
+                field["validators"]
+                if not for_show
+                else field.get("output_validators", [])
+            )
             for field in fields
             if "validators" in field
         }
@@ -269,6 +273,39 @@ class BaseChartForm(ABC):
                 ],
             }
         )
+
+        return field
+
+    def x_multi_axis_field(self, choices: list[dict[str, str]]) -> dict[str, Any]:
+        return {
+            "field_name": "x",
+            "label": "X Axis",
+            # "preset": "select",
+            "required": True,
+            "choices": choices,
+            "group": "Data",
+            "form_snippet": "chart_select.html",
+            "validators": [
+                self.get_validator("charts_if_empty_same_as")("values"),
+                self.get_validator("not_empty"),
+                self.get_validator("charts_to_list_if_string"),
+                self.get_validator("list_of_strings"),
+            ],
+            "output_validators": [
+                self.get_validator("not_empty"),
+                self.get_validator("charts_to_list_if_string"),
+                self.get_validator("charts_list_to_csv"),
+            ],
+            "form_attrs": {
+                "multiple ": "1",
+                "class": "tom-select",
+            },
+            "help_text": "Select one or more columns for the X-axis",
+        }
+
+    def y_multi_axis_field(self, choices: list[dict[str, str]]) -> dict[str, Any]:
+        field = self.x_multi_axis_field(choices)
+        field.update({"field_name": "y", "label": "Y Axis"})
 
         return field
 

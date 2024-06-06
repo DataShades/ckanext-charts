@@ -40,7 +40,9 @@ def validate_chart_extras(key, data, errors, context):
 
     settings, err = tk.navl_validate(
         settings,
-        builder(settings["resource_id"]).get_validation_schema(),
+        builder(settings["resource_id"]).get_validation_schema(
+            context.get("_for_show", False)
+        ),
         {},
     )
 
@@ -64,3 +66,17 @@ def _extract_setting(data) -> dict[str, Any]:
     result.update(data.get(("__extras",), {}))
 
     return result
+
+def charts_to_list_if_string(value: Any) -> Any:
+    """Convert a string to a list"""
+    if isinstance(value, str):
+        return [value]
+
+    return value
+
+def charts_list_to_csv(data: list[str]):
+    """Convert a list of strings to a CSV string"""
+    if not isinstance(data, list):
+        return data
+
+    return ", ".join(data)

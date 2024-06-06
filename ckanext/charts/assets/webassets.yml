@@ -29,6 +29,14 @@ observable:
     preload:
       - base/main
 
+charts-js:
+  filter: rjsmin
+  output: ckanext-charts/%(version)s-charts.js
+  contents:
+    - js/charts-global.js
+  extra:
+    preload:
+      - base/main
 
 charts-css:
   filter: cssrewrite
