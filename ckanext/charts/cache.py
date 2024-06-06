@@ -193,7 +193,7 @@ def update_redis_expiration(time: int) -> None:
         return
 
     redis_conn = RedisCache().client
-    redis_version = redis_conn.info().get('redis_version', '0.0.0')
+    redis_version = redis_conn.info().get("redis_version", "0.0.0")
 
     for key in redis_conn.scan_iter(const.REDIS_PREFIX):
         if redis_version >= "7.0.0":

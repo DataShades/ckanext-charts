@@ -1,0 +1,9 @@
+{% ckan_extends %}
+
+{% block scripts %}
+    {{ super() }}
+
+    {% if h.charts_include_htmx_asset() %}
+        {% asset "charts/charts-htmx" %}
+    {% endif %}
+{% endblock scripts %}

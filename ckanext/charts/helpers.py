@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from ckanext.charts import utils
 from ckanext.charts.cache import count_file_cache_size, count_redis_cache_size
+from ckanext.charts import config
 
 
 def get_redis_cache_size():
@@ -19,3 +20,7 @@ def get_available_chart_engines_options():
     from ckanext.charts.chart_builders import get_chart_engines
 
     return [{"value": engine, "text": engine} for engine in get_chart_engines()]
+
+def charts_include_htmx_asset():
+    """Include HTMX asset if enabled."""
+    return config.include_htmx_asset()

@@ -39,7 +39,7 @@
         {{ field_label or _('Custom') }}
     </label>
 
-    <div class="controls ">
+    <div class="controls" data-module="charts-select">
         <select id="{{ id or name }}" name="{{ name }}" {{ attributes(attrs) }}>
             {% for option in options %}
                 <option value="{{ option.value }}"{% if option.value in option_selected %} selected{% endif %}>{{ option.text or option.value }}</option>

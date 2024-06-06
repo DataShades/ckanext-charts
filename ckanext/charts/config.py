@@ -5,6 +5,7 @@ CONF_REDIS_CACHE_TTL = "ckanext.charts.redis_cache_ttl"
 CONF_FILE_CACHE_TTL = "ckanext.charts.file_cache_ttl"
 CONF_ENABLE_CACHE = "ckanext.charts.enable_cache"
 CONF_SERVERSIDE_RENDER = "ckanext.charts.use_serverside_rendering"
+CONF_ENABLE_HTMX = "ckanext.charts.include_htmx_asset"
 
 
 def get_cache_strategy() -> str:
@@ -30,3 +31,8 @@ def is_cache_enabled() -> bool:
 def use_serverside_rendering() -> bool:
     """Check if the server-side rendering is enabled."""
     return tk.asbool(tk.config[CONF_SERVERSIDE_RENDER])
+
+
+def include_htmx_asset() -> bool:
+    """Include HTMX library asset. Disable it, if no other library do it."""
+    return tk.config[CONF_ENABLE_HTMX]

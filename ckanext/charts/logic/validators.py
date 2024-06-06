@@ -67,12 +67,14 @@ def _extract_setting(data) -> dict[str, Any]:
 
     return result
 
+
 def charts_to_list_if_string(value: Any) -> Any:
     """Convert a string to a list"""
     if isinstance(value, str):
         return [value]
 
     return value
+
 
 def charts_list_to_csv(data: list[str]):
     """Convert a list of strings to a CSV string"""

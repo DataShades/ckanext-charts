@@ -28,3 +28,9 @@ groups:
         editable: true
         type: bool
         validators: ignore_empty boolean_validator
+
+      - key: ckanext.charts.include_htmx_asset
+        description: Include HTMX asset
+        default: true
+        type: bool
+        validators: ignore_empty boolean_validator

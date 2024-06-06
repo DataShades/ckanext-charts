@@ -34,6 +34,7 @@ charts-js:
   output: ckanext-charts/%(version)s-charts.js
   contents:
     - js/charts-global.js
+    - js/charts-select.js
   extra:
     preload:
       - base/main
@@ -43,3 +44,19 @@ charts-css:
   output: ckanext-charts/%(version)s-charts.css
   contents:
     - css/charts.css
+
+charts-htmx:
+  filter: rjsmin
+  output: ckanext-charts/%(version)s-charts-htmx.js
+  contents:
+    - js/vendor/htmx.min.js
+
+tom-select-js:
+  output: ckanext-charts/%(version)s-tom-select.js
+  contents:
+    - js/vendor/tom-select.complete.min.js
+
+tom-select-css:
+  output: ckanext-charts/%(version)s-tom-select.css
+  contents:
+    - css/vendor/tom-select.min.css

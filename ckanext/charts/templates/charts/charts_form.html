@@ -8,8 +8,9 @@
 {% asset "charts/charts-css" %}
 {% asset "charts/charts-js" %}
 
-<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+{# Custom select library #}
+{% asset "charts/tom-select-js" %}
+{% asset "charts/tom-select-css" %}
 
 <div class="charts-view--form" data-module="charts-global">
     {% snippet "charts/snippets/charts_form_fields.html", resource_id=resource_id, data=settings,

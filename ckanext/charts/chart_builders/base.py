@@ -156,7 +156,7 @@ class BaseChartForm(ABC):
             field["field_name"]: (
                 field["validators"]
                 if not for_show
-                else field.get("output_validators", [])
+                else field.get("output_validators", field["validators"])
             )
             for field in fields
             if "validators" in field
