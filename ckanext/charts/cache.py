@@ -6,9 +6,9 @@ import os
 import tempfile
 import time
 from abc import ABC, abstractmethod
+from io import BytesIO
 
 import pandas as pd
-import pyarrow as pa
 from pyarrow import orc
 
 import ckan.plugins.toolkit as tk
@@ -48,16 +48,19 @@ class RedisCache(CacheStrategy):
         if not raw_data:
             return None
 
-        return pa.deserialize_pandas(raw_data)
+        return pd.read_csv(BytesIO(raw_data))  # type: ignore
 
     def set_data(self, key: str, data: pd.DataFrame):
         """Serialize data and save to redis"""
         cache_ttl = config.get_redis_cache_ttl()
 
-        if cache_ttl:
-            self.client.setex(key, cache_ttl, pa.serialize_pandas(data).to_pybytes())
-        else:
-            self.client.set(key, value=pa.serialize_pandas(data).to_pybytes())
+        try:
+            if cache_ttl:
+                self.client.setex(key, cache_ttl, data.to_csv(index=False))
+            else:
+                self.client.set(key, value=data.to_csv(index=False))
+        except Exception as e:
+            log.exception("Failed to save data to Redis: %s", e)
 
     def invalidate(self, key: str):
         self.client.delete(key)

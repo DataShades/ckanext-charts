@@ -70,5 +70,7 @@ def _build_chart(settings: dict[str, Any], dataframe: pd.DataFrame) -> str | Non
         chart_config = builder(dataframe, settings).to_json()
     except KeyError as e:
         raise ChartBuildError(f"Missing column or field {e}")
+    except ValueError as e:
+        raise ChartBuildError(f"{e}")
 
     return chart_config

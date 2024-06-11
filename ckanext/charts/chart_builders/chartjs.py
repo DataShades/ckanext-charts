@@ -21,6 +21,7 @@ class ChartJsBuilder(BaseChartBuilder):
             ChartJSDoughnutForm,
             ChartJSScatterForm,
             ChartJSBubbleForm,
+            ChartJSRadarForm,
         ]
 
 
@@ -112,13 +113,6 @@ class ChartJSLineBuilder(ChartJsBuilder):
 
         datasets = []
 
-        # TODO: hack, for view chart after creation
-        # for some reason, the validator didn't convert the y field to a list
-        if not isinstance(self.settings["y"], list):
-            self.settings["y"] = [
-                field.strip() for field in self.settings["y"].split(",")
-            ]
-
         for field in self.settings["y"]:
             dataset = {"label": field, "data": self.df[field].tolist()}
 
@@ -167,7 +161,6 @@ class ChartJSPieBuilder(ChartJsBuilder):
 
         for field in [self.settings["values"]]:
             for label in data["data"]["labels"]:
-                # dataset_data.append(self.df[self.df[field] == label][field].size)
                 dataset_data.append(
                     self.convert_to_native_types(
                         self.df[self.df[self.settings["names"]] == label][field].sum()
@@ -268,6 +261,8 @@ class ChartJSScatterForm(BaseChartForm):
 
 
 class ChartJSBubbleBuilder(ChartJSScatterBuilder):
+    min_bubble_radius = 5
+
     def to_json(self) -> str:
         data = {
             "type": "bubble",
@@ -276,47 +271,43 @@ class ChartJSBubbleBuilder(ChartJSScatterBuilder):
         }
 
         dataset_data = []
-
-        min_bubble_radius = 5
+        max_size = self.df[self.settings["size"]].max()
 
         for _, data_series in self.df.iterrows():
             for field in [self.settings["y"]]:
-                size_column: str = self.settings["size"]
-                max_size = self.df[size_column].max()
-
-                # Handle cases where max_size is zero or NaN values are present
-                # or the column is not numeric
-                try:
-                    pd.to_numeric(max_size)
-                except ValueError:
-                    raise ChartBuildError(f"Column '{size_column}' is not numeric")
-
-                if max_size == 0 or np.isnan(max_size):
-                    bubble_radius = min_bubble_radius
-                else:
-                    data_series_size = np.nan_to_num(data_series[size_column], nan=0)
-                    bubble_radius = (data_series_size / max_size) * 30
-
-                if bubble_radius < min_bubble_radius:
-                    bubble_radius = min_bubble_radius
-
                 dataset_data.append(
                     {
                         "x": data_series[self.settings["x"]],
                         "y": data_series[field],
-                        # calculate the radius of the bubble
-                        "r": bubble_radius,
+                        "r": self._calculate_bubble_radius(data_series, max_size),
                     }
                 )
 
-        data["data"]["datasets"] = [
-            {
-                "label": self.settings["y"],
-                "data": dataset_data,
-            }
-        ]
+        data["data"]["datasets"] = [{"label": self.settings["y"], "data": dataset_data}]
 
         return json.dumps(data)
+
+    def _calculate_bubble_radius(self, data_series: pd.Series, max_size: int) -> int:
+        """Calculate bubble radius based on the size column"""
+        size_column: str = self.settings["size"]
+
+        # Handle cases where max_size is zero or NaN values are present
+        # or the column is not numeric
+        try:
+            pd.to_numeric(max_size)
+        except ValueError:
+            raise ChartBuildError(f"Column '{size_column}' is not numeric")
+
+        if max_size == 0 or np.isnan(max_size):
+            bubble_radius = self.min_bubble_radius
+        else:
+            data_series_size = np.nan_to_num(data_series[size_column], nan=0)
+            bubble_radius = (data_series_size / max_size) * 30
+
+        if bubble_radius < self.min_bubble_radius:
+            bubble_radius = self.min_bubble_radius
+
+        return bubble_radius
 
 
 class ChartJSBubbleForm(ChartJSScatterForm):
@@ -331,3 +322,58 @@ class ChartJSBubbleForm(ChartJSScatterForm):
         fields.append(self.size_field(columns))
 
         return fields
+
+
+class ChartJSRadarBuilder(ChartJsBuilder):
+    def to_json(self) -> str:
+        data = {
+            "type": "radar",
+            "data": {"labels": self.settings["values"]},
+            "options": self.settings,
+        }
+
+        datasets = []
+
+        for label in self.get_unique_values(self.df[self.settings["names"]]):
+            dataset_data = []
+
+            for value in self.settings["values"]:
+                try:
+                    dataset_data.append(
+                        self.df[self.df[self.settings["names"]] == label][value].item()
+                    )
+                except ValueError:
+                    # TODO: probably collision by name column, e.g two or more rows
+                    # skip for now
+                    continue
+
+            datasets.append({"label": label, "data": dataset_data})
+
+        data["data"]["datasets"] = datasets
+
+        return json.dumps(data)
+
+
+class ChartJSRadarForm(BaseChartForm):
+    name = "Radar"
+    builder = ChartJSRadarBuilder
+
+    def get_form_fields(self):
+        columns = [{"value": col, "label": col} for col in self.df.columns]
+        chart_types = [
+            {"value": form.name, "label": form.name}
+            for form in self.builder.get_supported_forms()
+        ]
+
+        return [
+            self.title_field(),
+            self.description_field(),
+            self.engine_field(),
+            self.type_field(chart_types),
+            self.names_field(columns),
+            self.values_multi_field(
+                columns,
+                help_text="Select 3 or more different categorical variables (dimensions)",
+            ),
+            self.limit_field(),
+        ]

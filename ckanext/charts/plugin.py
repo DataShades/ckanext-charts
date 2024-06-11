@@ -91,7 +91,8 @@ class ChartsViewPlugin(p.SingletonPlugin):
             settings, _ = tk.navl_validate(
                 data_dict["resource_view"], settings_schema(), context
             )
-        except exception.ChartTypeNotImplementedError:
+        except Exception as e:
+            data["error_msg"] = e
             return data
 
         # view create or edit
@@ -177,7 +178,6 @@ class ChartsViewPlugin(p.SingletonPlugin):
             dataset_dict: dict[str, Any],
         ) -> None:
             """Invalidate cache after upload to DataStore"""
-            import ipdb; ipdb.set_trace()
             cache.invalidate_by_key(
                 fetchers.DatastoreDataFetcher(resource_dict["id"]).make_cache_key(),
             )

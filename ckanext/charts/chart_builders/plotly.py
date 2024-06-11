@@ -70,7 +70,8 @@ class PlotlyLineBuilder(PlotlyBuilder):
                 secondary_y=True,
             )
 
-        fig.update_layout(title_text=self.settings["chart_title"])
+        if chart_title := self.settings.get("chart_title"):
+            fig.update_layout(title_text=chart_title)
 
         return fig.to_json()
 

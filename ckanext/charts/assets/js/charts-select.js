@@ -1,3 +1,6 @@
+/**
+ * CKAN Charts select using tom select
+ */
 ckan.module("charts-select", function ($, _) {
     "use strict";
 
@@ -5,7 +8,13 @@ ckan.module("charts-select", function ($, _) {
         initialize: function () {
             $.proxyAll(this, /_/);
 
-            new TomSelect(this.el.find("select")[0], {
+            let selectEl = this.el.find("select")[0];
+
+            if (selectEl.tomselect) {
+                selectEl.tomselect.destroy();
+            }
+
+            new TomSelect(selectEl, {
                 plugins: {
                     'checkbox_options': {
                         'checkedClassNames': ['ts-checked'],
@@ -16,7 +25,7 @@ ckan.module("charts-select", function ($, _) {
                         'title': 'Remove all selected options',
                     }
                 },
-                maxItems: this.el.find("select").attr("maxItems") || null,
+                maxItems: selectEl.getAttribute("maxitems") || null,
             });
         }
     };

@@ -1,3 +1,16 @@
 {% ckan_extends %}
 
 {% block wrapper_class %} {% if resource_view.view_type == 'charts_view' %}charts-view{% endif %} {{ super() }}{% endblock %}
+
+{% block form %}
+    <form class="dataset-form dataset-resource-form" method="post" data-module="basic-form resource-form">
+        {{ h.csrf_input() }}
+        {% include 'package/snippets/view_form.html' %}
+
+        {# removing preview button #}
+        <div class="form-actions">
+            <button class="btn btn-danger pull-left" name="delete" value="Delete"> {{ _('Delete') }} </button>
+            <button class="btn btn-primary" name="save" value="Save" type="submit">{{ _('Update') }}</button>
+        </div>
+    </form>
+{% endblock %}

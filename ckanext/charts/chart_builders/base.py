@@ -221,7 +221,7 @@ class BaseChartForm(ABC):
             "form_placeholder": "Chart title",
             "group": "Styles",
             "validators": [
-                self.get_validator("default")(""),
+                self.get_validator("default")(" "),
                 self.get_validator("unicode_safe"),
             ],
         }
@@ -309,7 +309,10 @@ class BaseChartForm(ABC):
         return field
 
     def y_multi_axis_field(
-        self, choices: list[dict[str, str]], max_items: int = 0
+        self,
+        choices: list[dict[str, str]],
+        max_items: int = 0,
+        help_text: str = "Select one or more columns for the Y-axis",
     ) -> dict[str, Any]:
         field = {
             "field_name": "y",
@@ -319,21 +322,17 @@ class BaseChartForm(ABC):
             "group": "Data",
             "form_snippet": "chart_select.html",
             "validators": [
-                self.get_validator("charts_if_empty_same_as")("values"),
+                self.get_validator("charts_if_empty_same_as")("x"),
                 self.get_validator("not_empty"),
                 self.get_validator("charts_to_list_if_string"),
                 self.get_validator("list_of_strings"),
             ],
-            "output_validators": [
-                self.get_validator("not_empty"),
-                self.get_validator("charts_to_list_if_string"),
-                self.get_validator("charts_list_to_csv"),
-            ],
+            "output_validators": [self.get_validator("not_empty")],
             "form_attrs": {
                 "multiple ": "1",
                 "class": "tom-select",
             },
-            "help_text": "Select one or more columns for the Y-axis",
+            "help_text": help_text,
         }
 
         if max_items:
@@ -341,6 +340,30 @@ class BaseChartForm(ABC):
                 self.get_validator("charts_list_length_validator")(max_items)
             )
             field["form_attrs"]["maxItems"] = max_items
+
+        return field
+
+    def values_multi_field(
+        self,
+        choices: list[dict[str, str]],
+        max_items: int = 0,
+        help_text: str = "Select one or more values for the chart",
+    ):
+        field = self.y_multi_axis_field(choices, max_items)
+
+        field.update(
+            {
+                "field_name": "values",
+                "label": "Values",
+                "validators": [
+                    self.get_validator("charts_if_empty_same_as")("names"),
+                    self.get_validator("not_empty"),
+                    self.get_validator("charts_to_list_if_string"),
+                    self.get_validator("list_of_strings"),
+                ],
+                "help_text": help_text,
+            }
+        )
 
         return field
 

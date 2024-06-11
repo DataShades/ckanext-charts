@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 import pytest
 
 import ckanext.charts.exception as exception
@@ -47,7 +49,7 @@ class TestPlotlyBuilder:
                 "type": "Line",
                 "engine": "plotly",
                 "x": "name",
-                "y": "age",
+                "y": ["age"],
             },
             data_frame,
         )
@@ -55,6 +57,26 @@ class TestPlotlyBuilder:
         assert result
         assert "data" in result
         assert "layout" in result
+
+    def test_build_multi_y_line(self, data_frame):
+        result = utils.build_chart_for_data(
+            {
+                "type": "Line",
+                "engine": "plotly",
+                "x": "name",
+                "y": ["age", "surname"],
+            },
+            data_frame,
+        )
+
+        assert result
+        assert "data" in result
+        assert "layout" in result
+
+        layout = json.loads(result)['layout']
+
+        assert 'yaxis' in layout
+        assert 'yaxis2' in layout
 
     def test_build_scatter(self, data_frame):
         result = utils.build_chart_for_data(
@@ -138,7 +160,23 @@ class TestChartJsBuilder:
                 "type": "Line",
                 "engine": "chartjs",
                 "x": "name",
-                "y": "age",
+                "y": ["age"],
+            },
+            data_frame,
+        )
+
+        assert result
+        assert "type" in result
+        assert "data" in result
+        assert "options" in result
+
+    def test_build_multi_y_line(self, data_frame):
+        result = utils.build_chart_for_data(
+            {
+                "type": "Line",
+                "engine": "chartjs",
+                "x": "name",
+                "y": ["age", "surname"],
             },
             data_frame,
         )
