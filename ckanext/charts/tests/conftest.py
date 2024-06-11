@@ -11,4 +11,10 @@ def clean_file_cache():
 
 @pytest.fixture()
 def data_frame():
-    return pd.DataFrame({"name": ["Alice", "Bob"], "age": [25, 30]})
+    return pd.DataFrame(
+        {
+            "name": ["Alice", "Bob"],
+            "surname": ["Bing", "Right"],
+            "age": [25, 30],
+        }
+    )

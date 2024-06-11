@@ -95,3 +95,146 @@ class TestPlotlyBuilder:
                 {"type": "Unknown", "engine": "plotly"},
                 data_frame,
             )
+
+
+class TestChartJsBuilder:
+    """Tests for ChartJsBuilder"""
+
+    def test_build_bar(self, data_frame):
+        result = utils.build_chart_for_data(
+            {
+                "type": "Bar",
+                "engine": "chartjs",
+                "x": "name",
+                "y": "age",
+            },
+            data_frame,
+        )
+
+        assert result
+        assert "type" in result
+        assert "data" in result
+        assert "options" in result
+
+    def test_horizontal_bar(self, data_frame):
+        result = utils.build_chart_for_data(
+            {
+                "type": "Horizontal Bar",
+                "engine": "chartjs",
+                "x": "age",
+                "y": "name",
+            },
+            data_frame,
+        )
+
+        assert result
+        assert "type" in result
+        assert "data" in result
+        assert "options" in result
+
+    def test_build_line(self, data_frame):
+        result = utils.build_chart_for_data(
+            {
+                "type": "Line",
+                "engine": "chartjs",
+                "x": "name",
+                "y": "age",
+            },
+            data_frame,
+        )
+
+        assert result
+        assert "type" in result
+        assert "data" in result
+        assert "options" in result
+
+    def test_build_pie(self, data_frame):
+        result = utils.build_chart_for_data(
+            {
+                "type": "Pie",
+                "engine": "chartjs",
+                "names": "name",
+                "values": "age",
+            },
+            data_frame,
+        )
+
+        assert result
+        assert "type" in result
+        assert "data" in result
+        assert "options" in result
+
+    def test_build_doughnut(self, data_frame):
+        result = utils.build_chart_for_data(
+            {
+                "type": "Doughnut",
+                "engine": "chartjs",
+                "names": "name",
+                "values": "age",
+            },
+            data_frame,
+        )
+
+        assert result
+        assert "type" in result
+        assert "data" in result
+        assert "options" in result
+
+    def test_scatter(self, data_frame):
+        result = utils.build_chart_for_data(
+            {
+                "type": "Scatter",
+                "engine": "chartjs",
+                "x": "name",
+                "y": "age",
+            },
+            data_frame,
+        )
+
+        assert result
+        assert "type" in result
+        assert "data" in result
+        assert "options" in result
+
+    def test_bubble(self, data_frame):
+        result = utils.build_chart_for_data(
+            {
+                "type": "Bubble",
+                "engine": "chartjs",
+                "x": "name",
+                "y": "age",
+                "size": "age",
+            },
+            data_frame,
+        )
+
+        assert result
+        assert "type" in result
+        assert "data" in result
+        assert "options" in result
+
+    def test_bubble_not_numeric_column(self, data_frame):
+        with pytest.raises(
+            exception.ChartBuildError,
+            match="Column 'surname' is not numeric",
+        ):
+            utils.build_chart_for_data(
+                {
+                    "type": "Bubble",
+                    "engine": "chartjs",
+                    "x": "name",
+                    "y": "age",
+                    "size": "surname",
+                },
+                data_frame,
+            )
+
+    def test_not_supported_chart_type(self, data_frame):
+        with pytest.raises(
+            exception.ChartTypeNotImplementedError,
+            match="Chart type not implemented",
+        ):
+            utils.build_chart_for_data(
+                {"type": "Unknown", "engine": "chartjs"},
+                data_frame,
+            )

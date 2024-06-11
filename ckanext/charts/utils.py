@@ -9,7 +9,7 @@ import ckan.plugins.toolkit as tk
 
 from ckanext.charts.chart_builders import get_chart_engines
 from ckanext.charts.fetchers import DatastoreDataFetcher
-
+from ckanext.charts.exception import ChartBuildError
 
 def get_column_options(resource_id: str) -> list[dict[str, str]]:
     """Get column options for the given resource"""
@@ -66,4 +66,9 @@ def _build_chart(settings: dict[str, Any], dataframe: pd.DataFrame) -> str | Non
 
     builder = builders[settings["engine"]].get_builder_for_type(settings["type"])
 
-    return builder(dataframe, settings).to_json()
+    try:
+        chart_config = builder(dataframe, settings).to_json()
+    except KeyError as e:
+        raise ChartBuildError(f"Missing column or field {e}")
+
+    return chart_config

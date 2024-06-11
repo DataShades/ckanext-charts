@@ -177,6 +177,7 @@ class ChartsViewPlugin(p.SingletonPlugin):
             dataset_dict: dict[str, Any],
         ) -> None:
             """Invalidate cache after upload to DataStore"""
+            import ipdb; ipdb.set_trace()
             cache.invalidate_by_key(
                 fetchers.DatastoreDataFetcher(resource_dict["id"]).make_cache_key(),
             )

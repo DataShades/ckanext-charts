@@ -73,7 +73,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
             ).drop(columns=["_id", "_full_text"])
 
             # TODO: hack... Convert all columns to numeric if possible
-            df = cast(pd.DataFrame, df.apply(pd.to_numeric, errors="coerce").fillna(0))
+            df = cast(pd.DataFrame, df.apply(pd.to_numeric, errors='ignore').fillna(0))
 
         except ProgrammingError as e:
             raise exception.DataFetchError(

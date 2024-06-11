@@ -5,8 +5,19 @@ ckan.module("charts-select", function ($, _) {
         initialize: function () {
             $.proxyAll(this, /_/);
 
-            console.log('charts-select');
-            new TomSelect(this.el.find("select")[0], { plugins: ['remove_button'], });
+            new TomSelect(this.el.find("select")[0], {
+                plugins: {
+                    'checkbox_options': {
+                        'checkedClassNames': ['ts-checked'],
+                        'uncheckedClassNames': ['ts-unchecked'],
+                    },
+                    'remove_button': {},
+                    'clear_button': {
+                        'title': 'Remove all selected options',
+                    }
+                },
+                maxItems: this.el.find("select").attr("maxItems") || null,
+            });
         }
     };
 });

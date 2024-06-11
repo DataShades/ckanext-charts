@@ -2,13 +2,14 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
+import ckan.types as types
 import ckan.plugins.toolkit as tk
 
 from ckanext.charts import utils
 from ckanext.charts.chart_builders import DEFAULT_CHART_FORM
 
 
-def float_validator(value):
+def float_validator(value: Any) -> float:
     try:
         return float(value)
     except ValueError:
@@ -29,7 +30,12 @@ def charts_if_empty_same_as(other_key: str) -> Callable[..., Any]:
     return callable
 
 
-def validate_chart_extras(key, data, errors, context):
+def validate_chart_extras(
+    key: types.FlattenKey,
+    data: types.FlattenDataDict,
+    errors: types.FlattenErrorDict,
+    context: types.Context,
+):
     """Use a custom validation schema for specific chart types."""
     settings = _extract_setting(data)
 
@@ -57,7 +63,7 @@ def validate_chart_extras(key, data, errors, context):
         errors[(k,)] = v
 
 
-def _extract_setting(data) -> dict[str, Any]:
+def _extract_setting(data: types.FlattenDataDict) -> dict[str, Any]:
     result = {}
 
     for k, v in data.items():
@@ -82,3 +88,16 @@ def charts_list_to_csv(data: list[str]):
         return data
 
     return ", ".join(data)
+
+
+def charts_list_length_validator(max_length: int) -> Callable[..., Any]:
+    def callable(
+        key: types.FlattenKey,
+        data: types.FlattenDataDict,
+        errors: types.FlattenErrorDict,
+        context: types.Context,
+    ):
+        if len(data[key]) > max_length:
+            raise tk.Invalid(tk._("Length must be less than {0}").format(max_length))
+
+    return callable

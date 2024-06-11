@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Any, cast
 
 import pandas as pd
+import numpy as np
 
 import ckan.types as types
 import ckan.plugins.toolkit as tk
@@ -95,6 +96,24 @@ class BaseChartBuilder(ABC):
                 "view_type",
             )
         }
+
+    def convert_to_native_types(self, value: Any) -> Any:
+        """Convert numpy types to native python types."""
+        if isinstance(value, np.generic):
+            return value.item()
+
+        return value
+
+    def get_unique_values(self, column: pd.Series, sort: bool = True) -> list[Any]:
+        """Get unique values from a pandas Series."""
+        result = [
+            self.convert_to_native_types(value) for value in column.unique().tolist()
+        ]
+
+        if not sort:
+            return result
+
+        return sorted(result)
 
 
 class BaseChartForm(ABC):
@@ -194,6 +213,19 @@ class BaseChartForm(ABC):
             ],
         }
 
+    def chart_title_field(self) -> dict[str, Any]:
+        return {
+            "field_name": "chart_title",
+            "label": "Chart Title",
+            "preset": "title",
+            "form_placeholder": "Chart title",
+            "group": "Styles",
+            "validators": [
+                self.get_validator("default")(""),
+                self.get_validator("unicode_safe"),
+            ],
+        }
+
     def description_field(self) -> dict[str, Any]:
         return {
             "field_name": "description",
@@ -276,11 +308,12 @@ class BaseChartForm(ABC):
 
         return field
 
-    def x_multi_axis_field(self, choices: list[dict[str, str]]) -> dict[str, Any]:
-        return {
-            "field_name": "x",
-            "label": "X Axis",
-            # "preset": "select",
+    def y_multi_axis_field(
+        self, choices: list[dict[str, str]], max_items: int = 0
+    ) -> dict[str, Any]:
+        field = {
+            "field_name": "y",
+            "label": "Y Axis",
             "required": True,
             "choices": choices,
             "group": "Data",
@@ -300,12 +333,14 @@ class BaseChartForm(ABC):
                 "multiple ": "1",
                 "class": "tom-select",
             },
-            "help_text": "Select one or more columns for the X-axis",
+            "help_text": "Select one or more columns for the Y-axis",
         }
 
-    def y_multi_axis_field(self, choices: list[dict[str, str]]) -> dict[str, Any]:
-        field = self.x_multi_axis_field(choices)
-        field.update({"field_name": "y", "label": "Y Axis"})
+        if max_items:
+            field["validators"].append(
+                self.get_validator("charts_list_length_validator")(max_items)
+            )
+            field["form_attrs"]["maxItems"] = max_items
 
         return field
 
@@ -330,19 +365,6 @@ class BaseChartForm(ABC):
             "validators": [
                 self.get_validator("default")(False),
                 self.get_validator("boolean_validator"),
-            ],
-        }
-
-    def query_field(self) -> dict[str, Any]:
-        return {
-            "field_name": "query",
-            "label": "Query",
-            "form_snippet": "textarea.html",
-            "group": "Structure",
-            "form_attrs": {"disabled": 5},
-            "validators": [
-                self.get_validator("ignore_empty"),
-                self.get_validator("unicode_safe"),
             ],
         }
 
@@ -483,3 +505,9 @@ class BaseChartForm(ABC):
             ],
             "group": "Data",
         }
+
+    def size_field(self, choices: list[dict[str, str]]) -> dict[str, Any]:
+        field = self.column_field(choices)
+        field.update({"field_name": "size", "label": "Size", "group": "Structure"})
+
+        return field
