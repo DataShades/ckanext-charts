@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from turtle import title
 from typing import Any, cast
 
 import pandas as pd
