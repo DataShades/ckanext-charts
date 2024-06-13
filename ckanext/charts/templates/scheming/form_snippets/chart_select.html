@@ -22,7 +22,7 @@
 {%- if data[field.field_name] -%}
     {%- set option_selected = data[field.field_name] -%}
 {%- else -%}
-    {%- set option_selected = None -%}
+    {%- set option_selected = "" -%}
 {%- endif -%}
 
 {% set errors = errors[field.field_name] %}
@@ -35,7 +35,7 @@
 
 <div class="form-group control-medium control-select">
     <label class="form-label" for="{{ for }}">
-        {% if is_required %}<span title="{{ _("This field is required") }}" class="control-required">*</span> {% endif %}
+        {% if is_required %}<span title="{{ _('This field is required') }}" class="control-required">*</span> {% endif %}
         {{ field_label or _('Custom') }}
     </label>
 

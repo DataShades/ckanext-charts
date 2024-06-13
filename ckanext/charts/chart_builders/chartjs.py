@@ -27,7 +27,7 @@ class ChartJsBuilder(BaseChartBuilder):
 
 class ChartJSBarBuilder(ChartJsBuilder):
     def _prepare_data(self) -> dict[str, Any]:
-        data = {
+        data: dict[str, Any] = {
             "type": "bar",
             "data": {"labels": self.get_unique_values(self.df[self.settings["x"]])},
             "options": self.settings,
@@ -38,16 +38,24 @@ class ChartJSBarBuilder(ChartJsBuilder):
                 "indexAxis": "x",
                 "elements": {"bar": {"borderWidth": 1}},
                 "plugins": {"legend": {"position": "top"}},
+                "scales": {"y": {"beginAtZero": True}},
             }
         )
 
         datasets = []
 
-        for field in [self.settings["y"]]:
+        for field in self.settings["y"]:
             dataset_data = []
 
             for label in data["data"]["labels"]:
-                dataset_data.append(self.df[self.df[field] == label][field].size)
+                try:
+                    aggregate_value = int(
+                        self.df[self.df[self.settings["x"]] == label][field].sum()
+                    )
+                except ValueError:
+                    raise ChartBuildError(f"Column '{field}' is not numeric")
+
+                dataset_data.append(aggregate_value)
 
             datasets.append(
                 {
@@ -81,11 +89,9 @@ class ChartJSBarForm(BaseChartForm):
             self.engine_field(),
             self.type_field(chart_types),
             self.x_axis_field(columns),
-            self.y_axis_field(columns),
-            self.sort_x_field(),
-            self.sort_y_field(),
+            self.y_multi_axis_field(columns),
             self.limit_field(),
-            self.filter_field(columns)
+            self.filter_field(columns),
         ]
 
 
@@ -106,7 +112,7 @@ class ChartJSHorizontalBarForm(ChartJSBarForm):
 
 class ChartJSLineBuilder(ChartJsBuilder):
     def to_json(self) -> str:
-        data = {
+        data: dict[str, Any] = {
             "type": "line",
             "data": {"labels": self.df[self.settings["x"]].to_list()},
             "options": self.settings,
@@ -115,7 +121,7 @@ class ChartJSLineBuilder(ChartJsBuilder):
         datasets = []
 
         for field in self.settings["y"]:
-            dataset = {"label": field, "data": self.df[field].tolist()}
+            dataset: dict[str, Any] = {"label": field, "data": self.df[field].tolist()}
 
             datasets.append(dataset)
 
@@ -145,7 +151,7 @@ class ChartJSLineForm(BaseChartForm):
             self.sort_x_field(),
             self.sort_y_field(),
             self.limit_field(),
-            self.filter_field(columns)
+            self.filter_field(columns),
         ]
 
 
@@ -199,7 +205,7 @@ class ChartJSPieForm(BaseChartForm):
             self.values_field(columns),
             self.names_field(columns),
             self.limit_field(),
-            self.filter_field(columns)
+            self.filter_field(columns),
         ]
 
 
@@ -214,7 +220,7 @@ class ChartJSDoughnutForm(ChartJSPieForm):
 
 class ChartJSScatterBuilder(ChartJsBuilder):
     def to_json(self) -> str:
-        data = {
+        data: dict[str, Any] = {
             "type": "scatter",
             "data": {"datasets": []},
             "options": self.settings,
@@ -225,7 +231,12 @@ class ChartJSScatterBuilder(ChartJsBuilder):
         for _, data_series in self.df.iterrows():
             for field in [self.settings["y"]]:
                 dataset_data.append(
-                    {"x": data_series[self.settings["x"]], "y": data_series[field]}
+                    {
+                        "x": self.convert_to_native_types(
+                            data_series[self.settings["x"]]
+                        ),
+                        "y": self.convert_to_native_types(data_series[field]),
+                    }
                 )
 
         data["data"]["datasets"] = [
@@ -260,7 +271,7 @@ class ChartJSScatterForm(BaseChartForm):
             self.sort_x_field(),
             self.sort_y_field(),
             self.limit_field(),
-            self.filter_field(columns)
+            self.filter_field(columns),
         ]
 
 
@@ -268,7 +279,7 @@ class ChartJSBubbleBuilder(ChartJSScatterBuilder):
     min_bubble_radius = 5
 
     def to_json(self) -> str:
-        data = {
+        data: dict[str, Any] = {
             "type": "bubble",
             "data": {"datasets": []},
             "options": self.settings,
@@ -281,13 +292,17 @@ class ChartJSBubbleBuilder(ChartJSScatterBuilder):
             for field in [self.settings["y"]]:
                 dataset_data.append(
                     {
-                        "x": data_series[self.settings["x"]],
-                        "y": data_series[field],
+                        "x": self.convert_to_native_types(
+                            data_series[self.settings["x"]]
+                        ),
+                        "y": self.convert_to_native_types(data_series[field]),
                         "r": self._calculate_bubble_radius(data_series, max_size),
                     }
                 )
 
-        data["data"]["datasets"] = [{"label": self.settings["y"], "data": dataset_data}]
+        data["data"]["datasets"] = [
+            {"label": self.settings["y"], "data": dataset_data},
+        ]
 
         return json.dumps(data)
 
@@ -311,7 +326,7 @@ class ChartJSBubbleBuilder(ChartJSScatterBuilder):
         if bubble_radius < self.min_bubble_radius:
             bubble_radius = self.min_bubble_radius
 
-        return bubble_radius
+        return self.convert_to_native_types(bubble_radius)
 
 
 class ChartJSBubbleForm(ChartJSScatterForm):
@@ -330,7 +345,7 @@ class ChartJSBubbleForm(ChartJSScatterForm):
 
 class ChartJSRadarBuilder(ChartJsBuilder):
     def to_json(self) -> str:
-        data = {
+        data: dict[str, Any] = {
             "type": "radar",
             "data": {"labels": self.settings["values"]},
             "options": self.settings,
@@ -380,5 +395,5 @@ class ChartJSRadarForm(BaseChartForm):
                 help_text="Select 3 or more different categorical variables (dimensions)",
             ),
             self.limit_field(),
-            self.filter_field(columns)
+            self.filter_field(columns),
         ]

@@ -21,13 +21,13 @@ class FilterDecoder:
         self.pair_divider = pair_divider
         self.key_value_divider = key_value_divider
 
-    def decode_filter_params(self) -> dict[str, list[str | int | float]]:
+    def decode_filter_params(self) -> dict[str, list[str]]:
         if not self.filter_input:
             return {}
 
         key_value_pairs = self.filter_input.split(self.pair_divider)
 
-        parsed_data: dict[str, list[str | int | float]] = {}
+        parsed_data: dict[str, list[str]] = {}
 
         for pair in key_value_pairs:
             key, value = pair.split(self.key_value_divider)
@@ -248,7 +248,7 @@ class BaseChartForm(ABC):
         return {
             "field_name": "column",
             "label": "Column",
-            "preset": "select",
+            "form_snippet": "chart_select.html",
             "required": True,
             "choices": choices,
             "group": "Data",
@@ -373,7 +373,7 @@ class BaseChartForm(ABC):
         max_items: int = 0,
         help_text: str = "Select one or more columns for the Y-axis",
     ) -> dict[str, Any]:
-        field = {
+        field: dict[str, Any] = {
             "field_name": "y",
             "label": "Y Axis",
             "required": True,
@@ -386,10 +386,14 @@ class BaseChartForm(ABC):
                 self.get_validator("charts_to_list_if_string"),
                 self.get_validator("list_of_strings"),
             ],
-            "output_validators": [self.get_validator("not_empty")],
+            "output_validators": [
+                self.get_validator("charts_if_empty_same_as")("x"),
+                self.get_validator("not_empty"),
+            ],
             "form_attrs": {
                 "class": "tom-select",
                 "data-module-multiple": "true",
+                "multiple": 1,
             },
             "help_text": help_text,
         }
@@ -419,6 +423,11 @@ class BaseChartForm(ABC):
                     self.get_validator("not_empty"),
                     self.get_validator("charts_to_list_if_string"),
                     self.get_validator("list_of_strings"),
+                ],
+                "output_validators": [
+                    self.get_validator("charts_if_empty_same_as")("names"),
+                    self.get_validator("not_empty"),
+                    self.get_validator("charts_to_list_if_string"),
                 ],
                 "help_text": help_text,
             }
@@ -478,7 +487,7 @@ class BaseChartForm(ABC):
         return {
             "field_name": "color",
             "label": "Color",
-            "preset": "select",
+            "form_snippet": "chart_select.html",
             "choices": choices,
             "group": "Styles",
             "validators": [
@@ -491,7 +500,7 @@ class BaseChartForm(ABC):
         return {
             "field_name": "animation_frame",
             "label": "Animation Frame",
-            "preset": "select",
+            "form_snippet": "chart_select.html",
             "choices": choices,
             "group": "Styles",
             "validators": [

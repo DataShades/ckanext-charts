@@ -90,6 +90,9 @@ class FileCache(CacheStrategy):
         """Save data to cache. The data will be stored as an ORC file."""
         file_path = self.make_file_path_from_key(key)
 
+        for col in data.select_dtypes(include=['object']).columns:
+            data[col] = data[col].astype(str)
+
         data.to_orc(file_path)
 
     def invalidate(self, key: str) -> None:

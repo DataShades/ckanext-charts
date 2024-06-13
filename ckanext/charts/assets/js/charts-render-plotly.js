@@ -9,7 +9,8 @@ ckan.module("charts-render-plotly", function ($, _) {
         initialize: function () {
             $.proxyAll(this, /_/);
 
-            console.log(this.options.config);
+            console.debug(this.options.config);
+
             if (!this.options.config) {
                 console.error("No configuration provided");
                 return;

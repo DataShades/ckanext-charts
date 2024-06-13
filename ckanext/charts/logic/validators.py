@@ -82,7 +82,7 @@ def charts_to_list_if_string(value: Any) -> Any:
     return value
 
 
-def charts_list_to_csv(data: list[str]):
+def charts_list_to_csv(data: list[str] | str):
     """Convert a list of strings to a CSV string"""
     if not isinstance(data, list):
         return data

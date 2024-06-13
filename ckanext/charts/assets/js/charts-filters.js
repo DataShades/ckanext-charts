@@ -156,11 +156,6 @@ ckan.module("charts-filters", function ($, _) {
          * @param {Event} e
          */
         _removeFilterPair: function (e) {
-            if (this._countFilterPairs() == 1) {
-                alert('At least one filter pair is required');
-                return;
-            }
-
             e.target.parentElement.remove()
 
             this._recalculateColumnSelectorIndexes();
@@ -208,7 +203,7 @@ ckan.module("charts-filters", function ($, _) {
                 url: this.sandbox.url(`/api/utils/charts/get-values`),
                 data: { "resource_id": this.options.resourceId, "column": column },
                 success: (options) => {
-                    console.log(options);
+                    console.debug(options);
                     let selectValue = value;
 
                     for (let index = 0; index < options.length; index++) {

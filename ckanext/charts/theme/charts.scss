@@ -53,9 +53,22 @@
 .charts-view--form {
     .ts-wrapper {
         .ts-control {
-            // position select clear button
-            .clear-button {
-                right: 1rem;
+            // caret down icon
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+        }
+
+        // position select clear button
+        &.plugin-clear_button {
+            .ts-control {
+                background: white;
+
+                .clear-button {
+                    right: .550rem;
+                    font-size: 1.25rem;
+                }
             }
         }
 
