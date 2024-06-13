@@ -35,6 +35,7 @@ charts-js:
   contents:
     - js/charts-global.js
     - js/charts-select.js
+    - js/charts-filters.js
   extra:
     preload:
       - base/main

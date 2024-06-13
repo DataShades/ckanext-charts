@@ -85,6 +85,7 @@ class ChartJSBarForm(BaseChartForm):
             self.sort_x_field(),
             self.sort_y_field(),
             self.limit_field(),
+            self.filter_field(columns)
         ]
 
 
@@ -144,6 +145,7 @@ class ChartJSLineForm(BaseChartForm):
             self.sort_x_field(),
             self.sort_y_field(),
             self.limit_field(),
+            self.filter_field(columns)
         ]
 
 
@@ -197,6 +199,7 @@ class ChartJSPieForm(BaseChartForm):
             self.values_field(columns),
             self.names_field(columns),
             self.limit_field(),
+            self.filter_field(columns)
         ]
 
 
@@ -257,6 +260,7 @@ class ChartJSScatterForm(BaseChartForm):
             self.sort_x_field(),
             self.sort_y_field(),
             self.limit_field(),
+            self.filter_field(columns)
         ]
 
 
@@ -376,4 +380,5 @@ class ChartJSRadarForm(BaseChartForm):
                 help_text="Select 3 or more different categorical variables (dimensions)",
             ),
             self.limit_field(),
+            self.filter_field(columns)
         ]

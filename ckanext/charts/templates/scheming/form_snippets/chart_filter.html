@@ -1,0 +1,18 @@
+{#} HACK, pass resource ID more explicitly #}
+{% set resource_id = data.__extras.resource_id %}
+
+<div
+    class="form-group control-full control-large charts-filters"
+    data-module="charts-filters"
+    data-module-resource-id="{{ resource_id }}"
+    data-module-columns="{{ h.charts_get_resource_columns(resource_id) }}">
+    <label for="vol">{{ field.label }}</label>
+    <div class="controls">
+        <div class="filter-container"></div>
+
+        <input class="filters-input" type="hidden" id="{{ 'field-' + field.field_name }}" name="{{ field.field_name }}" value="{{ data[field.field_name] }}">
+        <button class="add-filter-btn btn btn-primary" type="button">
+            {{ _("Add filter") }}
+        </button>
+    </div>
+</div>

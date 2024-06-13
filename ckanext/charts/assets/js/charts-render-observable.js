@@ -68,7 +68,6 @@ function PieChart(data, {
     fontSize = 12 // font size of labels
 } = {}) {
     // Compute values.
-    console.log(strokeWidth);
     const N = d3.map(data, (data) => data[names]);
     const V = d3.map(data, (data) => data[values]);
 

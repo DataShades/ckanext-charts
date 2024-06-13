@@ -13,6 +13,33 @@ from ckanext.charts.exception import ChartTypeNotImplementedError
 from ckanext.charts import fetchers
 
 
+class FilterDecoder:
+    def __init__(
+        self, filter_input: str, pair_divider: str = "|", key_value_divider: str = ":"
+    ):
+        self.filter_input = filter_input
+        self.pair_divider = pair_divider
+        self.key_value_divider = key_value_divider
+
+    def decode_filter_params(self) -> dict[str, list[str | int | float]]:
+        if not self.filter_input:
+            return {}
+
+        key_value_pairs = self.filter_input.split(self.pair_divider)
+
+        parsed_data: dict[str, list[str | int | float]] = {}
+
+        for pair in key_value_pairs:
+            key, value = pair.split(self.key_value_divider)
+
+            if key in parsed_data:
+                parsed_data[key].append(value)
+            else:
+                parsed_data[key] = [value]
+
+        return parsed_data
+
+
 class BaseChartBuilder(ABC):
     def __init__(
         self,
@@ -21,6 +48,26 @@ class BaseChartBuilder(ABC):
     ) -> None:
         self.df = dataframe
         self.settings = settings
+
+        if filter_input := self.settings.pop("filter", None):
+            filter_decoder = FilterDecoder(filter_input)
+            filter_params = filter_decoder.decode_filter_params()
+
+            filtered_df = self.df.copy()
+
+            for column, values in filter_params.items():
+                column_type = filtered_df[column].convert_dtypes().dtype.type
+
+                # TODO: requires more work here...
+                # I'm not sure about other types, that column can have
+                if column_type == np.int64:
+                    values = [int(value) for value in values]
+                elif column_type == np.float64:
+                    values = [float(value) for value in values]
+
+                filtered_df = filtered_df[filtered_df[column].isin(values)]
+
+            self.df = filtered_df
 
         if self.settings.pop("sort_x", False):
             self.df.sort_values(by=self.settings["x"], inplace=True)
@@ -136,7 +183,18 @@ class BaseChartForm(ABC):
         dataset schema fields."""
 
     def get_form_tabs(self) -> list[str]:
-        return ["General", "Structure", "Data", "Styles"]
+        result = []
+
+        for field in self.get_form_fields():
+            if "group" not in field:
+                continue
+
+            if field["group"] in result:
+                continue
+
+            result.append(field["group"])
+
+        return result
 
     def get_expanded_form_fields(self):
         """Expands the presets."""
@@ -243,7 +301,7 @@ class BaseChartForm(ABC):
         return {
             "field_name": "engine",
             "label": "Engine",
-            "preset": "select",
+            "form_snippet": "chart_select.html",
             "required": True,
             "choices": tk.h.get_available_chart_engines_options(),
             "group": "Structure",
@@ -263,7 +321,7 @@ class BaseChartForm(ABC):
         return {
             "field_name": "type",
             "label": "Type",
-            "preset": "select",
+            "form_snippet": "chart_select.html",
             "required": True,
             "choices": choices,
             "group": "Structure",
@@ -276,6 +334,7 @@ class BaseChartForm(ABC):
                 "hx-trigger": "change",
                 "hx-include": "closest form",
                 "hx-target": ".charts-view--form",
+                "data-module-clear-button": True,
             },
         }
 
@@ -283,7 +342,7 @@ class BaseChartForm(ABC):
         return {
             "field_name": "x",
             "label": "X Axis",
-            "preset": "select",
+            "form_snippet": "chart_select.html",
             "required": True,
             "choices": choices,
             "group": "Data",
@@ -329,8 +388,8 @@ class BaseChartForm(ABC):
             ],
             "output_validators": [self.get_validator("not_empty")],
             "form_attrs": {
-                "multiple ": "1",
                 "class": "tom-select",
+                "data-module-multiple": "true",
             },
             "help_text": help_text,
         }
@@ -534,3 +593,16 @@ class BaseChartForm(ABC):
         field.update({"field_name": "size", "label": "Size", "group": "Structure"})
 
         return field
+
+    def filter_field(self, choices: list[dict[str, str]]) -> dict[str, Any]:
+        return {
+            "field_name": "filter",
+            "label": "Filter",
+            "form_snippet": "chart_filter.html",
+            "choices": choices,
+            "validators": [
+                self.get_validator("ignore_empty"),
+                self.get_validator("unicode_safe"),
+            ],
+            "group": "Filter",
+        }

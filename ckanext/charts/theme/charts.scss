@@ -18,3 +18,50 @@
         max-height: 600px;
     }
 }
+
+
+.charts-filters {
+    .filter-container {
+        margin-bottom: 1rem;
+
+        .filter-pair {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid beige;
+
+            &:last-of-type {
+                margin-bottom: 0;
+                padding-bottom: 0;
+                border-bottom: unset;
+            }
+
+            .remove-pair {
+                top: 0;
+                flex-basis: 10%;
+                height: fit-content;
+            }
+
+            .ts-wrapper {
+                flex-basis: 45%;
+            }
+        }
+    }
+}
+
+.charts-view--form {
+    .ts-wrapper {
+        .ts-control {
+            // position select clear button
+            .clear-button {
+                right: 1rem;
+            }
+        }
+
+        .ts-dropdown {
+            top: unset;
+            margin-top: 1px;
+        }
+    }
+}

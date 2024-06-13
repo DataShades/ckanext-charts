@@ -5,28 +5,44 @@ ckan.module("charts-select", function ($, _) {
     "use strict";
 
     return {
+        options: {
+            multiple: false,
+            clearButton: false,
+            maxOptions: null
+        },
         initialize: function () {
             $.proxyAll(this, /_/);
 
-            let selectEl = this.el.find("select")[0];
+            let selectEl = this.el[0];
 
-            if (selectEl.tomselect) {
+            if (this.el[0].tomselect) {
                 selectEl.tomselect.destroy();
             }
 
-            new TomSelect(selectEl, {
-                plugins: {
-                    'checkbox_options': {
-                        'checkedClassNames': ['ts-checked'],
-                        'uncheckedClassNames': ['ts-unchecked'],
-                    },
-                    'remove_button': {},
-                    'clear_button': {
-                        'title': 'Remove all selected options',
-                    }
-                },
-                maxItems: selectEl.getAttribute("maxitems") || null,
-            });
+            var config = {
+                plugins: {},
+                maxOptions: this.options.maxOptions,
+                placeholder: "Add more..."
+            }
+
+            if (this.options.clearButton) {
+                config.plugins.clear_button = {
+                    title: this.options.clearButton
+                };
+            }
+
+            if (this.options.multiple) {
+                config.plugins.checkbox_options = {
+                    checkedClassNames: ['ts-checked'],
+                    uncheckedClassNames: ['ts-unchecked'],
+                };
+
+                config.plugins.remove_button = {};
+
+                config.maxItems = selectEl.getAttribute("maxitems") || null;
+            }
+            console.log(config);
+            new TomSelect(selectEl, config);
         }
     };
 });

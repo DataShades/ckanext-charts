@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from flask import Blueprint
+from flask import Blueprint, jsonify
 from flask.views import MethodView
 
 import ckan.plugins.toolkit as tk
 from ckan.logic import parse_params
 from ckan.plugins import plugin_loaded
 
-from ckanext.charts import cache, exception, utils
+from ckanext.charts import cache, exception, utils, fetchers
 
 charts = Blueprint("charts_view", __name__)
 
@@ -99,6 +99,26 @@ def _get_form_builder(data: dict):
     builder = utils.get_chart_form_builder(data["engine"], data["type"])
 
     return builder(data["resource_id"])
+
+
+@charts.route("/api/utils/charts/get-values")
+def get_chart_column_values():
+    data = parse_params(tk.request.args)
+
+    resource_id = tk.get_or_bust(data, "resource_id")
+    column = tk.get_or_bust(data, "column")
+
+    fetcher = fetchers.DatastoreDataFetcher(resource_id)
+
+    result = []
+
+    for val in fetcher.fetch_data()[column].tolist():
+        if val in result:
+            continue
+
+        result.append(val)
+
+    return jsonify(sorted(result))
 
 
 if plugin_loaded("admin_panel"):
