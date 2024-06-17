@@ -9,6 +9,7 @@ import numpy as np
 import ckan.types as types
 import ckan.plugins.toolkit as tk
 
+import ckanext.charts.const as const
 from ckanext.charts.exception import ChartTypeNotImplementedError
 from ckanext.charts import fetchers
 
@@ -75,12 +76,18 @@ class BaseChartBuilder(ABC):
         if self.settings.pop("sort_y", False):
             self.df.sort_values(by=self.settings["y"], inplace=True)
 
-        if limit := self.settings.pop("limit", 0):
-            self.df = self.df.head(int(limit))
+        self.df = self.df.head(self.get_limit())
 
         self.settings.pop("query", None)
 
         self.settings = self.drop_view_fields(self.drop_empty_values(self.settings))
+
+    def get_limit(self) -> int:
+        """Get the limit of rows to show in the chart."""
+        if "limit" not in self.settings:
+            return const.CHART_DEFAULT_ROW_LIMIT
+
+        return int(self.settings.pop("limit"))
 
     @classmethod
     @abstractmethod
@@ -182,7 +189,7 @@ class BaseChartForm(ABC):
         """The list for a specific chart could be defined similar to a scheming
         dataset schema fields."""
 
-    def get_form_tabs(self) -> list[str]:
+    def get_form_tabs(self, exclude_tabs: list[str] | None = None) -> list[str]:
         result = []
 
         for field in self.get_form_fields():
@@ -193,6 +200,9 @@ class BaseChartForm(ABC):
                 continue
 
             result.append(field["group"])
+
+        if exclude_tabs:
+            result = [tab for tab in result if tab not in exclude_tabs]
 
         return result
 
@@ -522,7 +532,7 @@ class BaseChartForm(ABC):
             ],
         }
 
-    def limit_field(self) -> dict[str, Any]:
+    def limit_field(self, default: int = 100, maximum: int = 10000) -> dict[str, Any]:
         """The limit field represent an amount of rows to show in the chart."""
         return {
             "field_name": "limit",
@@ -530,9 +540,9 @@ class BaseChartForm(ABC):
             "form_snippet": "chart_text.html",
             "input_type": "number",
             "validators": [
-                self.get_validator("default")(100),
+                self.get_validator("default")(default),
                 self.get_validator("int_validator"),
-                self.get_validator("limit_to_configured_maximum")("", 10000),
+                self.get_validator("limit_to_configured_maximum")("", maximum),
             ],
             "group": "Data",
         }

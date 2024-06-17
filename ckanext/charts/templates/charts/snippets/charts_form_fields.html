@@ -1,7 +1,11 @@
-{% set active_tab = active_tab or "General" %}
-{% set form_tabs = builder.get_form_tabs() %}
-
 <div class="charts-view--form">
+    {% set active_tab = active_tab or "General" %}
+    {% set form_tabs = builder.get_form_tabs(exclude_tabs=exclude_tabs) %}
+
+    {% if "General" not in form_tabs %}
+        {% set active_tab = form_tabs[0] %}
+    {% endif %}
+
     <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
         {% for tab in form_tabs %}
             {% set tab_fields = builder.get_fields_by_tab(tab) %}
@@ -13,15 +17,20 @@
                 </li>
             {% endif %}
         {% endfor %}
+
+        <button class="btn btn-default" id="chart-clear" type="button"
+            {% if user_chart_builder %}
+                hx-get="{{ h.url_for('charts_view.clear_user_builder_chart', resource_id=resource_id) }}"
+            {% else %}
+                hx-get="{{ h.url_for('charts_view.clear_chart', resource_id=resource_id) }}"
+            {% endif %}
+            hx-trigger="click"
+            hx-include="closest form" hx-target=".charts-view--form" hx-swap="outerHTML">
+            {{ _("Clear") }}
+        </button>
     </ul>
 
-    <button class="btn btn-default" id="chart-clear" type="button" style="position: absolute; right: 0; top: 0;"
-        hx-get="{{ h.url_for('charts_view.clear_chart', resource_id=resource_id) }}" hx-trigger="click"
-        hx-include="closest form" hx-target=".charts-view--form" hx-swap="outerHTML">
-        {{ _("Clear") }}
-    </button>
-
-    <div class="tab-content" id="pills-tabContent" style="display: block;"
+    <div class="tab-content" id="pills-tabContent"
         hx-get="{{ h.url_for('charts_view.update_chart', resource_id=resource_id) }}" hx-trigger="load, submit, change"
         hx-include="closest form" hx-target="#charts-view--preview">
 
@@ -37,6 +46,10 @@
             {% endif %}
         {% endfor %}
     </div>
+
+    {% if user_chart_builder %}
+        <input type="hidden" name="user_chart_builder" value="1">
+    {% endif %}
 
     <input type="hidden" name="resource_id" value="{{ resource_id }}">
     <input type="hidden" name="{{ g.csrf_field_name }}" value="{{ csrf_token() }}"

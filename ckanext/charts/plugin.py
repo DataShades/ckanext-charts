@@ -8,6 +8,8 @@ from ckan import types
 from ckan.common import CKANConfig
 
 import ckanext.charts.config as conf
+import ckanext.charts.utils as utils
+import ckanext.charts.const as const
 from ckanext.charts import cache, exception, fetchers, utils
 from ckanext.charts.logic.schema import settings_schema
 from ckanext.charts.chart_builders import DEFAULT_CHART_FORM
@@ -56,19 +58,10 @@ class ChartsViewPlugin(p.SingletonPlugin):
         }
 
     def can_view(self, data_dict: dict[str, Any]) -> bool:
-        if data_dict["resource"].get("datastore_active"):
-            return True
-
-        # TODO: Add support for XML, XLS, XLSX, and other formats tabular data?
-        # if data_dict["resource"]["format"].lower() == "xml":
-        #     return True
-
-        return False
+        return utils.can_view_be_viewed(data_dict)
 
     def setup_template_variables(
-        self,
-        context: types.Context,
-        data_dict: dict[str, Any],
+        self, context: types.Context, data_dict: dict[str, Any]
     ) -> dict[str, Any]:
         """
         The ``data_dict`` contains the following keys:
@@ -85,7 +78,7 @@ class ChartsViewPlugin(p.SingletonPlugin):
         }
 
         data_dict["resource_view"]["resource_id"] = data_dict["resource"]["id"]
-        context["_for_show"] = True
+        context["_for_show"] = True  # type: ignore
 
         try:
             settings, _ = tk.navl_validate(
@@ -204,7 +197,7 @@ class ChartsBuilderViewPlugin(p.SingletonPlugin):
         return {
             "name": "charts_builder_view",
             "title": tk._("Chart Builder"),
-            "schema": settings_schema(),
+            "schema": {},
             "icon": "chart-line",
             "iframed": False,
             "filterable": False,
@@ -213,23 +206,27 @@ class ChartsBuilderViewPlugin(p.SingletonPlugin):
         }
 
     def can_view(self, data_dict: dict[str, Any]) -> bool:
-        if data_dict["resource"].get("datastore_active"):
-            return True
-
-        return False
+        return utils.can_view_be_viewed(data_dict)
 
     def setup_template_variables(
-        self,
-        context: types.Context,
-        data_dict: dict[str, Any],
+        self, context: types.Context, data_dict: dict[str, Any]
     ) -> dict[str, Any]:
-        return {
-            "settings": {},
+        form_builder = DEFAULT_CHART_FORM
+
+        data = {
             "resource_id": data_dict["resource"]["id"],
+            "settings": {
+                "engine": "plotly",
+                "type": "line",
+                "limit": const.CHART_DEFAULT_ROW_LIMIT,
+            },
+            "form_builder": form_builder,
         }
 
+        return data
+
     def view_template(self, context: types.Context, data_dict: dict[str, Any]) -> str:
-        return "charts/charts_view.html"
+        return "charts/charts_builder_view.html"
 
     def form_template(self, context: types.Context, data_dict: dict[str, Any]) -> str:
         return "charts/charts_builder_form.html"

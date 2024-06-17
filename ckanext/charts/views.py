@@ -46,6 +46,7 @@ def update_chart(resource_id: str):
 def update_form():
     data = parse_params(tk.request.args)
     resource_id = data["resource_id"]
+    user_builder: bool = tk.asbool(data.pop("user_chart_builder", False))
 
     # if we're changing the engine, drop the chart type, cause we don't know
     # the list of supported types for the new engine
@@ -59,25 +60,44 @@ def update_form():
 
     data, errors = tk.navl_validate(data, builder.get_validation_schema(), {})
 
-    return tk.render_snippet(
-        "charts/snippets/charts_form_fields.html",
-        {
-            "builder": builder,
-            "resource_id": resource_id,
-            "data": data,
-            "errors": errors,
-            "active_tab": "Structure",
-        },
-    )
+    extra_vars = {
+        "builder": builder,
+        "resource_id": resource_id,
+        "data": data,
+        "errors": errors,
+        "active_tab": "Structure",
+        "user_chart_builder": user_builder,
+    }
+
+    if user_builder:
+        extra_vars["exclude_tabs"] = ["General"]
+
+    return tk.render_snippet("charts/snippets/charts_form_fields.html", extra_vars)
 
 
 @charts.route("/api/utils/charts/<resource_id>/clear-chart")
 def clear_chart(resource_id: str):
+    return _clear_chart(resource_id)
+
+
+@charts.route("/api/utils/charts/<resource_id>/clear-builder-chart")
+def clear_user_builder_chart(resource_id: str):
+    return _clear_chart(resource_id, exclude_tabs=["General"], user_chart_builder=True)
+
+
+def _clear_chart(
+    resource_id: str,
+    exclude_tabs: None | list[str] = None,
+    user_chart_builder: bool = False,
+):
     builder = _get_form_builder(
         {"engine": "plotly", "type": "Bar", "resource_id": resource_id}
     )
 
     data, errors = tk.navl_validate({}, builder.get_validation_schema(), {})
+
+    if not exclude_tabs:
+        exclude_tabs = []
 
     return tk.render_snippet(
         "charts/snippets/charts_form_fields.html",
@@ -87,6 +107,8 @@ def clear_chart(resource_id: str):
             "data": data,
             "errors": errors,
             "active_tab": "General",
+            "exclude_tabs": exclude_tabs,
+            "user_chart_builder": user_chart_builder,
         },
     )
 

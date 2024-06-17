@@ -11,6 +11,7 @@ from ckanext.charts.chart_builders import get_chart_engines
 from ckanext.charts.fetchers import DatastoreDataFetcher
 from ckanext.charts.exception import ChartBuildError
 
+
 def get_column_options(resource_id: str) -> list[dict[str, str]]:
     """Get column options for the given resource"""
     df = DatastoreDataFetcher(resource_id).fetch_data()
@@ -74,3 +75,14 @@ def _build_chart(settings: dict[str, Any], dataframe: pd.DataFrame) -> str | Non
         raise ChartBuildError(f"{e}")
 
     return chart_config
+
+
+def can_view_be_viewed(data_dict: dict[str, Any]) -> bool:
+    if data_dict["resource"].get("datastore_active"):
+        return True
+
+    # TODO: Add support for XML, XLS, XLSX, and other formats tabular data?
+    # if data_dict["resource"]["format"].lower() == "xml":
+    #     return True
+
+    return False

@@ -2,12 +2,15 @@
 @import "mixins";
 
 .row.wrapper.charts-view {
-
     .dataset-resource-form {
         position: relative;
         padding: 0;
     }
+}
 
+.resource-view-charts_builder_view,
+.resource-view-charts_view,
+.row.wrapper.charts-view {
     label.no-dots {
         &:after {
             display: none;
@@ -17,8 +20,22 @@
     #chart-container {
         max-height: 600px;
     }
-}
 
+    select {
+        border: 1px solid #d0d0d0;
+        padding: 8px;
+        border-radius: 3px;
+        width: 100%;
+    }
+
+    #chart-clear {
+        margin-left: auto;
+    }
+
+    .tab-content {
+        display: block;
+    }
+}
 
 .charts-filters {
     .filter-container {

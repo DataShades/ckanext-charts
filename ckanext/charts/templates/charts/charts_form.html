@@ -1,20 +1,6 @@
-{% import "macros/form.html" as form %}
-
-{% asset "charts/plotly" %}
-{% asset "charts/chartjs" %}
-{% asset "charts/observable" %}
-
-{# Global styles for all charts #}
-{% asset "charts/charts-css" %}
-{% asset "charts/charts-js" %}
-
-{# Custom select library #}
-{% asset "charts/tom-select-js" %}
-{% asset "charts/tom-select-css" %}
-
-<div class="charts-view--form" data-module="charts-global">
-    {% snippet "charts/snippets/charts_form_fields.html", resource_id=resource_id, data=settings,
-    builder=form_builder(resource_id), errors=errors %}
-</div>
-
-<div class="charts-view--preview" id="charts-view--preview" style="min-height: 450px;"></div>
+{% snippet "charts/snippets/chart_create_form.html",
+    resource_id=resource_id,
+    settings=settings,
+    form_builder=form_builder(resource_id),
+    errors=errors
+%}
