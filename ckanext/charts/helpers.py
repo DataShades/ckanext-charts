@@ -24,9 +24,14 @@ def get_available_chart_engines_options():
     return [{"value": engine, "text": engine} for engine in get_chart_engines()]
 
 
-def charts_include_htmx_asset():
+def charts_include_htmx_asset() -> bool:
     """Include HTMX asset if enabled."""
     return config.include_htmx_asset()
+
+
+def charts_reinit_ckan_js_modules() -> bool:
+    """Reinitialize CKAN JS modules."""
+    return config.reinit_ckan_js_modules()
 
 
 def charts_get_resource_columns(resource_id: str) -> str:

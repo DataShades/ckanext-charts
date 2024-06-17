@@ -198,7 +198,7 @@ class ChartsBuilderViewPlugin(p.SingletonPlugin):
             "name": "charts_builder_view",
             "title": tk._("Chart Builder"),
             "schema": {},
-            "icon": "chart-line",
+            "icon": "chart-area",
             "iframed": False,
             "filterable": False,
             "preview_enabled": False,

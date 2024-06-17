@@ -34,3 +34,9 @@ groups:
         default: true
         type: bool
         validators: ignore_empty boolean_validator
+
+      - key: ckanext.charts.reinit_ckan_js_modules
+        description: Reinit CKAN JS modules
+        default: false
+        type: bool
+        validators: ignore_empty boolean_validator

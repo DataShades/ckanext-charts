@@ -12,7 +12,7 @@
 {% asset "charts/tom-select-js" %}
 {% asset "charts/tom-select-css" %}
 
-<div class="charts-view--form" data-module="charts-global">
+<div class="charts-view--form" data-module="charts-global" data-module-reinit-js="{{ h.charts_reinit_ckan_js_modules() }}">
     {% snippet "charts/snippets/charts_form_fields.html", resource_id=resource_id, data=settings,
     builder=form_builder, errors=errors, exclude_tabs=exclude_tabs or false,
     user_chart_builder=user_chart_builder or false %}
