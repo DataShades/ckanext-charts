@@ -14,7 +14,8 @@
 
 <div class="charts-view--form" data-module="charts-global">
     {% snippet "charts/snippets/charts_form_fields.html", resource_id=resource_id, data=settings,
-    builder=form_builder, errors=errors, exclude_tabs=exclude_tabs or false, user_chart_builder=1 %}
+    builder=form_builder, errors=errors, exclude_tabs=exclude_tabs or false,
+    user_chart_builder=user_chart_builder or false %}
 </div>
 
 <div class="charts-view--preview" id="charts-view--preview" style="min-height: 450px;"></div>
