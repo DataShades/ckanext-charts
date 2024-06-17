@@ -5,7 +5,7 @@
 
 {{ form.errors(error_summary) }}
 
-{% if data.view_type == "charts_view" %}
+{% if data.view_type in ["charts_view", "charts_builder_view"] %}
     {% include form_template %}
 {% else %}
     {{ form.input('title', id='field-title', label=_('Title'), placeholder=_('eg. My View'), value=data.title, error=errors.title, classes=['control-full', 'control-large'], is_required=true) }}

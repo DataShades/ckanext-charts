@@ -193,3 +193,43 @@ class ChartsViewPlugin(p.SingletonPlugin):
         cache.invalidate_by_key(
             fetchers.DatastoreDataFetcher(resource["id"]).make_cache_key(),
         )
+
+
+class ChartsBuilderViewPlugin(p.SingletonPlugin):
+    p.implements(p.IResourceView)
+
+    # IResourceView
+
+    def info(self) -> dict[str, Any]:
+        return {
+            "name": "charts_builder_view",
+            "title": tk._("Chart Builder"),
+            "schema": settings_schema(),
+            "icon": "chart-line",
+            "iframed": False,
+            "filterable": False,
+            "preview_enabled": False,
+            "requires_datastore": True,
+        }
+
+    def can_view(self, data_dict: dict[str, Any]) -> bool:
+        if data_dict["resource"].get("datastore_active"):
+            return True
+
+        return False
+
+    def setup_template_variables(
+        self,
+        context: types.Context,
+        data_dict: dict[str, Any],
+    ) -> dict[str, Any]:
+        return {
+            "settings": {},
+            "resource_id": data_dict["resource"]["id"],
+        }
+
+    def view_template(self, context: types.Context, data_dict: dict[str, Any]) -> str:
+        return "charts/charts_view.html"
+
+    def form_template(self, context: types.Context, data_dict: dict[str, Any]) -> str:
+        return "charts/charts_builder_form.html"
