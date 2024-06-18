@@ -66,6 +66,8 @@ using an extension [`ckanext-admin-panel`](https://github.com/mutantsan/ckanext-
 
 ![Admin config page](doc/admin-page.jpg)
 
+This page could be accessed by the following URL: `/admin-panel/charts/config`, but it will be registered only if the `ckanext-admin-panel` is installed and enabled.
+
 ## Cache
 
 The extension implement a cache strategy to store the data fetched from the different sources. There are two cache strategies available: `redis` and `file`. The file cache works by storing the data in an `orc` file in the filesystem. The redis cache stores the data in a Redis database. The cache strategy can be changed at the CKAN configuration level through the admin interface or in a configuration file.
