@@ -8,6 +8,11 @@ The extension includes features such as chart creation, chart editing, chart emb
 
 With ckanext-charts, users can easily generate interactive and visually appealing charts to enhance data analysis and presentation in CKAN.
 
+This extension offers two plugins: `charts_view` and `charts_builder_view`. The first plugin is a standard chart builder designed for system administrators or anyone with permission to edit or create a resource view. Creating a preview using this plugin generates a static chart with saved settings. This chart retains the settings and will always be rendered in the same way.
+
+The charts_builder_view plugin does not have any special settings during the creation or editing stages. Instead, it renders a chart builder JS widget on a resource page, allowing any user to interact with the resource data and create a chart that meets their needs. In the future, we plan to implement a feature that will allow users to save their charts.
+
+![User chart builder](doc/chart-user-builder.gif)
 
 ## Requirements
 
@@ -24,7 +29,7 @@ Compatibility with core CKAN versions:
 ## Installation
 
 - Install it with `PyPi` with `pip install ckanext-charts`
-- Add `charts_view` to the list of plugins in your CKAN config (`ckan.plugins = charts_view`)
+- Add `charts_view` to the list of plugins in your CKAN config (`ckan.plugins = charts_view charts_builder_view`)
 
 ## Config settings
 
@@ -39,9 +44,35 @@ List of config options:
     # Time to live for the File cache in seconds. Set 0 to disable cache.
     ckanext.charts.file_cache_ttl = 0
 
+    # Enable cache for the charts (default: true)
+    ckanext.charts.enable_cache = true
+
+    # Include HTMX assets. Could be disabled if another plugins are including it (default: true)
+    ckanext.charts.include_htmx_asset
+
+    # Reinit CKAN JS modules after HTMX swap (default: false)
+    ckanext.charts.reinit_ckan_js_modules
+
+    # Allow anonymous users to build charts (default: false)
+    ckanext.charts.allow_anon_building_charts
+
+
+## User chart builder view
+
+
 ## Cache
 
 The extension implement a cache strategy to store the data fetched from the different sources. There are two cache strategies available: `redis` and `file`. The file cache works by storing the data in an `orc` file in the filesystem. The redis cache stores the data in a Redis database. The cache strategy can be changed at the CKAN configuration level through the admin interface or in a configuration file.
+
+The cache TTL can be set in the CKAN configuration file. The default value is 3600 seconds (1 hour). The cache TTL can be set to 0 to disable the cache.
+
+The `redis` and `file` cache has separate TTL settings. The `redis` cache TTL can be set with the `ckanext.charts.redis_cache_ttl` configuration option. The `file` cache TTL can be set with the `ckanext.charts.file_cache_ttl` configuration option.
+
+You need to have a Redis server running to use the `redis` cache strategy.
+
+The `file` cache strategy stores the data in a file in the filesystem. The file cache is stored in the `ckanext-charts` directory in the CKAN storage path. The file cache is stored in an `orc` file format.
+
+Cache could be disabled by setting `ckanext.charts.enable_cache` to `false`. In this case the data will be fetched from the source every time the chart is rendered. It could be useful for debugging purposes. But using it in production is not recommended, as it could lead to performance issues.
 
 ## Implementing new fetchers
 

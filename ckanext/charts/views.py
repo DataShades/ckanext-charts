@@ -10,23 +10,22 @@ from ckan.plugins import plugin_loaded
 from ckanext.charts import cache, exception, utils, fetchers
 
 charts = Blueprint("charts_view", __name__)
+ERROR_TEMPLATE = "charts/snippets/error_chart.html"
 
 
 @charts.route("/api/utils/charts/<resource_id>/update-chart")
-def update_chart(resource_id: str):
+def update_chart(resource_id: str) -> str:
     data = parse_params(tk.request.args)
 
     try:
         builder = _get_form_builder(data)
     except exception.ChartTypeNotImplementedError:
-        return tk.render("charts/snippets/error_chart.html")
+        return tk.render(ERROR_TEMPLATE)
 
     data, errors = tk.navl_validate(data, builder.get_validation_schema(), {})
 
     if errors:
-        return tk.render_snippet(
-            "charts/snippets/error_chart.html", {"error_msg": errors}
-        )
+        return tk.render_snippet(ERROR_TEMPLATE, {"error_msg": errors})
 
     try:
         return tk.render_snippet(
@@ -34,10 +33,10 @@ def update_chart(resource_id: str):
             {"chart": utils.build_chart_for_resource(data, resource_id)},
         )
     except exception.ChartTypeNotImplementedError:
-        return tk.render("charts/snippets/error_chart.html")
+        return tk.render(ERROR_TEMPLATE)
     except exception.ChartBuildError as e:
         return tk.render(
-            "charts/snippets/error_chart.html",
+            ERROR_TEMPLATE,
             {"error_msg": tk._(f"Error building chart: {e}")},
         )
 
@@ -56,7 +55,7 @@ def update_form():
     try:
         builder = _get_form_builder(data)
     except exception.ChartTypeNotImplementedError:
-        return tk.render("charts/snippets/error_chart.html")
+        return tk.render(ERROR_TEMPLATE)
 
     data, errors = tk.navl_validate(data, builder.get_validation_schema(), {})
 
