@@ -10,6 +10,8 @@ With ckanext-charts, users can easily generate interactive and visually appealin
 
 This extension offers two plugins: `charts_view` and `charts_builder_view`. The first plugin is a standard chart builder designed for system administrators or anyone with permission to edit or create a resource view. Creating a preview using this plugin generates a static chart with saved settings. This chart retains the settings and will always be rendered in the same way.
 
+![User chart builder](doc/chart-builder.gif)
+
 The charts_builder_view plugin does not have any special settings during the creation or editing stages. Instead, it renders a chart builder JS widget on a resource page, allowing any user to interact with the resource data and create a chart that meets their needs. In the future, we plan to implement a feature that will allow users to save their charts.
 
 ![User chart builder](doc/chart-user-builder.gif)
@@ -57,8 +59,12 @@ List of config options:
     ckanext.charts.allow_anon_building_charts
 
 
-## User chart builder view
+## Admin config page
 
+The extension provides an admin configuration page where you can set all the listed configuration options. The admin page available only
+using an extension [`ckanext-admin-panel`](https://github.com/mutantsan/ckanext-admin-panel). The admin panel is a separate extension that provides an alternative admin interface for CKAN. It allows you to manage CKAN settings and other extensions settings through the web interface.
+
+![Admin config page](doc/admin page.jpg)
 
 ## Cache
 
