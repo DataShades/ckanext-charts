@@ -16,6 +16,10 @@ The charts_builder_view plugin does not have any special settings during the cre
 
 ![User chart builder](doc/chart-user-builder.gif)
 
+The user chart builder could be restricted to only authenticated users. See the config settings section for more information. In this case, user will be forced to log in to build a chart. After the user logs in, user will be redirected to the chart builder page back.
+
+![Restrict user chart builder for anon](anon-restrict.png)
+
 ## Requirements
 
 Requires Redis 7+
