@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 
+import ckan.plugins.toolkit as tk
+
 from ckanext.charts import utils
 from ckanext.charts.cache import count_file_cache_size, count_redis_cache_size
 from ckanext.charts import config
@@ -41,3 +43,13 @@ def charts_get_resource_columns(resource_id: str) -> str:
     return json.dumps(
         [{"id": col, "title": col} for col in fetcher.fetch_data().columns]
     )
+
+
+def charts_user_is_authenticated() -> bool:
+    """Check if the user is authenticated."""
+    return tk.current_user.is_authenticated
+
+
+def charts_allow_anon_building_charts() -> bool:
+    """Allow anonymous users to build charts."""
+    return config.allow_anon_building_charts()

@@ -34,3 +34,25 @@ fields:
         label: True
       - value: false
         label: False
+
+  - field_name: ckanext.charts.reinit_ckan_js_modules
+    label: Reinit CKAN JS Modules
+    help_text: Reinitialize CKAN JS modules.
+    preset: select
+    required: true
+    choices:
+      - value: true
+        label: True
+      - value: false
+        label: False
+
+  - field_name: ckanext.charts.allow_anon_building_charts
+    label: Allow Anonymous Building Charts
+    help_text: Allow anonymous users to build charts.
+    preset: select
+    required: true
+    choices:
+      - value: true
+        label: True
+      - value: false
+        label: False

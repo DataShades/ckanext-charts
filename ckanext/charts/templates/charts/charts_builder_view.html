@@ -1,10 +1,15 @@
-<form method="POST">
-    {% snippet "charts/snippets/chart_create_form.html",
-        resource_id=resource_id,
-        settings=settings,
-        form_builder=form_builder(resource_id),
-        errors={},
-        exclude_tabs=["General"],
-        user_chart_builder=true
-    %}
-</form>
+{% if not h.charts_user_is_authenticated() and not h.charts_allow_anon_building_charts() %}
+    {{ _("You have to login to access the chart builder.") }}
+    <a href="{{ h.url_for('user.login', came_from=request.full_path) }}">{{ _("Click here to login") }}</a>
+{% else %}
+    <form method="POST">
+        {% snippet "charts/snippets/chart_create_form.html",
+            resource_id=resource_id,
+            settings=settings,
+            form_builder=form_builder(resource_id),
+            errors={},
+            exclude_tabs=["General"],
+            user_chart_builder=true
+        %}
+    </form>
+{% endif %}
