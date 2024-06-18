@@ -14,7 +14,12 @@ ckan.module("charts-global", function ($, _) {
                     var elements = event.target.querySelectorAll("[data-module]");
 
                     for (let node of elements) {
+                        if (node.getAttribute("dm-initialized")) {
+                            continue;
+                        }
+
                         ckan.module.initializeElement(node);
+                        node.setAttribute("dm-initialized", true)
                     }
                 });
             }
