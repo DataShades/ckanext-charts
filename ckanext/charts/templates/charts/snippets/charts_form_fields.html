@@ -32,7 +32,7 @@
 
     <div class="tab-content" id="pills-tabContent"
         hx-get="{{ h.url_for('charts_view.update_chart', resource_id=resource_id) }}" hx-trigger="load, submit, change"
-        hx-include="closest form" hx-target="#charts-view--preview">
+        hx-include="closest form" hx-target="#charts-view--preview" hx-indicator="#chart-indicator">
 
         {% for tab in form_tabs %}
             {% set tab_fields = builder.get_fields_by_tab(tab) %}

@@ -18,4 +18,11 @@
     user_chart_builder=user_chart_builder or false %}
 </div>
 
-<div class="charts-view--preview" id="charts-view--preview" style="min-height: 450px;"></div>
+<div id="chart-indicator">
+    {% snippet "charts/snippets/svg/loader.svg" %}
+    {{ _("Updating chart...") }}
+</div>
+
+<div class="charts-view--preview" id="charts-view--preview" style="min-height: 450px;">
+
+</div>

@@ -35,6 +35,14 @@
     .tab-content {
         display: block;
     }
+
+    #chart-indicator {
+        display: none;
+    }
+
+    .htmx-request#chart-indicator{
+        display:inline;
+    }
 }
 
 .charts-filters {
