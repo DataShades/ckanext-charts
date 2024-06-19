@@ -59,6 +59,7 @@ class ObservableBarForm(BaseChartForm):
             self.fill_field(columns),
             self.opacity_field(),
             self.limit_field(),
+            self.filter_field(columns),
         ]
 
 
@@ -110,6 +111,7 @@ class ObservableLineForm(BaseChartForm):
             self.sort_x_field(),
             self.sort_y_field(),
             self.limit_field(),
+            self.filter_field(columns),
         ]
 
 
@@ -186,6 +188,7 @@ class ObservablePieForm(BaseChartForm):
             self.limit_field(),
             self.width_field(),
             self.height_field(),
+            self.filter_field(columns),
         ]
 
 
@@ -223,6 +226,7 @@ class ObservableScatterForm(BaseChartForm):
             self.color_field(columns),
             self.opacity_field(),
             self.limit_field(),
+            self.filter_field(columns),
         ]
 
 
@@ -260,4 +264,5 @@ class ObservableAutoForm(BaseChartForm):
             self.color_field(columns),
             self.opacity_field(),
             self.limit_field(),
+            self.filter_field(columns),
         ]

@@ -114,6 +114,7 @@ class PlotlyBarForm(BasePlotlyForm):
             self.animation_frame_field(columns),
             self.opacity_field(),
             self.limit_field(),
+            self.filter_field(columns),
         ]
 
 
@@ -138,6 +139,7 @@ class PlotlyPieForm(BasePlotlyForm):
             self.names_field(columns),
             self.opacity_field(),
             self.limit_field(),
+            self.filter_field(columns),
         ]
 
 
@@ -181,6 +183,7 @@ class PlotlyLineForm(BasePlotlyForm):
             self.sort_y_field(),
             self.limit_field(),
             self.chart_title_field(),
+            self.filter_field(columns),
         ]
 
 
@@ -228,4 +231,5 @@ class PlotlyScatterForm(BasePlotlyForm):
             self.color_field(columns),
             self.animation_frame_field(columns),
             self.opacity_field(),
+            self.filter_field(columns),
         ]
