@@ -1,3 +1,3 @@
 {% for field in fields if field.form_snippet is not none %}
-    {% snippet 'scheming/snippets/form_field.html', field=field, data=data, errors=errors %}
+    {% snippet 'charts/snippets/charts_form_field.html', field=field, data=data, errors=errors, resource_id=resource_id %}
 {% endfor %}

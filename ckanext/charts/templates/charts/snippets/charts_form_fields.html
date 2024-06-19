@@ -40,8 +40,12 @@
             {% if tab_fields %}
                 <div class="tab-pane fade {{ 'show active' if tab == active_tab }}" id="pills-{{ tab }}" role="tabpanel"
                     aria-labelledby="pills-{{ tab }}-tab">
-                    {% snippet 'charts/snippets/render_fields.html', fields=builder.get_fields_by_tab(tab), data=data,
-                    errors=errors %}
+                    {% snippet 'charts/snippets/render_fields.html',
+                        fields=builder.get_fields_by_tab(tab),
+                        data=data,
+                        errors=errors,
+                        resource_id=resource_id
+                    %}
                 </div>
             {% endif %}
         {% endfor %}

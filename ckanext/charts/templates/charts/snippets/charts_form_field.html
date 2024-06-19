@@ -1,0 +1,14 @@
+{#- master snippet for all charts form fields -#}
+
+{%- set form_snippet = field.form_snippet|default('repeating_subfields.html' if field.repeating_subfields else 'text.html') -%}
+
+{%- if '/' not in form_snippet -%}
+    {%- set form_snippet = 'scheming/form_snippets/' + form_snippet -%}
+{%- endif -%}
+
+{%- snippet form_snippet,
+    field=field,
+    data=data,
+    errors=errors,
+    resource_id=resource_id
+-%}
