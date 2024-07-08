@@ -10,6 +10,7 @@ import pandas as pd
 import requests
 import sqlalchemy as sa
 from sqlalchemy.exc import ProgrammingError
+from psycopg2.errors import UndefinedTable
 
 from ckanext.datastore.backend.postgres import get_read_engine
 
@@ -75,7 +76,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
             # TODO: hack... Convert all columns to numeric if possible
             df = cast(pd.DataFrame, df.apply(pd.to_numeric, errors='ignore').fillna(0))
 
-        except ProgrammingError as e:
+        except (ProgrammingError, UndefinedTable) as e:
             raise exception.DataFetchError(
                 f"An error occurred during fetching data from DataStore: {e}",
             ) from e
