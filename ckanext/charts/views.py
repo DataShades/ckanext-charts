@@ -39,6 +39,12 @@ def update_chart(resource_id: str) -> str:
             ERROR_TEMPLATE,
             {"error_msg": tk._(f"Error building chart: {e}")},
         )
+    # TODO: we probably want to know which exceptions exactly could happen instead
+    except Exception as e:
+        return tk.render(
+            ERROR_TEMPLATE,
+            {"error_msg": tk._(f"Error building chart: {e}")},
+        )
 
 
 @charts.route("/api/utils/charts/update-form")
