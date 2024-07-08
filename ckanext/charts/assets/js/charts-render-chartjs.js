@@ -13,8 +13,6 @@ ckan.module("charts-render-chartjs", function ($, _) {
                 window.charts_chartjs.destroy();
             }
 
-            console.debug(this.options.config);
-
             if (!this.options.config) {
                 console.error("No configuration provided");
                 return;

@@ -42,8 +42,6 @@ ckan.module("charts-select", function ($, _) {
                 config.maxItems = selectEl.getAttribute("maxitems") || null;
             }
 
-            console.debug(config);
-
             new TomSelect(selectEl, config);
         }
     };
