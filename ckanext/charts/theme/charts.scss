@@ -10,7 +10,7 @@
 
 .resource-view-charts_builder_view,
 .resource-view-charts_view,
-.row.wrapper.charts-view {
+#content div.charts-view {
     label.no-dots {
         &:after {
             display: none;
@@ -33,7 +33,7 @@
     }
 
     .tab-content {
-        display: block;
+        display: block !important;
     }
 
     #chart-indicator {
