@@ -203,7 +203,7 @@ def update_redis_expiration(time: int) -> None:
     for key in redis_conn.scan_iter(const.REDIS_PREFIX):
         try:
             redis_conn.expire(name=key, time=time, lt=True)
-        except AttributeError:
+        except TypeError:
             redis_conn.expire(name=key, time=time)
 
 
