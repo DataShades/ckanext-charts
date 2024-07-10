@@ -3,18 +3,21 @@ from __future__ import annotations
 import hashlib
 import logging
 import os
+from re import T
 import tempfile
 import time
 from abc import ABC, abstractmethod
 from io import BytesIO
+from typing import IO as File
 
 import pandas as pd
-from pyarrow import orc
+from redis.exceptions import ResponseError
 
 import ckan.plugins.toolkit as tk
 from ckan.lib.redis import connect_to_redis
 
 from ckanext.charts import config, const, exception
+
 
 log = logging.getLogger(__name__)
 
@@ -69,6 +72,8 @@ class RedisCache(CacheStrategy):
 class FileCache(CacheStrategy):
     """Cache data as file"""
 
+    FILE_FORMAT = ""
+
     def __init__(self):
         self.directory = get_file_cache_path()
 
@@ -82,18 +87,23 @@ class FileCache(CacheStrategy):
                 return None
 
             with open(file_path, "rb") as f:
-                return orc.ORCFile(f).read().to_pandas()
+                return self.read_data(f)
 
         return None
+
+    @abstractmethod
+    def read_data(self, file: File) -> pd.DataFrame | None:
+        pass
 
     def set_data(self, key: str, data: pd.DataFrame) -> None:
         """Save data to cache. The data will be stored as an ORC file."""
         file_path = self.make_file_path_from_key(key)
 
-        for col in data.select_dtypes(include=['object']).columns:
-            data[col] = data[col].astype(str)
+        self.write_data(file_path, data)
 
-        data.to_orc(file_path)
+    @abstractmethod
+    def write_data(self, file_path: str, data: pd.DataFrame) -> None:
+        pass
 
     def invalidate(self, key: str) -> None:
         """Remove data from cache"""
@@ -105,7 +115,7 @@ class FileCache(CacheStrategy):
     def make_file_path_from_key(self, key: str) -> str:
         return os.path.join(
             self.directory,
-            f"{self.generate_unique_consistent_filename(key)}.orc",
+            f"{self.generate_unique_consistent_filename(key)}.{self.FILE_FORMAT}",
         )
 
     def generate_unique_consistent_filename(self, key: str) -> str:
@@ -125,6 +135,34 @@ class FileCache(CacheStrategy):
         return time.time() - os.path.getmtime(file_path) > file_ttl
 
 
+class FileCacheORC(FileCache):
+    """Cache data as ORC file"""
+
+    FILE_FORMAT = "orc"
+
+    def read_data(self, file: File) -> pd.DataFrame | None:
+        from pyarrow import orc
+
+        return orc.ORCFile(file).read().to_pandas()
+
+    def write_data(self, file_path: str, data: pd.DataFrame) -> None:
+        for col in data.select_dtypes(include=["object"]).columns:
+            data[col] = data[col].astype(str)
+
+        data.to_orc(file_path)
+
+class FileCacheCSV(FileCache):
+    """Cache data as CSV file"""
+
+    FILE_FORMAT = "csv"
+
+    def read_data(self, file: File) -> pd.DataFrame | None:
+        return pd.read_csv(file)
+
+    def write_data(self, file_path: str, data: pd.DataFrame) -> None:
+        data.to_csv(file_path, index=False)
+
+
 def get_cache_manager(cache_strategy: str | None) -> CacheStrategy:
     """Return cache manager based on the strategy"""
     active_cache = cache_strategy or config.get_cache_strategy()
@@ -132,8 +170,11 @@ def get_cache_manager(cache_strategy: str | None) -> CacheStrategy:
     if active_cache == const.CACHE_REDIS:
         return RedisCache()
 
-    if active_cache == const.CACHE_FILE:
-        return FileCache()
+    if active_cache == const.CACHE_FILE_ORC:
+        return FileCacheORC()
+
+    if active_cache == const.CACHE_FILE_CSV:
+        return FileCacheCSV()
 
     raise exception.CacheStrategyNotImplementedError(
         f"Cache strategy {active_cache} is not implemented",
@@ -151,7 +192,8 @@ def invalidate_all_cache() -> None:
 def invalidate_by_key(key: str) -> None:
     """Invalidate cache by key"""
     RedisCache().invalidate(key)
-    FileCache().invalidate(key)
+    FileCacheORC().invalidate(key)
+    FileCacheCSV().invalidate(key)
 
     log.info("Chart cache for key %s has been invalidated", key)
 
@@ -203,7 +245,7 @@ def update_redis_expiration(time: int) -> None:
     for key in redis_conn.scan_iter(const.REDIS_PREFIX):
         try:
             redis_conn.expire(name=key, time=time, lt=True)
-        except TypeError:
+        except (TypeError, ResponseError):
             redis_conn.expire(name=key, time=time)
 
 

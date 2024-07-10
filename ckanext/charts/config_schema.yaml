@@ -9,8 +9,10 @@ fields:
     preset: select
     required: true
     choices:
-      - value: file
-        label: File
+      - value: file_orc
+        label: File (ORC)
+      - value: file_csv
+        label: File (CSV)
       - value: redis
         label: Redis
 

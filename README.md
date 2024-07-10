@@ -42,11 +42,12 @@ Compatibility with core CKAN versions:
 List of config options:
 
 	# Caching strategy for chart data (required, default: redis).
-	ckanext.charts.cache_strategy = disk
+    # Available options: redis, file_orc, file_csv
+	ckanext.charts.cache_strategy = file_csv
 
     # Time to live for the Redis cache in seconds. Set 0 to disable cache (default: 3600)
     ckanext.charts.redis_cache_ttl = 7200
-    
+
     # Time to live for the File cache in seconds. Set 0 to disable cache.
     ckanext.charts.file_cache_ttl = 0
 
@@ -74,17 +75,21 @@ This page could be accessed by the following URL: `/admin-panel/charts/config`, 
 
 ## Cache
 
-The extension implement a cache strategy to store the data fetched from the different sources. There are two cache strategies available: `redis` and `file`. The file cache works by storing the data in an `orc` file in the filesystem. The redis cache stores the data in a Redis database. The cache strategy can be changed at the CKAN configuration level through the admin interface or in a configuration file.
+The extension implement a cache strategy to store the data fetched from the different sources. There are three cache strategies available: `redis`, `file_orc` and `file_csv`. The file cache works by storing the data in an `orc` or `csv` file in the filesystem. The redis cache stores the data in a Redis database. The cache strategy can be changed at the CKAN configuration level through the admin interface or in a configuration file.
 
 The cache TTL can be set in the CKAN configuration file. The default value is 3600 seconds (1 hour). The cache TTL can be set to 0 to disable the cache.
 
-The `redis` and `file` cache has separate TTL settings. The `redis` cache TTL can be set with the `ckanext.charts.redis_cache_ttl` configuration option. The `file` cache TTL can be set with the `ckanext.charts.file_cache_ttl` configuration option.
+The `redis` and `file-type` cache has separate TTL settings. The `redis` cache TTL can be set with the `ckanext.charts.redis_cache_ttl` configuration option. The `file` cache TTL can be set with the `ckanext.charts.file_cache_ttl` configuration option.
 
 You need to have a Redis server running to use the `redis` cache strategy.
 
-The `file` cache strategy stores the data in a file in the filesystem. The file cache is stored in the `ckanext-charts` directory in the CKAN storage path. The file cache is stored in an `orc` file format.
+The `file-type` cache strategy stores the data in a file in the filesystem. The file cache is stored in the `ckanext-charts` directory in the CKAN storage path. The file cache is stored in an `orc` or `csv` file format.
 
 Cache could be disabled by setting `ckanext.charts.enable_cache` to `false`. In this case the data will be fetched from the source every time the chart is rendered. It could be useful for debugging purposes. But using it in production is not recommended, as it could lead to performance issues.
+
+### File ORC cache strategy
+
+This strategy requires `pyarrow` python library to be installed.
 
 ## Implementing new fetchers
 
@@ -99,11 +104,11 @@ The `make_cache_key` method should return a unique string that will be used as a
 Implementing support for a new chart engine includes multiple steps and changes in Python, HTML, and JavaScript. Starting from the Python code:
 
 1. Create a new builder class at `ckanext.charts.chart_builder` that inherits from `BaseChartBuilder` and implements the `get_supported_forms` method. This method must return a list of classes that represent supported chart types forms.
-   
+
 2. Each form type builder must be connected with a respective chart type builder.
 
 3. The chart type builder must implement a `to_json` method that will return a dumped JSON data, which will be passed to a JS script.
-   
+
 4. The form type builder must implement a `get_form_fields` method that will return a list of all form fields that will be rendered for the user, allowing them to provide all the necessary information for a chart.
 
 5. Register your chart engine by adding the builder class to `get_chart_engines` in `ckanext.charts.chart_builder.__init__.py`.

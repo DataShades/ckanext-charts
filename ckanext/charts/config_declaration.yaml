@@ -6,7 +6,8 @@ groups:
         description: Charts cache strategy
         default: redis
         editable: true
-        validators: OneOf(["file","redis"])
+        validators: OneOf(["file_orc","file_csv","redis"]) charts_strategy_support
+
 
       - key: ckanext.charts.redis_cache_ttl
         description: Redis cache TTL

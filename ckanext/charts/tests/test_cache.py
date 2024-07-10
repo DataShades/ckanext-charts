@@ -51,7 +51,7 @@ class TestDataStoreFetcherCache:
 
         fetcher = fetchers.DatastoreDataFetcher(
             resource["id"],
-            cache_strategy=const.CACHE_FILE,
+            cache_strategy=const.CACHE_FILE_ORC,
         )
 
         assert fetcher.get_cached_data() is None
@@ -66,7 +66,7 @@ class TestDataStoreFetcherCache:
 
         fetcher = fetchers.DatastoreDataFetcher(
             resource["id"],
-            cache_strategy=const.CACHE_FILE,
+            cache_strategy=const.CACHE_FILE_ORC,
         )
 
         result = fetcher.fetch_data()
@@ -93,7 +93,7 @@ class TestDataStoreFetcherCache:
 
         fetcher = fetchers.DatastoreDataFetcher(
             resource["id"],
-            cache_strategy=const.CACHE_FILE,
+            cache_strategy=const.CACHE_FILE_ORC,
         )
 
         assert isinstance(fetcher.fetch_data(), pd.DataFrame)
@@ -122,7 +122,7 @@ class TestUrlFetcherCache:
     def test_hit_cache_file(self, requests_mock):
         requests_mock.get(self.URL, content=helpers.get_file_content("csv"))
 
-        fetcher = fetchers.URLDataFetcher(self.URL, cache_strategy=const.CACHE_FILE)
+        fetcher = fetchers.URLDataFetcher(self.URL, cache_strategy=const.CACHE_FILE_ORC)
 
         assert fetcher.get_cached_data() is None
 
@@ -144,7 +144,7 @@ class TestUrlFetcherCache:
     def test_invalidate_file_cache(self, requests_mock):
         requests_mock.get(self.URL, content=helpers.get_file_content("csv"))
 
-        fetcher = fetchers.URLDataFetcher(self.URL, cache_strategy=const.CACHE_FILE)
+        fetcher = fetchers.URLDataFetcher(self.URL, cache_strategy=const.CACHE_FILE_ORC)
 
         assert isinstance(fetcher.fetch_data(), pd.DataFrame)
 
@@ -167,7 +167,7 @@ class TestFileSystemFetcherCache:
     def test_hit_cache_file(self):
         fetcher = fetchers.FileSystemDataFetcher(
             helpers.get_file_path("sample.csv"),
-            cache_strategy=const.CACHE_FILE,
+            cache_strategy=const.CACHE_FILE_ORC,
         )
 
         assert fetcher.get_cached_data() is None
@@ -188,7 +188,7 @@ class TestFileSystemFetcherCache:
     def test_invalidate_file_cache(self):
         fetcher = fetchers.FileSystemDataFetcher(
             helpers.get_file_path("sample.csv"),
-            cache_strategy=const.CACHE_FILE,
+            cache_strategy=const.CACHE_FILE_ORC,
         )
 
         assert isinstance(fetcher.fetch_data(), pd.DataFrame)
@@ -200,11 +200,11 @@ class TestFileSystemFetcherCache:
 
 @pytest.mark.usefixtures("clean_file_cache")
 @pytest.mark.ckan_config(config.CONF_FILE_CACHE_TTL, 100)
-class TestCalculateFileExpiration:
+class TestCalculateFileORCExpiration:
     def test_file_is_expired(self):
         fetcher = fetchers.FileSystemDataFetcher(
             helpers.get_file_path("sample.csv"),
-            cache_strategy=const.CACHE_FILE,
+            cache_strategy=const.CACHE_FILE_ORC,
         )
 
         assert fetcher.get_cached_data() is None
@@ -213,15 +213,15 @@ class TestCalculateFileExpiration:
 
         assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
 
-        file_path = cache.FileCache().make_file_path_from_key(fetcher.make_cache_key())
+        file_path = cache.FileCacheORC().make_file_path_from_key(fetcher.make_cache_key())
 
         with freeze_time(datetime.now() + timedelta(seconds=101)):
-            assert cache.FileCache().is_file_cache_expired(file_path)
+            assert cache.FileCacheORC().is_file_cache_expired(file_path)
 
     def test_file_is_not_expired(self):
         fetcher = fetchers.FileSystemDataFetcher(
             helpers.get_file_path("sample.csv"),
-            cache_strategy=const.CACHE_FILE,
+            cache_strategy=const.CACHE_FILE_ORC,
         )
 
         assert fetcher.get_cached_data() is None
@@ -230,6 +230,6 @@ class TestCalculateFileExpiration:
 
         assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
 
-        file_path = cache.FileCache().make_file_path_from_key(fetcher.make_cache_key())
+        file_path = cache.FileCacheORC().make_file_path_from_key(fetcher.make_cache_key())
 
-        assert not cache.FileCache().is_file_cache_expired(file_path)
+        assert not cache.FileCacheORC().is_file_cache_expired(file_path)

@@ -5,7 +5,7 @@ from typing import Any, Callable
 import ckan.types as types
 import ckan.plugins.toolkit as tk
 
-from ckanext.charts import utils
+from ckanext.charts import utils, const
 from ckanext.charts.chart_builders import DEFAULT_CHART_FORM
 
 
@@ -28,6 +28,24 @@ def charts_if_empty_same_as(other_key: str) -> Callable[..., Any]:
                 data[key] = data.get(("__extras",), {}).get(other_key, "")
 
     return callable
+
+
+def charts_strategy_support(strategy: str) -> str:
+    if strategy not in const.SUPPORTED_CACHE_STRATEGIES:
+        raise tk.Invalid(tk._("Invalid cache strategy"))
+
+    if strategy == const.CACHE_FILE_ORC:
+        try:
+            from pyarrow import orc as _  # noqa
+        except ImportError:
+            raise tk.Invalid(
+                tk._("Can't use File Orc cache strategy. PyArrow is not installed")
+            )
+
+    if not strategy:
+        return const.DEFAULT_CACHE_STRATEGY
+
+    return strategy
 
 
 def validate_chart_extras(
