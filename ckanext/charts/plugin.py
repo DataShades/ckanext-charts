@@ -1,11 +1,16 @@
 from __future__ import annotations
 
 from typing import Any
+from os import path
+
+from yaml import safe_load
 
 import ckan.plugins as p
 import ckan.plugins.toolkit as tk
+import ckan.logic as logic
 from ckan import types
 from ckan.common import CKANConfig
+from ckan.config.declaration import Declaration, Key
 
 import ckanext.charts.config as conf
 import ckanext.charts.utils as utils
@@ -17,10 +22,10 @@ from ckanext.charts.chart_builders import DEFAULT_CHART_FORM
 
 @tk.blanket.helpers
 @tk.blanket.blueprints
-@tk.blanket.config_declarations
 @tk.blanket.validators
 class ChartsViewPlugin(p.SingletonPlugin):
     p.implements(p.IConfigurer)
+    p.implements(p.IConfigDeclaration)
     p.implements(p.IResourceView)
     p.implements(p.IBlueprint)
     p.implements(p.ISignal)
@@ -42,6 +47,17 @@ class ChartsViewPlugin(p.SingletonPlugin):
         tk.add_template_directory(config_, "templates")
         tk.add_public_directory(config_, "public")
         tk.add_resource("assets", "charts")
+
+    # IConfigDeclaration
+
+    def declare_config_options(self, declaration: Declaration, key: Key):
+        """Allow usage of custom validators by clearing the validators cache"""
+        logic.clear_validators_cache()
+
+        with open(path.dirname(__file__) + "/config_declaration.yaml") as file:
+            data_dict = safe_load(file)
+
+        return declaration.load_dict(data_dict)
 
     # IResourceView
 
