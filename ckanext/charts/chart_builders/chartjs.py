@@ -115,7 +115,16 @@ class ChartJSLineBuilder(ChartJsBuilder):
         data: dict[str, Any] = {
             "type": "line",
             "data": {"labels": self.df[self.settings["x"]].to_list()},
-            "options": self.settings,
+            "options": {
+                "scales": {
+                    "x": {
+                        "reverse": self.settings.get("invert_x", False),
+                    },
+                    "y": {
+                        "reverse": self.settings.get("invert_y", False),
+                    }
+                }
+            }
         }
 
         datasets = []
@@ -151,6 +160,8 @@ class ChartJSLineForm(BaseChartForm):
             self.sort_x_field(),
             self.sort_y_field(),
             self.limit_field(),
+            self.invert_x_field(),
+            self.invert_y_field(),
             self.filter_field(columns),
         ]
 

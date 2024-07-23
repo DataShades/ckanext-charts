@@ -469,6 +469,30 @@ class BaseChartForm(ABC):
             ],
         }
 
+    def invert_x_field(self) -> dict[str, Any]:
+        return {
+            "field_name": "invert_x",
+            "label": "Invert X-axis",
+            "form_snippet": "chart_checkbox.html",
+            "group": "Data",
+            "validators": [
+                self.get_validator("default")(False),
+                self.get_validator("boolean_validator"),
+            ],
+        }
+
+    def invert_y_field(self) -> dict[str, Any]:
+        return {
+            "field_name": "invert_y",
+            "label": "Invert Y-axis",
+            "form_snippet": "chart_checkbox.html",
+            "group": "Data",
+            "validators": [
+                self.get_validator("default")(False),
+                self.get_validator("boolean_validator"),
+            ],
+        }
+
     def log_x_field(self) -> dict[str, Any]:
         return {
             "field_name": "log_x",
