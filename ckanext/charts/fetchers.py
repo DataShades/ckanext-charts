@@ -73,8 +73,10 @@ class DatastoreDataFetcher(DataFetcherStrategy):
                 get_read_engine(),
             ).drop(columns=["_id", "_full_text"])
 
-            # TODO: hack... Convert all columns to numeric if possible
-            df = cast(pd.DataFrame, df.apply(pd.to_numeric, errors='ignore').fillna(0))
+            # Identify columns that are not datetime
+            non_datetime_cols = df.select_dtypes(exclude=['datetime']).columns
+            # Apply numeric conversion only to non-datetime columns
+            df[non_datetime_cols] = df[non_datetime_cols].apply(pd.to_numeric, errors='ignore').fillna(0)
 
         except (ProgrammingError, UndefinedTable) as e:
             raise exception.DataFetchError(
