@@ -115,16 +115,7 @@ class ChartJSLineBuilder(ChartJsBuilder):
         data: dict[str, Any] = {
             "type": "line",
             "data": {"labels": self.df[self.settings["x"]].to_list()},
-            "options": {
-                "scales": {
-                    "x": {
-                        "reverse": self.settings.get("invert_x", False),
-                    },
-                    "y": {
-                        "reverse": self.settings.get("invert_y", False),
-                    }
-                }
-            }
+            "options": self.settings,
         }
 
         datasets = []
@@ -135,7 +126,14 @@ class ChartJSLineBuilder(ChartJsBuilder):
             datasets.append(dataset)
 
         data["data"]["datasets"] = datasets
-
+        data["options"]["scales"] = {
+            "x": {
+                "reverse": self.settings.get("invert_x", False),
+            },
+            "y": {
+                "reverse": self.settings.get("invert_y", False),
+            },
+        }
         return json.dumps(data)
 
 
