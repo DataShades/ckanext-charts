@@ -607,6 +607,14 @@ class BaseChartForm(ABC):
             "group": "Data",
         }
 
+    def more_info_button(self) -> dict[str, Any]:
+        return {
+            "field_name": "more_info",
+            "label": "More info",
+            "form_snippet": "chart_more_info_button.html",
+            "group": "Data",
+        }
+
     def size_field(self, choices: list[dict[str, str]]) -> dict[str, Any]:
         field = self.column_field(choices)
         field.update({"field_name": "size", "label": "Size", "group": "Structure"})

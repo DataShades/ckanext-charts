@@ -78,6 +78,10 @@ class DatastoreDataFetcher(DataFetcherStrategy):
             # Apply numeric conversion only to non-datetime columns
             df[non_datetime_cols] = df[non_datetime_cols].apply(pd.to_numeric, errors='ignore').fillna(0)
 
+            if "date_time" in df.columns:
+                # Convert the 'date_time' column to string format in ISO 8601
+                df['date_time'] = df['date_time'].dt.strftime("%Y-%m-%dT%H:%M:%S")
+
         except (ProgrammingError, UndefinedTable) as e:
             raise exception.DataFetchError(
                 f"An error occurred during fetching data from DataStore: {e}",
