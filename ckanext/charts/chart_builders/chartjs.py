@@ -24,6 +24,36 @@ class ChartJsBuilder(BaseChartBuilder):
             ChartJSRadarForm,
         ]
 
+    def create_zoom_and_title_options(self, options: str[dict, Any]) -> dict[str, Any]:
+        """Add zoom and title plugin options to the provided options dictionary"""
+        zoom_options = {
+            "zoom": {
+                "wheel": {"enabled": True},
+                "pinch": {"enabled": True},
+                "drag": {"enabled": True},
+                "mode": "xy",
+            },
+            "pan": {
+                "enabled": True,
+                "modifierKey": "shift",
+                "mode": "xy",
+            },
+        }
+
+        if "plugins" not in options:
+            options["plugins"] = {}
+
+        options["plugins"].update(
+            {
+                "zoom": zoom_options,
+                "title": {
+                    "display": True,
+                    "position": "bottom",
+                },
+            }
+        )
+        return options
+
 
 class ChartJSBarBuilder(ChartJsBuilder):
     def _prepare_data(self) -> dict[str, Any]:
@@ -65,6 +95,7 @@ class ChartJSBarBuilder(ChartJsBuilder):
             )
 
         data["data"]["datasets"] = datasets
+        data["options"] = self.create_zoom_and_title_options(data["options"])
 
         return data
 
@@ -134,6 +165,7 @@ class ChartJSLineBuilder(ChartJsBuilder):
                 "reverse": self.settings.get("invert_y", False),
             },
         }
+        data["options"] = self.create_zoom_and_title_options(data["options"])
         return json.dumps(data)
 
 
@@ -254,6 +286,7 @@ class ChartJSScatterBuilder(ChartJsBuilder):
                 "data": dataset_data,
             }
         ]
+        data["options"] = self.create_zoom_and_title_options(data["options"])
 
         return json.dumps(data)
 
@@ -312,6 +345,7 @@ class ChartJSBubbleBuilder(ChartJSScatterBuilder):
         data["data"]["datasets"] = [
             {"label": self.settings["y"], "data": dataset_data},
         ]
+        data["options"] = self.create_zoom_and_title_options(data["options"])
 
         return json.dumps(data)
 
