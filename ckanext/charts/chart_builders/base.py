@@ -631,6 +631,18 @@ class BaseChartForm(ABC):
             "group": "Data",
         }
 
+    def more_info_button_field(self) -> dict[str, Any]:
+        """
+        Adds a "More info" button to the Data tab in the form, which triggers a pop-up.
+        This pop-up provides users with information about supported date formats.
+        """
+        return {
+            "field_name": "more_info",
+            "label": "More info",
+            "form_snippet": "chart_more_info_button.html",
+            "group": "Data",
+        }
+
     def size_field(self, choices: list[dict[str, str]]) -> dict[str, Any]:
         field = self.column_field(choices)
         field.update({"field_name": "size", "label": "Size", "group": "Structure"})
