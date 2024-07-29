@@ -649,3 +649,14 @@ class BaseChartForm(ABC):
             ],
             "group": "Filter",
         }
+
+    def engine_details_field(self) -> dict[str, Any]:
+        """
+        Provides details about zoom functionality support in various charting libraries.
+        """
+        return {
+            "field_name": "engine_details",
+            "label": "Engine details",
+            "form_snippet": "chart_engine_details.html",
+            "group": "Structure",
+        }
