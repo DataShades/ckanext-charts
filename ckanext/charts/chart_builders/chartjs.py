@@ -24,6 +24,36 @@ class ChartJsBuilder(BaseChartBuilder):
             ChartJSRadarForm,
         ]
 
+    def create_zoom_and_title_options(self, options: str[dict, Any]) -> dict[str, Any]:
+        """Add zoom and title plugin options to the provided options dictionary"""
+        zoom_options = {
+            "zoom": {
+                "wheel": {"enabled": True},
+                "pinch": {"enabled": True},
+                "drag": {"enabled": True},
+                "mode": "xy",
+            },
+            "pan": {
+                "enabled": True,
+                "modifierKey": "shift",
+                "mode": "xy",
+            },
+        }
+
+        if "plugins" not in options:
+            options["plugins"] = {}
+
+        options["plugins"].update(
+            {
+                "zoom": zoom_options,
+                "title": {
+                    "display": True,
+                    "position": "bottom",
+                },
+            }
+        )
+        return options
+
 
 class ChartJSBarBuilder(ChartJsBuilder):
     def _prepare_data(self) -> dict[str, Any]:
@@ -65,6 +95,7 @@ class ChartJSBarBuilder(ChartJsBuilder):
             )
 
         data["data"]["datasets"] = datasets
+        data["options"] = self.create_zoom_and_title_options(data["options"])
 
         return data
 
@@ -88,6 +119,7 @@ class ChartJSBarForm(BaseChartForm):
             self.description_field(),
             self.engine_field(),
             self.type_field(chart_types),
+            self.engine_details_field(),
             self.x_axis_field(columns),
             self.y_multi_axis_field(columns),
             self.more_info_button_field(),
@@ -135,6 +167,7 @@ class ChartJSLineBuilder(ChartJsBuilder):
                 "reverse": self.settings.get("invert_y", False),
             },
         }
+        data["options"] = self.create_zoom_and_title_options(data["options"])
         return json.dumps(data)
 
 
@@ -154,6 +187,7 @@ class ChartJSLineForm(BaseChartForm):
             self.description_field(),
             self.engine_field(),
             self.type_field(chart_types),
+            self.engine_details_field(),
             self.x_axis_field(columns),
             self.y_multi_axis_field(columns),
             self.more_info_button_field(),
@@ -213,6 +247,7 @@ class ChartJSPieForm(BaseChartForm):
             self.description_field(),
             self.engine_field(),
             self.type_field(chart_types),
+            self.engine_details_field(),
             self.values_field(columns),
             self.names_field(columns),
             self.more_info_button_field(),
@@ -257,6 +292,7 @@ class ChartJSScatterBuilder(ChartJsBuilder):
                 "data": dataset_data,
             }
         ]
+        data["options"] = self.create_zoom_and_title_options(data["options"])
         return json.dumps(self._configure_date_axis(data))
 
     def _configure_date_axis(self, data: dict[str, Any]) -> dict[str, Any]:
@@ -302,6 +338,7 @@ class ChartJSScatterForm(BaseChartForm):
             self.description_field(),
             self.engine_field(),
             self.type_field(chart_types),
+            self.engine_details_field(),
             self.x_axis_field(columns),
             self.y_axis_field(columns),
             self.more_info_button_field(),
@@ -340,6 +377,8 @@ class ChartJSBubbleBuilder(ChartJSScatterBuilder):
         data["data"]["datasets"] = [
             {"label": self.settings["y"], "data": dataset_data},
         ]
+        data["options"] = self.create_zoom_and_title_options(data["options"])
+
         return json.dumps(self._configure_date_axis(data))
 
     def _calculate_bubble_radius(self, data_series: pd.Series, max_size: int) -> int:
@@ -425,6 +464,7 @@ class ChartJSRadarForm(BaseChartForm):
             self.description_field(),
             self.engine_field(),
             self.type_field(chart_types),
+            self.engine_details_field(),
             self.names_field(columns),
             self.values_multi_field(
                 columns,
