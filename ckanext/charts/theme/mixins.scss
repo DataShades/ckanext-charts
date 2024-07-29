@@ -1,32 +1,5 @@
-.date-formats-container {
-
-    &__row {
-        display: flex;
-        justify-content: space-between;
+.modal-open {
+    .module-resource {
+        z-index: unset;
     }
-
-    &__column {
-        flex: 1;
-        margin-right: 20px;
-        
-        &:last-child {
-            margin-right: 0;
-        }
-    }
-}
-
-.date-formats-text {
-    font-size: 1.2em;
-    color: #333;
-}
-
-.date-formats-list {
-    list-style-type: none;
-    padding-left: 0;
-}
-
-.date-formats-item {
-    margin: 5px 0;
-    font-size: 1em;
-    color: #555;
 }

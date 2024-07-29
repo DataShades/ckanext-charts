@@ -607,7 +607,11 @@ class BaseChartForm(ABC):
             "group": "Data",
         }
 
-    def more_info_button(self) -> dict[str, Any]:
+    def more_info_button_field(self) -> dict[str, Any]:
+        """
+        Adds a "More info" button to the Data tab in the form, which triggers a pop-up.
+        This pop-up provides users with information about supported date formats.
+        """
         return {
             "field_name": "more_info",
             "label": "More info",
