@@ -90,6 +90,7 @@ class ChartJSBarForm(BaseChartForm):
             self.type_field(chart_types),
             self.x_axis_field(columns),
             self.y_multi_axis_field(columns),
+            self.more_info_button_field(),
             self.limit_field(),
             self.filter_field(columns),
         ]
@@ -155,6 +156,7 @@ class ChartJSLineForm(BaseChartForm):
             self.type_field(chart_types),
             self.x_axis_field(columns),
             self.y_multi_axis_field(columns),
+            self.more_info_button_field(),
             self.sort_x_field(),
             self.sort_y_field(),
             self.limit_field(),
@@ -213,6 +215,7 @@ class ChartJSPieForm(BaseChartForm):
             self.type_field(chart_types),
             self.values_field(columns),
             self.names_field(columns),
+            self.more_info_button_field(),
             self.limit_field(),
             self.filter_field(columns),
         ]
@@ -254,8 +257,32 @@ class ChartJSScatterBuilder(ChartJsBuilder):
                 "data": dataset_data,
             }
         ]
+        return json.dumps(self._configure_date_axis(data))
 
-        return json.dumps(data)
+    def _configure_date_axis(self, data: dict[str, Any]) -> dict[str, Any]:
+        """
+        Configure date settings for the x-axis if it uses 'date_time'.
+        """
+        x_axis = data["options"]["x"]
+        scales = data["options"].get("scales", {})
+
+        if x_axis == "date_time":
+            x_scale = scales.get("x", {})
+            x_scale.update(
+                {
+                    "type": "time",
+                    "time": {
+                        "unit": "day",
+                        "displayFormats": {"day": "YYYY-MM-DD"},
+                    },
+                }
+            )
+            scales["x"] = x_scale
+
+        if scales:
+            data["options"]["scales"] = scales
+
+        return data
 
 
 class ChartJSScatterForm(BaseChartForm):
@@ -277,6 +304,7 @@ class ChartJSScatterForm(BaseChartForm):
             self.type_field(chart_types),
             self.x_axis_field(columns),
             self.y_axis_field(columns),
+            self.more_info_button_field(),
             self.sort_x_field(),
             self.sort_y_field(),
             self.limit_field(),
@@ -312,8 +340,7 @@ class ChartJSBubbleBuilder(ChartJSScatterBuilder):
         data["data"]["datasets"] = [
             {"label": self.settings["y"], "data": dataset_data},
         ]
-
-        return json.dumps(data)
+        return json.dumps(self._configure_date_axis(data))
 
     def _calculate_bubble_radius(self, data_series: pd.Series, max_size: int) -> int:
         """Calculate bubble radius based on the size column"""
@@ -403,6 +430,7 @@ class ChartJSRadarForm(BaseChartForm):
                 columns,
                 help_text="Select 3 or more different categorical variables (dimensions)",
             ),
+            self.more_info_button_field(),
             self.limit_field(),
             self.filter_field(columns),
         ]

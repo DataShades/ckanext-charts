@@ -1,0 +1,63 @@
+<div class="form-group control-full control-large">
+    <div class="controls">
+        <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#moreInfoModal">
+            {{ _('More info') }}
+        </button>
+    </div>
+</div>
+
+{% set datetime_mapping = {
+    "YYYY-MM-DD": "2023-07-24",
+    "YYYY/MM/DD": "2023/07/24",
+    "MM-DD-YYYY": "07-24-2023",
+    "MM/DD/YYYY": "07/24/2023",
+    "DD-MM-YYYY": "24-07-2023",
+    "DD/MM/YYYY": "24/07/2023",
+    "dd/MMM/yyyy": "25/Nov/2023",
+    "YYYYMMDD": "20231125",
+    "YYYY-MM-DDTHH:MM:SS": "2023-07-24T14:30:00",
+    "YYYY-MM-DD HH:mm:ss": "2023-11-25 12:34:56",
+    "YYYY-MM-DDTHH:mm:ssZ": "2023-11-25T12:34:56Z",
+    "YYYY-MM-DD HH:mm:ss.SSS": "2023-11-25 12:34:56.789",
+    "MM/dd/yyyy hh:mm:ss a": "9/28/2023 2:23:15 PM",
+    "MM/dd/yyyy hh:mm:ss a:SSS": "8/5/2023 3:31:18 AM:234",
+    "MMdd_HH:mm:ss.SSS": "0423_11:42:35.883",
+    "dd MMM yyyy HH:mm:ss*SSS": "23 Apr 2023 10:32:35*311",
+    "dd MMM yyyy HH:mm:ss": "23 Apr 2023 11:42:35",
+    "yyMMdd HH:mm:ss": "220423 11:42:35",
+    "yy-MM-dd HH:mm:ss": "23-04-19 12:00:17"
+} %}
+
+<div class="modal fade" id="moreInfoModal" tabindex="-1" role="dialog" aria-labelledby="moreInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="moreInfoModalLabel">{{ _("Supported Date Formats") }}</h5>
+                <button type="button" class="btn-close close" data-bs-dismiss="modal" aria-label="Close">
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="date-formats-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>{{ _("Timestamp Format") }}</th>
+                                <th>{{ _("Example") }}</th>
+                            </tr>
+                        </thead>
+
+                        {% for format, example in datetime_mapping.items() %}
+                            <tr>
+                                <td>{{ format }}</td>
+                                <td>{{ example }}</td>
+                            </tr>
+                        {% endfor %}
+                      </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">{{ _("Close") }}</button>
+            </div>
+        </div>
+    </div>
+</div>
