@@ -87,6 +87,10 @@ class ObservableLineBuilder(ObservableBuilder):
                 "type": "line",
                 "data": self.df.to_dict(orient="records"),
                 "settings": self.settings,
+                "plot": {
+                    "x": {"reverse": self.settings.get("invert_x", False)},
+                    "y": {"reverse": self.settings.get("invert_y", False)}
+                }
             }
         )
 
@@ -110,6 +114,8 @@ class ObservableLineForm(BaseChartForm):
             self.x_axis_field(columns),
             self.y_axis_field(columns),
             self.more_info_button_field(),
+            self.invert_x_field(),
+            self.invert_y_field(),
             self.sort_x_field(),
             self.sort_y_field(),
             self.limit_field(),

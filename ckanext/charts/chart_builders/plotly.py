@@ -72,6 +72,12 @@ class PlotlyLineBuilder(PlotlyBuilder):
         if chart_title := self.settings.get("chart_title"):
             fig.update_layout(title_text=chart_title)
 
+        if self.settings.get("invert_x", False):
+            fig.update_xaxes(autorange="reversed")
+
+        if self.settings.get("invert_y", False):
+            fig.update_yaxes(autorange="reversed")
+
         return fig.to_json()
 
 
@@ -182,6 +188,8 @@ class PlotlyLineForm(BasePlotlyForm):
             self.x_axis_field(columns),
             self.plotly_y_multi_axis_field(columns, 2),
             self.more_info_button_field(),
+            self.invert_x_field(),
+            self.invert_y_field(),
             self.sort_x_field(),
             self.sort_y_field(),
             self.limit_field(),

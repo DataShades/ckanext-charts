@@ -27,7 +27,7 @@ ckan.module("charts-render-observable", function ($, _) {
                     plot = Plot.dot(this.options.config.data, this.options.config.settings).plot();
                     break;
                 case "line":
-                    plot = Plot.line(this.options.config.data, this.options.config.settings).plot();
+                    plot = Plot.line(this.options.config.data, this.options.config.settings).plot(this.options.config.plot);
                     break;
                 case "pie":
                     plot = PieChart(this.options.config.data, this.options.config.settings);
