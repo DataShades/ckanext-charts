@@ -2,7 +2,7 @@
 
 {% if chart %}
     <canvas id="chart-container" data-module="charts-render-chartjs" data-module-config="{{ chart }}"></canvas>
-    <div>
+    <div class="zoom-control">
         <button class="btn btn-primary" id="resetZoom">Reset Zoom</button>
         <button class="btn btn-primary" id="toggleZoom" class="btn btn-primary">Toggle Zoom</button>
         <button class="btn btn-primary" id="togglePan" class="btn btn-primary">Toggle Pan</button>

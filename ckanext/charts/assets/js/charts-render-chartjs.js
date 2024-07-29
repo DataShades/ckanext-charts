@@ -20,31 +20,24 @@ ckan.module("charts-render-chartjs", function ($, _) {
 
             const unsupportedTypes = ['pie', 'doughnut', 'radar'];
             const isZoomSupported = !unsupportedTypes.includes(this.options.config.type);
-            let zoomOptions = null;
 
             if (isZoomSupported) {
-                zoomOptions =  this.options.config.options.plugins.zoom;
+                const zoomOptions =  this.options.config.options.plugins.zoom;
 
                 this.options.config.options.plugins.title.text = () => {
                     return 'Zoom: ' + this.zoomStatus(zoomOptions) + ', Pan: ' + this.panStatus(zoomOptions);
                 };
 
-                $('#resetZoom').show();
-                $('#toggleZoom').show();
-                $('#togglePan').show();
-            } else {
-                $('#resetZoom').hide();
-                $('#toggleZoom').hide();
-                $('#togglePan').hide();
+                $('#resetZoom').on('click', this.resetZoom);
+                $('#toggleZoom').on('click', (e) => this.toggleZoom(e, zoomOptions));
+                $('#togglePan').on('click', (e) => this.togglePan(e, zoomOptions));
             }
 
-            var chart = new Chart(this.el[0].getContext("2d"), this.options.config);
-            window.charts_chartjs = chart;
+            $(".zoom-control").toggle(isZoomSupported);
 
-            $('#resetZoom').on('click', this.resetZoom);
-            $('#toggleZoom').on('click', (e) => this.toggleZoom(e, zoomOptions));
-            $('#togglePan').on('click', (e) => this.togglePan(e, zoomOptions));
+            window.charts_chartjs = new Chart(this.el[0].getContext("2d"), this.options.config);
         },
+
         resetZoom: function(event) {
             event.preventDefault();
             window.charts_chartjs.resetZoom();
@@ -67,17 +60,13 @@ ckan.module("charts-render-chartjs", function ($, _) {
             zoomOptions.zoom.pinch.enabled = !zoomEnabled;
             zoomOptions.zoom.drag.enabled = !zoomEnabled;
 
-            // Update the chart with the new zoom options
             window.charts_chartjs.update();
         },
 
         togglePan: function(event, zoomOptions) {
             event.preventDefault();
 
-            const currentPanEnabled = zoomOptions.pan.enabled;
-            zoomOptions.pan.enabled = !currentPanEnabled;
-
-            // Update the chart with the new zoom options
+            zoomOptions.pan.enabled = !zoomOptions.pan.enabled;
             window.charts_chartjs.update();
         }
     };
