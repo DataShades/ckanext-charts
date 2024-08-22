@@ -47,7 +47,10 @@ class PlotlyLineBuilder(PlotlyBuilder):
         return self.build_line_chart()
 
     def build_line_chart(self) -> Any:
-        """Build a line chart. For now we support only Two Y Axes in the line chart."""
+        """
+        Build a line chart. It supports multi columns for y-axis
+        to display on the line chart.
+        """
         fig = make_subplots(specs=[[{"secondary_y": True}]])
 
         fig.add_trace(
@@ -60,14 +63,15 @@ class PlotlyLineBuilder(PlotlyBuilder):
         )
 
         if len(self.settings["y"]) > 1:
-            fig.add_trace(
-                go.Scatter(
-                    x=self.df[self.settings["x"]],
-                    y=self.df[self.settings["y"][1]],
-                    name=self.settings["y"][1],
-                ),
-                secondary_y=True,
-            )
+            for column in self.settings["y"][1:]:
+                fig.add_trace(
+                    go.Scatter(
+                        x=self.df[self.settings["x"]],
+                        y=self.df[column],
+                        name=column,
+                    ),
+                    secondary_y=True,
+                )
 
         if chart_title := self.settings.get("chart_title"):
             fig.update_layout(title_text=chart_title)
@@ -163,13 +167,13 @@ class PlotlyLineForm(BasePlotlyForm):
     builder = PlotlyLineBuilder
 
     def plotly_y_multi_axis_field(
-        self, columns: list[dict[str, str]], max_y: int
+        self, columns: list[dict[str, str]], max_y: int = 0
     ) -> dict[str, Any]:
-        """Plotly line chart support up to 2 y-axis."""
-        field = self.y_multi_axis_field(columns, 2)
+        """Plotly line chart supports multi columns for y-axis"""
+        field = self.y_multi_axis_field(columns, max_y)
 
         field["help_text"] = (
-            "Select the columns for the Y axis. You can select up to 2 columns."
+            "Select the columns for the Y axis."
         )
 
         return field
@@ -189,7 +193,7 @@ class PlotlyLineForm(BasePlotlyForm):
             self.type_field(chart_types),
             self.engine_details_field(),
             self.x_axis_field(columns),
-            self.plotly_y_multi_axis_field(columns, 2),
+            self.plotly_y_multi_axis_field(columns),
             self.more_info_button_field(),
             self.invert_x_field(),
             self.invert_y_field(),
