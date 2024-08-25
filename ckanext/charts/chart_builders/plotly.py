@@ -46,11 +46,31 @@ class PlotlyLineBuilder(PlotlyBuilder):
     def to_json(self) -> Any:
         return self.build_line_chart()
 
+    def split_data_by_year(self) -> dict[str, Any]:
+        """
+        Prepare data for a line chart. It splits the data by year stated
+        in the date format column which is used for x-axis.
+        """
+        self.df["date"] = pd.to_datetime(self.df[self.settings["x"]]).dt.date
+        self.df = self.df[["date", self.settings["y"][0]]].set_index(["date"])
+        self.df = self.df[[self.settings["y"][0]]].groupby(["date"]).mean()
+
+        self.df.index = [pd.to_datetime(self.df.index).strftime("%m/%d"), pd.to_datetime(self.df.index).strftime("%Y")]
+        self.df = self.df[self.settings["y"][0]].unstack()
+
+        self.settings["y"] = self.df.columns.to_list()
+        self.df["date_time"] = self.df.index
+
+        return self
+
     def build_line_chart(self) -> Any:
         """
         Build a line chart. It supports multi columns for y-axis
         to display on the line chart.
         """
+        if self.settings.get("split_data", False):
+            self.split_data_by_year()
+
         fig = make_subplots(specs=[[{"secondary_y": True}]])
 
         fig.add_trace(
@@ -199,7 +219,8 @@ class PlotlyLineForm(BasePlotlyForm):
             self.invert_y_field(),
             self.sort_x_field(),
             self.sort_y_field(),
-            self.limit_field(),
+            self.split_data_field(),
+            self.limit_field(maximum=1000000),
             self.chart_title_field(),
             self.filter_field(columns),
         ]

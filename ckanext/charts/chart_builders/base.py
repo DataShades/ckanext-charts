@@ -445,6 +445,20 @@ class BaseChartForm(ABC):
 
         return field
 
+    def split_data_field(self) -> dict[str, Any]:
+        return {
+            "field_name": "split_data",
+            "label": "Split by years",
+            "form_snippet": "chart_checkbox.html",
+            "group": "Data",
+            "validators": [
+                self.get_validator("default")(False),
+                self.get_validator("boolean_validator"),
+            ],
+            "help_text":    """Split data into different columns by years based 
+                            on datetime column stated for the x-axis"""
+        }
+
     def sort_x_field(self) -> dict[str, Any]:
         return {
             "field_name": "sort_x",
