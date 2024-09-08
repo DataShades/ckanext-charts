@@ -143,7 +143,7 @@ class FileCacheORC(FileCache):
     def read_data(self, file: File) -> pd.DataFrame | None:
         from pyarrow import orc
 
-        return orc.ORCFile(file).read().to_pandas(all_rows=True)
+        return orc.ORCFile(file).read().to_pandas()
 
     def write_data(self, file_path: str, data: pd.DataFrame) -> None:
         for col in data.select_dtypes(include=["object"]).columns:
