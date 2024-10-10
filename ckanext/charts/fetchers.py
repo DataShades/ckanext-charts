@@ -73,15 +73,17 @@ class DatastoreDataFetcher(DataFetcherStrategy):
                 get_read_engine(),
             ).drop(columns=["_id", "_full_text"])
 
-            # Identify columns that are not datetime
-            non_datetime_cols = df.select_dtypes(exclude=['datetime']).columns
-            # Apply numeric conversion only to non-datetime columns
-            df[non_datetime_cols] = df[non_datetime_cols].apply(pd.to_numeric, errors='ignore').fillna(0)
-
             if "date_time" in df.columns:
-                # Ensure datetime type consistency and format to ISO 8601
-                # Handles cases where ckanext.xloader.use_type_guessing is disabled
-                df['date_time'] = pd.to_datetime(df['date_time']).dt.strftime("%Y-%m-%dT%H:%M:%S")
+                try:
+                    df['date_time'] = pd.to_datetime(df['date_time'])
+                    # Convert valid dates to ISO format
+                    df['date_time'] = df['date_time'].dt.strftime("%Y-%m-%dT%H:%M:%S")
+                except (ValueError, TypeError, AttributeError) as e:
+                    # Log the warning and keep the original values if conversion fails
+                    log.warning(f"Warning: Could not convert date_time column: {e}")
+
+            # Apply numeric conversion to all columns - it will safely ignore non-numeric values
+            df = df.apply(pd.to_numeric, errors='ignore').fillna(0)
 
         except (ProgrammingError, UndefinedTable) as e:
             raise exception.DataFetchError(
