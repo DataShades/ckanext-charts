@@ -79,8 +79,9 @@ class DatastoreDataFetcher(DataFetcherStrategy):
             df[non_datetime_cols] = df[non_datetime_cols].apply(pd.to_numeric, errors='ignore').fillna(0)
 
             if "date_time" in df.columns:
-                # Convert the 'date_time' column to string format in ISO 8601
-                df['date_time'] = df['date_time'].dt.strftime("%Y-%m-%dT%H:%M:%S")
+                # Ensure datetime type consistency and format to ISO 8601
+                # Handles cases where CKAN type guessing is disabled
+                df['date_time'] = pd.to_datetime(df['date_time']).dt.strftime("%Y-%m-%dT%H:%M:%S")
 
         except (ProgrammingError, UndefinedTable) as e:
             raise exception.DataFetchError(
