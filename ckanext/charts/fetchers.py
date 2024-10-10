@@ -80,7 +80,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
 
             if "date_time" in df.columns:
                 # Ensure datetime type consistency and format to ISO 8601
-                # Handles cases where CKAN type guessing is disabled
+                # Handles cases where ckanext.xloader.use_type_guessing is disabled
                 df['date_time'] = pd.to_datetime(df['date_time']).dt.strftime("%Y-%m-%dT%H:%M:%S")
 
         except (ProgrammingError, UndefinedTable) as e:
