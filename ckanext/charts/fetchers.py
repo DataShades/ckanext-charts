@@ -71,7 +71,11 @@ class DatastoreDataFetcher(DataFetcherStrategy):
                 .select_from(sa.table(self.resource_id))
                 .limit(self.limit),
                 get_read_engine(),
-            ).drop(columns=["_id", "_full_text"])
+            )
+
+            existing_columns = {col for col in {'_id', '_full_text'} if col in df.columns}
+            if existing_columns:
+                df = df.drop(columns=existing_columns)
 
             if "date_time" in df.columns:
                 try:
