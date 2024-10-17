@@ -1,3 +1,60 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ckanext-charts"
+description = ""
+keywords = ["CKAN", "charts", "visualization"]
+readme = "README.md"
+authors = [
+    {name = "DataShades", email = "datashades@linkdigital.com.au"},
+    {name = "Sergey Motornyuk", email = "sergey.motornyuk@linkdigital.com.au"},
+    {name = "Oleksandr Cherniavskyi", email = "mutantsan@gmail.com"},
+]
+maintainers = [
+    {name = "DataShades", email = "datashades@linkdigital.com.au"},
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.8",
+]
+dependencies = [
+             "typing-extensions>=4.3.0",
+             "pandas>=2.0.0,<=2.1.4",
+             "plotly>=5.21.0,<6.0.0",
+             "redis>=5.0.0,<6.0.0",
+             "ckanext-scheming",
+]
+license = {text = "AGPL"}
+requires-python = ">=3.8"
+version = "1.1.1.post1"
+
+[project.optional-dependencies]
+pyarrow = ["pyarrow>=16.0.0,<17.0.0"]
+test = ["pytest-ckan", "ckanext-toolbelt", "requests-mock"]
+dev = ["pytest-ckan", "ckanext-toolbelt", "requests-mock"]
+
+[project.entry-points."ckan.plugins"]
+charts_view = "ckanext.charts.plugin:ChartsViewPlugin"
+charts_builder_view = "ckanext.charts.plugin:ChartsBuilderViewPlugin"
+
+[project.entry-points."babel.extractors"]
+ckan = "ckan.lib.extract:extract_ckan"
+
+[project.urls]
+Homepage = "https://github.com/DataShades/ckanext-charts"
+
+[tool.setuptools.packages]
+find = {}
+
+
 [tool.black]
 # line-length = 88
 # preview = true
@@ -50,8 +107,6 @@ profile = "black"
 [tool.pytest.ini_options]
 addopts = "--ckan-ini test.ini"
 filterwarnings = [
-    "ignore::sqlalchemy.exc.SADeprecationWarning",
-    "ignore::sqlalchemy.exc.SAWarning",
     "ignore::DeprecationWarning",
 ]
 
