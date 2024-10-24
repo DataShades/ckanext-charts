@@ -67,7 +67,7 @@ List of config options:
 ## Admin config page
 
 The extension provides an admin configuration page where you can set all the listed configuration options. The admin page available only
-using an extension [`ckanext-admin-panel`](https://github.com/mutantsan/ckanext-admin-panel). The admin panel is a separate extension that provides an alternative admin interface for CKAN. It allows you to manage CKAN settings and other extensions settings through the web interface.
+using an extension [`ckanext-admin-panel`](https://github.com/DataShades/ckanext-admin-panel). The admin panel is a separate extension that provides an alternative admin interface for CKAN. It allows you to manage CKAN settings and other extensions settings through the web interface.
 
 ![Admin config page](doc/admin-page.jpg)
 
