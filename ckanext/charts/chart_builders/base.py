@@ -294,6 +294,32 @@ class BaseChartForm(ABC):
             ],
         }
 
+    def chart_xlabel_field(self) -> dict[str, Any]:
+        return {
+            "field_name": "chart_xlabel",
+            "label": "Chart X axe label",
+            "form_placeholder": "X label",
+            "group": "Styles",
+            "validators": [
+                self.get_validator("ignore_empty"),
+                # self.get_validator("default")(" "),
+                self.get_validator("unicode_safe"),
+            ],
+        }
+
+    def chart_ylabel_field(self) -> dict[str, Any]:
+        return {
+            "field_name": "chart_ylabel",
+            "label": "Chart Y axe label",
+            "form_placeholder": "Y label",
+            "group": "Styles",
+            "validators": [
+                self.get_validator("ignore_empty"),
+                # self.get_validator("default")(" "),
+                self.get_validator("unicode_safe"),
+            ],
+        }
+
     def description_field(self) -> dict[str, Any]:
         return {
             "field_name": "description",
