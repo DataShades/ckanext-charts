@@ -114,10 +114,22 @@ class PlotlyLineBuilder(PlotlyBuilder):
         else:
             fig.update_xaxes(title_text=self.settings["x"])
 
-        if chart_ylabel := self.settings.get("chart_ylabel"):
-            fig.update_yaxes(title_text=chart_ylabel)
+        if chart_ylabel_left := self.settings.get("chart_ylabel_left"):
+            fig.update_yaxes(title_text=chart_ylabel_left)
         else:
             fig.update_yaxes(title_text=self.settings["y"][0])
+
+        if len(self.settings["y"]) > 1:
+            if chart_ylabel_right := self.settings.get("chart_ylabel_right"):
+                fig.update_yaxes(
+                    secondary_y=True,
+                    title_text=chart_ylabel_right,
+                )
+            else:
+                fig.update_yaxes(
+                    secondary_y=True,
+                    title_text=self.settings["y"][1],
+                )
 
         if self.settings.get("invert_x", False):
             fig.update_xaxes(autorange="reversed")
@@ -247,7 +259,8 @@ class PlotlyLineForm(BasePlotlyForm):
             self.limit_field(maximum=1000000),
             self.chart_title_field(),
             self.chart_xlabel_field(),
-            self.chart_ylabel_field(),
+            self.chart_ylabel_left_field(),
+            self.chart_ylabel_right_field(),
             self.filter_field(columns),
         ]
 
