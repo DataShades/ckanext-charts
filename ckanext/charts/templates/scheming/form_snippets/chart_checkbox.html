@@ -1,13 +1,14 @@
 {% set val = data[field.field_name] %}
+{% set skip_null = field.field_name=="skip_null_values" %}
 
 <div class="form-group">
 	<label for="field-{{ field.field_name }}" class="no-dots">
-	    <input id="field-{{ field.field_name }}"
-	        type="checkbox"
-	        name="{{ field.field_name }}"
-	        value="true"
-	        {{"checked " if (val is string and 'true' in val) or val }} />
-	    {{ field.label }}
+		<input id="field-{{ field.field_name }}"
+			type="checkbox"
+			name="{{ field.field_name }}"
+			value="true"
+			{{"checked " if (skip_null and not val) or (val is string and 'true' in val) or val }} />
+		{{ field.label }}
 	</label>
 
 	{%- snippet 'scheming/form_snippets/help_text.html', field=field -%}
