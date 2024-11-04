@@ -302,20 +302,30 @@ class BaseChartForm(ABC):
             "group": "Styles",
             "validators": [
                 self.get_validator("ignore_empty"),
-                # self.get_validator("default")(" "),
                 self.get_validator("unicode_safe"),
             ],
         }
 
-    def chart_ylabel_field(self) -> dict[str, Any]:
+    def chart_ylabel_left_field(self) -> dict[str, Any]:
         return {
-            "field_name": "chart_ylabel",
-            "label": "Chart Y axe label",
-            "form_placeholder": "Y label",
+            "field_name": "chart_ylabel_left",
+            "label": "Chart Y axe left label",
+            "form_placeholder": "Left Y label",
             "group": "Styles",
             "validators": [
                 self.get_validator("ignore_empty"),
-                # self.get_validator("default")(" "),
+                self.get_validator("unicode_safe"),
+            ],
+        }
+
+    def chart_ylabel_right_field(self) -> dict[str, Any]:
+        return {
+            "field_name": "chart_ylabel_right",
+            "label": "Chart Y axe right label",
+            "form_placeholder": "Right Y label",
+            "group": "Styles",
+            "validators": [
+                self.get_validator("ignore_empty"),
                 self.get_validator("unicode_safe"),
             ],
         }
