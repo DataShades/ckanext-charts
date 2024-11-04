@@ -302,7 +302,6 @@ class BaseChartForm(ABC):
             "group": "Styles",
             "validators": [
                 self.get_validator("ignore_empty"),
-                # self.get_validator("default")(" "),
                 self.get_validator("unicode_safe"),
             ],
         }
@@ -315,7 +314,6 @@ class BaseChartForm(ABC):
             "group": "Styles",
             "validators": [
                 self.get_validator("ignore_empty"),
-                # self.get_validator("default")(" "),
                 self.get_validator("unicode_safe"),
             ],
         }
@@ -362,7 +360,7 @@ class BaseChartForm(ABC):
             "choices": choices,
             "group": "Structure",
             "validators": [
-                self.get_validator("default")("Bar"),
+                self.get_validator("default")("Line"),
                 self.get_validator("unicode_safe"),
             ],
             "form_attrs": {
@@ -483,6 +481,19 @@ class BaseChartForm(ABC):
             ],
             "help_text":    """Split data into different columns by years based 
                             on datetime column stated for the x-axis"""
+        }
+
+    def skip_null_values_field(self) -> dict[str, Any]:
+        return {
+            "field_name": "skip_null_values",
+            "label": "Skip N/A and NULL values",
+            "form_snippet": "chart_checkbox.html",
+            "group": "Data",
+            "validators": [
+                self.get_validator("boolean_validator"),
+            ],
+            "help_text":    """Entries in the data with N/A or NULL will not be 
+                            graphed and will be skipped"""
         }
 
     def sort_x_field(self) -> dict[str, Any]:

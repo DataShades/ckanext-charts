@@ -46,7 +46,7 @@ class PlotlyLineBuilder(PlotlyBuilder):
     def to_json(self) -> Any:
         return self.build_line_chart()
 
-    def split_data_by_year(self) -> dict[str, Any]:
+    def _split_data_by_year(self) -> dict[str, Any]:
         """
         Prepare data for a line chart. It splits the data by year stated
         in the date format column which is used for x-axis.
@@ -63,20 +63,31 @@ class PlotlyLineBuilder(PlotlyBuilder):
 
         return self
 
+    def _skip_null_values(self, column) -> tuple[Any]:
+        if self.settings.get("skip_null_values", True):
+            x = self.df[self.df[column].notna()][self.settings["x"]]
+            y = self.df[self.df[column].notna()][column]
+        else:
+            x = self.df[self.settings["x"]]
+            y = self.df[column].fillna(0)
+        return x, y
+
     def build_line_chart(self) -> Any:
         """
         Build a line chart. It supports multi columns for y-axis
         to display on the line chart.
         """
         if self.settings.get("split_data", False):
-            self.split_data_by_year()
+            self._split_data_by_year()
+
+        x, y = self._skip_null_values(self.settings["y"][0])
 
         fig = make_subplots(specs=[[{"secondary_y": True}]])
 
         fig.add_trace(
             go.Scatter(
-                x=self.df[self.settings["x"]],
-                y=self.df[self.settings["y"][0]],
+                x=x,
+                y=y,
                 name=self.settings["y"][0],
             ),
             secondary_y=False,
@@ -84,10 +95,12 @@ class PlotlyLineBuilder(PlotlyBuilder):
 
         if len(self.settings["y"]) > 1:
             for column in self.settings["y"][1:]:
+                x, y = self._skip_null_values(column)
+
                 fig.add_trace(
                     go.Scatter(
-                        x=self.df[self.settings["x"]],
-                        y=self.df[column],
+                        x=x,
+                        y=y,
                         name=column,
                     ),
                     secondary_y=True,
@@ -230,6 +243,7 @@ class PlotlyLineForm(BasePlotlyForm):
             self.sort_x_field(),
             self.sort_y_field(),
             self.split_data_field(),
+            self.skip_null_values_field(),
             self.limit_field(maximum=1000000),
             self.chart_title_field(),
             self.chart_xlabel_field(),

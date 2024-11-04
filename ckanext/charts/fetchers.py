@@ -83,7 +83,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
                     log.warning(f"Warning: Could not convert date_time column: {e}")
 
             # Apply numeric conversion to all columns - it will safely ignore non-numeric values
-            df = df.apply(pd.to_numeric, errors='ignore').fillna(0)
+            df = df.apply(pd.to_numeric, errors='ignore')
 
         except (ProgrammingError, UndefinedTable) as e:
             raise exception.DataFetchError(
