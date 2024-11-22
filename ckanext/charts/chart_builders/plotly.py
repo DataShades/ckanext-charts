@@ -5,6 +5,9 @@ from typing import Any, cast
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+
+from pandas.core.frame import DataFrame
+from pandas.errors import ParserError
 from plotly.subplots import make_subplots
 
 from ckanext.charts import exception
@@ -46,37 +49,95 @@ class PlotlyLineBuilder(PlotlyBuilder):
     def to_json(self) -> Any:
         return self.build_line_chart()
 
+
     def _split_data_by_year(self) -> dict[str, Any]:
         """
         Prepare data for a line chart. It splits the data by year stated
         in the date format column which is used for x-axis.
         """
-        self.df["date"] = pd.to_datetime(self.df[self.settings["x"]]).dt.date
-        self.df = self.df[["date", self.settings["y"][0]]].set_index(["date"])
-        self.df = self.df[[self.settings["y"][0]]].groupby(["date"]).mean()
+        if len(self.settings["years"]) > 1:
+            self.df.drop_duplicates(subset=[self.settings["x"]], inplace=True)
+            self.df = self.df[[self.settings["x"], self.settings["y"][0]]]
+            self.df["year"] = pd.to_datetime(self.df[self.settings["x"]]).dt.year
 
-        self.df.index = [pd.to_datetime(self.df.index).strftime("%m/%d"), pd.to_datetime(self.df.index).strftime("%Y")]
-        self.df = self.df[self.settings["y"][0]].unstack()
+            self.df = self.df.pivot(
+                index=self.settings["x"],
+                columns="year",
+                values=self.settings["y"][0],
+            )
 
-        self.settings["y"] = self.df.columns.to_list()
-        self.df["date_time"] = self.df.index
+            self.settings["y"] = self.df.columns.to_list()
+            self.df[self.settings["x"]] = self.df.index
+            self.df[self.settings["x"]] = pd.to_datetime(
+                self.df[self.settings["x"]],
+                unit="ns",
+            ).dt.strftime("%m-%d %H:%M")
 
         return self
 
-    def _skip_null_values(self, column) -> tuple[Any]:
-        if self.settings.get("skip_null_values", True):
-            x = self.df[self.df[column].notna()][self.settings["x"]]
-            y = self.df[self.df[column].notna()][column]
+
+    def _skip_null_values(self, column: str) -> tuple[Any]:
+        """
+        Return values for x-axis and y-axis after removing missing values.
+        """
+        if self.settings.get("split_data") and len(self.settings["years"]) > 1:
+            df = self.df.dropna(subset=column)
         else:
-            x = self.df[self.settings["x"]]
-            y = self.df[column].fillna(0)
+            df = self.df
+
+        if self.settings.get("skip_null_values"):
+            if self.settings.get("break_chart"):
+                x, y = self._break_chart_by_missing_data(df, column)
+            else:
+                x = df[self.settings["x"]]
+                y = df[column]
+        else:
+            x = df[self.settings["x"]]
+            y = df[column].fillna(0)
+
         return x, y
+
+
+    def _break_chart_by_missing_data(self, df: DataFrame, column: str) -> tuple[Any]:
+        """
+        Find gaps in date column and fill them with missing dates.
+        """
+        if len(self.settings["years"]) > 1:
+            df["xaxis"] = df[self.settings["x"]]
+
+            if self.settings.get("split_data"):
+                df[self.settings["x"]] = df.index
+
+            df["date"] = pd.to_datetime(df[self.settings["x"]]).dt.date
+
+            all_dates = pd.date_range(
+                start=df["date"].min(),
+                end=df["date"].max(),
+                unit="ns",
+            ).date
+            date_range_df = pd.DataFrame({"date": all_dates})
+            df = pd.merge(date_range_df, df, on="date", how="left")
+
+            x = df["xaxis"]
+            y = df[column]
+        else:
+            x = df[self.settings["x"]]
+            y = df[column]
+
+        return x, y
+
 
     def build_line_chart(self) -> Any:
         """
         Build a line chart. It supports multi columns for y-axis
         to display on the line chart.
         """
+        try:
+            dates = pd.to_datetime(self.df[self.settings["x"]], unit="ns")
+            self.settings["years"] = dates.dt.year.unique()
+        except (ParserError, ValueError):
+            self.settings["years"] = []
+
         if self.settings.get("split_data", False):
             self._split_data_by_year()
 
@@ -89,6 +150,7 @@ class PlotlyLineBuilder(PlotlyBuilder):
                 x=x,
                 y=y,
                 name=self.settings["y"][0],
+                connectgaps=not self.settings.get("break_chart"),
             ),
             secondary_y=False,
         )
@@ -102,9 +164,13 @@ class PlotlyLineBuilder(PlotlyBuilder):
                         x=x,
                         y=y,
                         name=column,
+                        connectgaps=not self.settings.get("break_chart"),
                     ),
                     secondary_y=True,
                 )
+
+        if self.settings.get("split_data") and len(self.settings["years"]) > 1:
+            fig.update_layout(xaxis={"categoryorder": "category ascending"})
 
         if chart_title := self.settings.get("chart_title"):
             fig.update_layout(title_text=chart_title)
@@ -256,6 +322,7 @@ class PlotlyLineForm(BasePlotlyForm):
             self.sort_y_field(),
             self.split_data_field(),
             self.skip_null_values_field(),
+            self.break_chart_field(),
             self.limit_field(maximum=1000000),
             self.chart_title_field(),
             self.chart_xlabel_field(),

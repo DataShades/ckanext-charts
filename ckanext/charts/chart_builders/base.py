@@ -504,8 +504,20 @@ class BaseChartForm(ABC):
             "validators": [
                 self.get_validator("boolean_validator"),
             ],
-            "help_text":    """Entries in the data with N/A or NULL will not be 
-                            graphed and will be skipped"""
+            "help_text":    """Entries of the data with missing values will not be
+                            graphed or will be skipped""",
+        }
+
+    def break_chart_field(self) -> dict[str, Any]:
+        return {
+            "field_name": "break_chart",
+            "label": "Break the chart",
+            "form_snippet": "chart_checkbox.html",
+            "group": "Data",
+            "validators": [
+                self.get_validator("boolean_validator"),
+            ],
+            "help_text": "Break the graph at missing values",
         }
 
     def sort_x_field(self) -> dict[str, Any]:
