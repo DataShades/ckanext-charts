@@ -50,7 +50,7 @@ class ChartJsBuilder(BaseChartBuilder):
                     "display": True,
                     "position": "bottom",
                 },
-            }
+            },
         )
         return options
 
@@ -69,7 +69,7 @@ class ChartJSBarBuilder(ChartJsBuilder):
                 "elements": {"bar": {"borderWidth": 1}},
                 "plugins": {"legend": {"position": "top"}},
                 "scales": {"y": {"beginAtZero": True}},
-            }
+            },
         )
 
         datasets = []
@@ -80,10 +80,10 @@ class ChartJSBarBuilder(ChartJsBuilder):
             for label in data["data"]["labels"]:
                 try:
                     aggregate_value = int(
-                        self.df[self.df[self.settings["x"]] == label][field].sum()
+                        self.df[self.df[self.settings["x"]] == label][field].sum(),
                     )
-                except ValueError:
-                    raise ChartBuildError(f"Column '{field}' is not numeric")
+                except ValueError as e:
+                    raise ChartBuildError(f"Column '{field}' is not numeric") from e
 
                 dataset_data.append(aggregate_value)
 
@@ -91,7 +91,7 @@ class ChartJSBarBuilder(ChartJsBuilder):
                 {
                     "label": field,
                     "data": dataset_data,
-                }
+                },
             )
 
         data["data"]["datasets"] = datasets
@@ -216,15 +216,15 @@ class ChartJSPieBuilder(ChartJsBuilder):
             for label in data["data"]["labels"]:
                 dataset_data.append(
                     self.convert_to_native_types(
-                        self.df[self.df[self.settings["names"]] == label][field].sum()
-                    )
+                        self.df[self.df[self.settings["names"]] == label][field].sum(),
+                    ),
                 )
 
         data["data"]["datasets"] = [
             {
                 "label": field,
                 "data": dataset_data,
-            }
+            },
         ]
 
         return json.dumps(data)
@@ -280,17 +280,17 @@ class ChartJSScatterBuilder(ChartJsBuilder):
                 dataset_data.append(
                     {
                         "x": self.convert_to_native_types(
-                            data_series[self.settings["x"]]
+                            data_series[self.settings["x"]],
                         ),
                         "y": self.convert_to_native_types(data_series[field]),
-                    }
+                    },
                 )
 
         data["data"]["datasets"] = [
             {
                 "label": self.settings["y"],
                 "data": dataset_data,
-            }
+            },
         ]
         data["options"] = self.create_zoom_and_title_options(data["options"])
         return json.dumps(self._configure_date_axis(data))
@@ -311,7 +311,7 @@ class ChartJSScatterBuilder(ChartJsBuilder):
                         "unit": "day",
                         "displayFormats": {"day": "YYYY-MM-DD"},
                     },
-                }
+                },
             )
             scales["x"] = x_scale
 
@@ -367,11 +367,11 @@ class ChartJSBubbleBuilder(ChartJSScatterBuilder):
                 dataset_data.append(
                     {
                         "x": self.convert_to_native_types(
-                            data_series[self.settings["x"]]
+                            data_series[self.settings["x"]],
                         ),
                         "y": self.convert_to_native_types(data_series[field]),
                         "r": self._calculate_bubble_radius(data_series, max_size),
-                    }
+                    },
                 )
 
         data["data"]["datasets"] = [
@@ -389,8 +389,8 @@ class ChartJSBubbleBuilder(ChartJSScatterBuilder):
         # or the column is not numeric
         try:
             pd.to_numeric(max_size)
-        except ValueError:
-            raise ChartBuildError(f"Column '{size_column}' is not numeric")
+        except ValueError as e:
+            raise ChartBuildError(f"Column '{size_column}' is not numeric") from e
 
         if max_size == 0 or np.isnan(max_size):
             bubble_radius = self.min_bubble_radius
@@ -434,7 +434,7 @@ class ChartJSRadarBuilder(ChartJsBuilder):
             for value in self.settings["values"]:
                 try:
                     dataset_data.append(
-                        self.df[self.df[self.settings["names"]] == label][value].item()
+                        self.df[self.df[self.settings["names"]] == label][value].item(),
                     )
                 except ValueError:
                     # TODO: probably collision by name column, e.g two or more rows
@@ -468,7 +468,9 @@ class ChartJSRadarForm(BaseChartForm):
             self.names_field(columns),
             self.values_multi_field(
                 columns,
-                help_text="Select 3 or more different categorical variables (dimensions)",
+                help_text=(
+                    "Select 3 or more different categorical variables (dimensions)"
+                ),
             ),
             self.more_info_button_field(),
             self.limit_field(),

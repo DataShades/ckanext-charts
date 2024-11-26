@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from typing import Any, cast
+from typing import Any
 
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-
 from pandas.core.frame import DataFrame
 from pandas.errors import ParserError
 from plotly.subplots import make_subplots
@@ -91,7 +90,9 @@ class PlotlyLineBuilder(PlotlyBuilder):
         self.df["year"] = pd.to_datetime(self.df[self.settings["x"]]).dt.year
 
         self.df = self.df.pivot(
-            index=self.settings["x"], columns="year", values=self.settings["y"][0]
+            index=self.settings["x"],
+            columns="year",
+            values=self.settings["y"][0],
         )
 
         self.settings["y"] = self.df.columns.to_list()
@@ -123,7 +124,9 @@ class PlotlyLineBuilder(PlotlyBuilder):
         return x, y
 
     def _break_chart_by_missing_data(
-        self, df: DataFrame, column: str
+        self,
+        df: DataFrame,
+        column: str,
     ) -> tuple[Any, Any]:
         """
         Find gaps in date column and fill them with missing dates.
@@ -139,7 +142,9 @@ class PlotlyLineBuilder(PlotlyBuilder):
         df["date"] = pd.to_datetime(df[self.settings["x"]]).dt.date
 
         all_dates = pd.date_range(
-            start=df["date"].min(), end=df["date"].max(), unit="ns"
+            start=df["date"].min(),
+            end=df["date"].max(),
+            unit="ns",
         ).date
 
         date_range_df = pd.DataFrame({"date": all_dates})
@@ -239,7 +244,7 @@ class PlotlyScatterBuilder(PlotlyBuilder):
         if self.df[self.settings["size"]].dtype not in ["int64", "float64"]:
             raise exception.ChartBuildError(
                 """The 'size' source should be a field of positive integer
-                or float type."""
+                or float type.""",
             )
 
         fig = px.scatter(
@@ -332,7 +337,9 @@ class PlotlyLineForm(BasePlotlyForm):
     builder = PlotlyLineBuilder
 
     def plotly_y_multi_axis_field(
-        self, columns: list[dict[str, str]], max_y: int = 0
+        self,
+        columns: list[dict[str, str]],
+        max_y: int = 0,
     ) -> dict[str, Any]:
         """Plotly line chart supports multi columns for y-axis"""
         field = self.y_multi_axis_field(columns, max_y)

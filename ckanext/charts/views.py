@@ -7,7 +7,7 @@ import ckan.plugins.toolkit as tk
 from ckan.logic import parse_params
 from ckan.plugins import plugin_loaded
 
-from ckanext.charts import cache, exception, utils, fetchers
+from ckanext.charts import cache, exception, fetchers, utils
 
 charts = Blueprint("charts_view", __name__)
 ERROR_TEMPLATE = "charts/snippets/error_chart.html"
@@ -96,7 +96,7 @@ def _clear_chart(
     user_chart_builder: bool = False,
 ):
     builder = _get_form_builder(
-        {"engine": "plotly", "type": "Bar", "resource_id": resource_id}
+        {"engine": "plotly", "type": "Bar", "resource_id": resource_id},
     )
 
     data, errors = tk.navl_validate({}, builder.get_validation_schema(), {})

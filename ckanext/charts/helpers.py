@@ -4,11 +4,10 @@ import json
 
 import ckan.plugins.toolkit as tk
 
-from ckanext.charts import utils
+from ckanext.charts import config, utils
 from ckanext.charts.cache import count_file_cache_size, count_redis_cache_size
-from ckanext.charts import config
-from ckanext.charts.fetchers import DatastoreDataFetcher
 from ckanext.charts.chart_builders import get_chart_engines
+from ckanext.charts.fetchers import DatastoreDataFetcher
 
 
 def get_redis_cache_size():
@@ -41,7 +40,7 @@ def charts_get_resource_columns(resource_id: str) -> str:
     fetcher = DatastoreDataFetcher(resource_id)
 
     return json.dumps(
-        [{"id": col, "title": col} for col in fetcher.fetch_data().columns]
+        [{"id": col, "title": col} for col in fetcher.fetch_data().columns],
     )
 
 

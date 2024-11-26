@@ -73,10 +73,10 @@ class TestPlotlyBuilder:
         assert "data" in result
         assert "layout" in result
 
-        layout = json.loads(result)['layout']
+        layout = json.loads(result)["layout"]
 
-        assert 'yaxis' in layout
-        assert 'yaxis2' in layout
+        assert "yaxis" in layout
+        assert "yaxis2" in layout
 
     def test_build_scatter(self, data_frame):
         result = utils.build_chart_for_data(

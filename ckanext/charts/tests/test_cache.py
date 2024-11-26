@@ -213,7 +213,9 @@ class TestCalculateFileORCExpiration:
 
         assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
 
-        file_path = cache.FileCacheORC().make_file_path_from_key(fetcher.make_cache_key())
+        file_path = cache.FileCacheORC().make_file_path_from_key(
+            fetcher.make_cache_key(),
+        )
 
         with freeze_time(datetime.now() + timedelta(seconds=101)):
             assert cache.FileCacheORC().is_file_cache_expired(file_path)
@@ -230,6 +232,8 @@ class TestCalculateFileORCExpiration:
 
         assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
 
-        file_path = cache.FileCacheORC().make_file_path_from_key(fetcher.make_cache_key())
+        file_path = cache.FileCacheORC().make_file_path_from_key(
+            fetcher.make_cache_key(),
+        )
 
         assert not cache.FileCacheORC().is_file_cache_expired(file_path)

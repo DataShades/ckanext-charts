@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-import ckan.types as types
 import ckan.plugins.toolkit as tk
+from ckan import types
 
-from ckanext.charts import utils, const
+from ckanext.charts import const, utils
 from ckanext.charts.chart_builders import DEFAULT_CHART_FORM
 
 
@@ -39,8 +39,8 @@ def charts_strategy_support(strategy: str) -> str:
             from pyarrow import orc as _  # noqa
         except ImportError:
             raise tk.Invalid(
-                tk._("Can't use File Orc cache strategy. PyArrow is not installed")
-            )
+                tk._("Can't use File Orc cache strategy. PyArrow is not installed"),
+            ) from None
 
     if not strategy:
         return const.DEFAULT_CACHE_STRATEGY
@@ -65,7 +65,7 @@ def validate_chart_extras(
     settings, err = tk.navl_validate(
         settings,
         builder(settings["resource_id"]).get_validation_schema(
-            context.get("_for_show", False)
+            context.get("_for_show", False),
         ),
         {},
     )
