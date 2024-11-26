@@ -3,12 +3,11 @@ from __future__ import annotations
 import hashlib
 import logging
 import os
-from re import T
 import tempfile
 import time
 from abc import ABC, abstractmethod
 from io import BytesIO
-from typing import IO as File
+from typing import IO
 
 import pandas as pd
 from redis.exceptions import ResponseError
@@ -17,7 +16,6 @@ import ckan.plugins.toolkit as tk
 from ckan.lib.redis import connect_to_redis
 
 from ckanext.charts import config, const, exception
-
 
 log = logging.getLogger(__name__)
 
@@ -62,8 +60,8 @@ class RedisCache(CacheStrategy):
                 self.client.setex(key, cache_ttl, data.to_csv(index=False))
             else:
                 self.client.set(key, value=data.to_csv(index=False))
-        except Exception as e:
-            log.exception("Failed to save data to Redis: %s", e)
+        except Exception:
+            log.exception("Failed to save data to Redis")
 
     def invalidate(self, key: str):
         self.client.delete(key)
@@ -92,7 +90,7 @@ class FileCache(CacheStrategy):
         return None
 
     @abstractmethod
-    def read_data(self, file: File) -> pd.DataFrame | None:
+    def read_data(self, file: IO) -> pd.DataFrame | None:
         pass
 
     def set_data(self, key: str, data: pd.DataFrame) -> None:
@@ -140,7 +138,7 @@ class FileCacheORC(FileCache):
 
     FILE_FORMAT = "orc"
 
-    def read_data(self, file: File) -> pd.DataFrame | None:
+    def read_data(self, file: IO) -> pd.DataFrame | None:
         from pyarrow import orc
 
         return orc.ORCFile(file).read().to_pandas()
@@ -151,12 +149,13 @@ class FileCacheORC(FileCache):
 
         data.to_orc(file_path)
 
+
 class FileCacheCSV(FileCache):
     """Cache data as CSV file"""
 
     FILE_FORMAT = "csv"
 
-    def read_data(self, file: File) -> pd.DataFrame | None:
+    def read_data(self, file: IO) -> pd.DataFrame | None:
         return pd.read_csv(file)
 
     def write_data(self, file_path: str, data: pd.DataFrame) -> None:

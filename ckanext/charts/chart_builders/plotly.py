@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from typing import Any, cast
+from typing import Any
 
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-
 from pandas.core.frame import DataFrame
 from pandas.errors import ParserError
 from plotly.subplots import make_subplots
@@ -35,9 +34,9 @@ class PlotlyBarBuilder(PlotlyBuilder):
             self.df = self.df[self.df[self.settings["y"]].notna()]
 
         fig = px.bar(
-            data_frame = self.df,
-            x = self.settings["x"],
-            y = self.settings["y"],
+            data_frame=self.df,
+            x=self.settings["x"],
+            y=self.settings["y"],
         )
 
         fig.update_xaxes(
@@ -56,9 +55,9 @@ class PlotlyHorizontalBarBuilder(PlotlyBuilder):
             self.df = self.df[self.df[self.settings["y"]].notna()]
 
         fig = px.bar(
-            data_frame = self.df,
-            y = self.settings["x"],
-            x = self.settings["y"],
+            data_frame=self.df,
+            y=self.settings["x"],
+            x=self.settings["y"],
             orientation="h",
         )
 
@@ -78,34 +77,32 @@ class PlotlyLineBuilder(PlotlyBuilder):
     def to_json(self) -> Any:
         return self.build_line_chart()
 
-
-    def _split_data_by_year(self) -> dict[str, Any]:
+    def _split_data_by_year(self) -> None:
         """
         Prepare data for a line chart. It splits the data by year stated
         in the date format column which is used for x-axis.
         """
-        if len(self.settings["years"]) > 1:
-            self.df.drop_duplicates(subset=[self.settings["x"]], inplace=True)
-            self.df = self.df[[self.settings["x"], self.settings["y"][0]]]
-            self.df["year"] = pd.to_datetime(self.df[self.settings["x"]]).dt.year
+        if len(self.settings["years"]) <= 1:
+            return
 
-            self.df = self.df.pivot(
-                index=self.settings["x"],
-                columns="year",
-                values=self.settings["y"][0],
-            )
+        self.df.drop_duplicates(subset=[self.settings["x"]], inplace=True)
+        self.df = self.df[[self.settings["x"], self.settings["y"][0]]]
+        self.df["year"] = pd.to_datetime(self.df[self.settings["x"]]).dt.year
 
-            self.settings["y"] = self.df.columns.to_list()
-            self.df[self.settings["x"]] = self.df.index
-            self.df[self.settings["x"]] = pd.to_datetime(
-                self.df[self.settings["x"]],
-                unit="ns",
-            ).dt.strftime("%m-%d %H:%M")
+        self.df = self.df.pivot(
+            index=self.settings["x"],
+            columns="year",
+            values=self.settings["y"][0],
+        )
 
-        return self
+        self.settings["y"] = self.df.columns.to_list()
+        self.df[self.settings["x"]] = self.df.index
+        self.df[self.settings["x"]] = pd.to_datetime(
+            self.df[self.settings["x"]],
+            unit="ns",
+        ).dt.strftime("%m-%d %H:%M")
 
-
-    def _skip_null_values(self, column: str) -> tuple[Any]:
+    def _skip_null_values(self, column: str) -> tuple[Any, Any]:
         """
         Return values for x-axis and y-axis after removing missing values.
         """
@@ -126,35 +123,34 @@ class PlotlyLineBuilder(PlotlyBuilder):
 
         return x, y
 
-
-    def _break_chart_by_missing_data(self, df: DataFrame, column: str) -> tuple[Any]:
+    def _break_chart_by_missing_data(
+        self,
+        df: DataFrame,
+        column: str,
+    ) -> tuple[Any, Any]:
         """
         Find gaps in date column and fill them with missing dates.
         """
-        if len(self.settings["years"]) > 1:
-            df["xaxis"] = df[self.settings["x"]]
+        if len(self.settings["years"]) <= 1:
+            return df[self.settings["x"]], df[column]
 
-            if self.settings.get("split_data"):
-                df[self.settings["x"]] = df.index
+        df["xaxis"] = df[self.settings["x"]]
 
-            df["date"] = pd.to_datetime(df[self.settings["x"]]).dt.date
+        if self.settings.get("split_data"):
+            df[self.settings["x"]] = df.index
 
-            all_dates = pd.date_range(
-                start=df["date"].min(),
-                end=df["date"].max(),
-                unit="ns",
-            ).date
-            date_range_df = pd.DataFrame({"date": all_dates})
-            df = pd.merge(date_range_df, df, on="date", how="left")
+        df["date"] = pd.to_datetime(df[self.settings["x"]]).dt.date
 
-            x = df["xaxis"]
-            y = df[column]
-        else:
-            x = df[self.settings["x"]]
-            y = df[column]
+        all_dates = pd.date_range(
+            start=df["date"].min(),
+            end=df["date"].max(),
+            unit="ns",
+        ).date
 
-        return x, y
+        date_range_df = pd.DataFrame({"date": all_dates})
+        df = pd.merge(date_range_df, df, on="date", how="left")
 
+        return df["xaxis"], df[column]
 
     def build_line_chart(self) -> Any:
         """
@@ -239,7 +235,6 @@ class PlotlyScatterBuilder(PlotlyBuilder):
     def to_json(self) -> Any:
         return self.build_scatter_chart()
 
-
     def build_scatter_chart(self) -> Any:
         self.df = self.df.fillna(0)
 
@@ -254,11 +249,11 @@ class PlotlyScatterBuilder(PlotlyBuilder):
             )
 
         fig = px.scatter(
-            data_frame = self.df,
-            x = self.settings["x"],
-            y = self.settings["y"],
-            size = self.settings["size"],
-            size_max = self.settings["size_max"],
+            data_frame=self.df,
+            x=self.settings["x"],
+            y=self.settings["y"],
+            size=self.settings["size"],
+            size_max=self.settings["size_max"],
         )
 
         fig.update_xaxes(
@@ -343,14 +338,14 @@ class PlotlyLineForm(BasePlotlyForm):
     builder = PlotlyLineBuilder
 
     def plotly_y_multi_axis_field(
-        self, columns: list[dict[str, str]], max_y: int = 0
+        self,
+        columns: list[dict[str, str]],
+        max_y: int = 0,
     ) -> dict[str, Any]:
         """Plotly line chart supports multi columns for y-axis"""
         field = self.y_multi_axis_field(columns, max_y)
 
-        field["help_text"] = (
-            "Select the columns for the Y axis."
-        )
+        field["help_text"] = "Select the columns for the Y axis."
 
         return field
 

@@ -50,7 +50,7 @@ class ChartJsBuilder(BaseChartBuilder):
                     "display": True,
                     "position": "bottom",
                 },
-            }
+            },
         )
         return options
 
@@ -69,7 +69,7 @@ class ChartJSBarBuilder(ChartJsBuilder):
                 "elements": {"bar": {"borderWidth": 1}},
                 "plugins": {"legend": {"position": "top"}},
                 "scales": {"y": {"beginAtZero": True}},
-            }
+            },
         )
 
         datasets = []
@@ -80,10 +80,10 @@ class ChartJSBarBuilder(ChartJsBuilder):
             for label in data["data"]["labels"]:
                 try:
                     aggregate_value = int(
-                        self.df[self.df[self.settings["x"]] == label][field].sum()
+                        self.df[self.df[self.settings["x"]] == label][field].sum(),
                     )
-                except ValueError:
-                    raise ChartBuildError(f"Column '{field}' is not numeric")
+                except ValueError as e:
+                    raise ChartBuildError(f"Column '{field}' is not numeric") from e
 
                 dataset_data.append(aggregate_value)
 
@@ -91,7 +91,7 @@ class ChartJSBarBuilder(ChartJsBuilder):
                 {
                     "label": field,
                     "data": dataset_data,
-                }
+                },
             )
 
         data["data"]["datasets"] = datasets
@@ -216,15 +216,15 @@ class ChartJSPieBuilder(ChartJsBuilder):
             for label in data["data"]["labels"]:
                 dataset_data.append(
                     self.convert_to_native_types(
-                        self.df[self.df[self.settings["names"]] == label][field].sum()
-                    )
+                        self.df[self.df[self.settings["names"]] == label][field].sum(),
+                    ),
                 )
 
         data["data"]["datasets"] = [
             {
                 "label": field,
                 "data": dataset_data,
-            }
+            },
         ]
 
         return json.dumps(data)
@@ -280,17 +280,17 @@ class ChartJSScatterBuilder(ChartJsBuilder):
                 dataset_data.append(
                     {
                         "x": self.convert_to_native_types(
-                            data_series[self.settings["x"]]
+                            data_series[self.settings["x"]],
                         ),
                         "y": self.convert_to_native_types(data_series[field]),
-                    }
+                    },
                 )
 
         data["data"]["datasets"] = [
             {
                 "label": self.settings["y"],
                 "data": dataset_data,
-            }
+            },
         ]
         data["options"] = self.create_zoom_and_title_options(data["options"])
         return json.dumps(self._configure_date_axis(data))
@@ -311,7 +311,7 @@ class ChartJSScatterBuilder(ChartJsBuilder):
                         "unit": "day",
                         "displayFormats": {"day": "YYYY-MM-DD"},
                     },
-                }
+                },
             )
             scales["x"] = x_scale
 
@@ -360,18 +360,18 @@ class ChartJSBubbleBuilder(ChartJSScatterBuilder):
         }
 
         dataset_data = []
-        max_size = self.df[self.settings["size"]].max()
+        size_max = self.df[self.settings["size"]].max()
 
         for _, data_series in self.df.iterrows():
             for field in [self.settings["y"]]:
                 dataset_data.append(
                     {
                         "x": self.convert_to_native_types(
-                            data_series[self.settings["x"]]
+                            data_series[self.settings["x"]],
                         ),
                         "y": self.convert_to_native_types(data_series[field]),
-                        "r": self._calculate_bubble_radius(data_series, max_size),
-                    }
+                        "r": self._calculate_bubble_radius(data_series, size_max),
+                    },
                 )
 
         data["data"]["datasets"] = [
@@ -381,22 +381,22 @@ class ChartJSBubbleBuilder(ChartJSScatterBuilder):
 
         return json.dumps(self._configure_date_axis(data))
 
-    def _calculate_bubble_radius(self, data_series: pd.Series, max_size: int) -> int:
+    def _calculate_bubble_radius(self, data_series: pd.Series, size_max: int) -> int:
         """Calculate bubble radius based on the size column"""
         size_column: str = self.settings["size"]
 
-        # Handle cases where max_size is zero or NaN values are present
+        # Handle cases where size_max is zero or NaN values are present
         # or the column is not numeric
         try:
-            pd.to_numeric(max_size)
-        except ValueError:
-            raise ChartBuildError(f"Column '{size_column}' is not numeric")
+            pd.to_numeric(size_max)
+        except ValueError as e:
+            raise ChartBuildError(f"Column '{size_column}' is not numeric") from e
 
-        if max_size == 0 or np.isnan(max_size):
+        if size_max == 0 or np.isnan(size_max):
             bubble_radius = self.min_bubble_radius
         else:
             data_series_size = np.nan_to_num(data_series[size_column], nan=0)
-            bubble_radius = (data_series_size / max_size) * 30
+            bubble_radius = (data_series_size / size_max) * 30
 
         if bubble_radius < self.min_bubble_radius:
             bubble_radius = self.min_bubble_radius
@@ -434,7 +434,7 @@ class ChartJSRadarBuilder(ChartJsBuilder):
             for value in self.settings["values"]:
                 try:
                     dataset_data.append(
-                        self.df[self.df[self.settings["names"]] == label][value].item()
+                        self.df[self.df[self.settings["names"]] == label][value].item(),
                     )
                 except ValueError:
                     # TODO: probably collision by name column, e.g two or more rows
@@ -468,7 +468,9 @@ class ChartJSRadarForm(BaseChartForm):
             self.names_field(columns),
             self.values_multi_field(
                 columns,
-                help_text="Select 3 or more different categorical variables (dimensions)",
+                help_text=(
+                    "Select 3 or more different categorical variables (dimensions)"
+                ),
             ),
             self.more_info_button_field(),
             self.limit_field(),

@@ -3,14 +3,14 @@ from __future__ import annotations
 import logging
 from abc import ABC, abstractmethod
 from io import BytesIO
-from typing import Any, cast
+from typing import Any
 
 import lxml
 import pandas as pd
 import requests
 import sqlalchemy as sa
-from sqlalchemy.exc import ProgrammingError
 from psycopg2.errors import UndefinedTable
+from sqlalchemy.exc import ProgrammingError
 
 from ckanext.datastore.backend.postgres import get_read_engine
 
@@ -71,19 +71,20 @@ class DatastoreDataFetcher(DataFetcherStrategy):
                 .select_from(sa.table(self.resource_id))
                 .limit(self.limit),
                 get_read_engine(),
-            ).drop(columns=["_id", "_full_text"], errors='ignore')
+            ).drop(columns=["_id", "_full_text"], errors="ignore")
 
             if "date_time" in df.columns:
                 try:
-                    df['date_time'] = pd.to_datetime(df['date_time'])
+                    df["date_time"] = pd.to_datetime(df["date_time"])
                     # Convert valid dates to ISO format
-                    df['date_time'] = df['date_time'].dt.strftime("%Y-%m-%dT%H:%M:%S")
+                    df["date_time"] = df["date_time"].dt.strftime("%Y-%m-%dT%H:%M:%S")
                 except (ValueError, TypeError, AttributeError) as e:
                     # Log the warning and keep the original values if conversion fails
-                    log.warning(f"Warning: Could not convert date_time column: {e}")
+                    log.warning("Warning: Could not convert date_time column: %s", e)
 
-            # Apply numeric conversion to all columns - it will safely ignore non-numeric values
-            df = df.apply(pd.to_numeric, errors='ignore')
+            # Apply numeric conversion to all columns - it will safely ignore
+            # non-numeric values
+            df = df.apply(pd.to_numeric, errors="ignore")
 
         except (ProgrammingError, UndefinedTable) as e:
             raise exception.DataFetchError(

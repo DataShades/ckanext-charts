@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from .base import BaseChartBuilder
-from .plotly import PlotlyBuilder, PlotlyBarForm
-from .observable import ObservableBuilder
 from .chartjs import ChartJSBarBuilder
-
+from .observable import ObservableBuilder
+from .plotly import PlotlyBarForm, PlotlyBuilder
 
 DEFAULT_CHART_FORM = PlotlyBarForm
 

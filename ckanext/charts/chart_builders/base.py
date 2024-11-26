@@ -3,20 +3,22 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any, cast
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
-import ckan.types as types
 import ckan.plugins.toolkit as tk
+from ckan import types
 
-import ckanext.charts.const as const
+from ckanext.charts import const, fetchers
 from ckanext.charts.exception import ChartTypeNotImplementedError
-from ckanext.charts import fetchers
 
 
 class FilterDecoder:
     def __init__(
-        self, filter_input: str, pair_divider: str = "|", key_value_divider: str = ":"
+        self,
+        filter_input: str,
+        pair_divider: str = "|",
+        key_value_divider: str = ":",
     ):
         self.filter_input = filter_input
         self.pair_divider = pair_divider
@@ -62,11 +64,13 @@ class BaseChartBuilder(ABC):
                 # TODO: requires more work here...
                 # I'm not sure about other types, that column can have
                 if column_type == np.int64:
-                    values = [int(value) for value in values]
+                    converted_values = [int(value) for value in values]
                 elif column_type == np.float64:
-                    values = [float(value) for value in values]
+                    converted_values = [float(value) for value in values]
+                else:
+                    converted_values = values
 
-                filtered_df = filtered_df[filtered_df[column].isin(values)]
+                filtered_df = filtered_df[filtered_df[column].isin(converted_values)]
 
             self.df = filtered_df
 
@@ -118,7 +122,6 @@ class BaseChartBuilder(ABC):
         """This method should return the chart data as a dumped JSON data. It
         will be passed to a JS script, that will render a chart based on this
         data."""
-        pass
 
     def drop_empty_values(self, data: dict[str, Any]) -> dict[str, Any]:
         """Remove empty values from the dictionary"""
@@ -408,7 +411,7 @@ class BaseChartForm(ABC):
                     self.get_validator("charts_if_empty_same_as")("names"),
                     self.get_validator("unicode_safe"),
                 ],
-            }
+            },
         )
 
         return field
@@ -446,7 +449,7 @@ class BaseChartForm(ABC):
 
         if max_items:
             field["validators"].append(
-                self.get_validator("charts_list_length_validator")(max_items)
+                self.get_validator("charts_list_length_validator")(max_items),
             )
             field["form_attrs"]["maxItems"] = max_items
 
@@ -476,7 +479,7 @@ class BaseChartForm(ABC):
                     self.get_validator("charts_to_list_if_string"),
                 ],
                 "help_text": help_text,
-            }
+            },
         )
 
         return field
@@ -491,8 +494,10 @@ class BaseChartForm(ABC):
                 self.get_validator("default")(False),
                 self.get_validator("boolean_validator"),
             ],
-            "help_text":    """Split data into different columns by years based 
-                            on datetime column stated for the x-axis"""
+            "help_text": (
+                "Split data into different columns by years based on datetime "
+                "column stated for the x-axis"
+            ),
         }
 
     def skip_null_values_field(self) -> dict[str, Any]:
@@ -504,7 +509,7 @@ class BaseChartForm(ABC):
             "validators": [
                 self.get_validator("boolean_validator"),
             ],
-            "help_text":    """Entries of the data with missing values will not be
+            "help_text": """Entries of the data with missing values will not be
                             graphed or will be skipped""",
         }
 

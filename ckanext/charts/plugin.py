@@ -1,23 +1,20 @@
 from __future__ import annotations
 
-from typing import Any
 from os import path
+from typing import Any
 
 from yaml import safe_load
 
 import ckan.plugins as p
 import ckan.plugins.toolkit as tk
-import ckan.logic as logic
-from ckan import types
+from ckan import logic, types
 from ckan.common import CKANConfig
 from ckan.config.declaration import Declaration, Key
 
 import ckanext.charts.config as conf
-import ckanext.charts.utils as utils
-import ckanext.charts.const as const
-from ckanext.charts import cache, exception, fetchers, utils
-from ckanext.charts.logic.schema import settings_schema
+from ckanext.charts import cache, const, exception, fetchers, utils
 from ckanext.charts.chart_builders import DEFAULT_CHART_FORM
+from ckanext.charts.logic.schema import settings_schema
 
 
 @tk.blanket.helpers
@@ -77,7 +74,9 @@ class ChartsViewPlugin(p.SingletonPlugin):
         return utils.can_view_be_viewed(data_dict)
 
     def setup_template_variables(
-        self, context: types.Context, data_dict: dict[str, Any]
+        self,
+        context: types.Context,
+        data_dict: dict[str, Any],
     ) -> dict[str, Any]:
         """
         The ``data_dict`` contains the following keys:
@@ -98,7 +97,9 @@ class ChartsViewPlugin(p.SingletonPlugin):
 
         try:
             settings, _ = tk.navl_validate(
-                data_dict["resource_view"], settings_schema(), context
+                data_dict["resource_view"],
+                settings_schema(),
+                context,
             )
         except Exception as e:
             data["error_msg"] = e
@@ -119,7 +120,8 @@ class ChartsViewPlugin(p.SingletonPlugin):
         else:
             try:
                 chart = utils.build_chart_for_resource(
-                    settings, data_dict["resource"]["id"]
+                    settings,
+                    data_dict["resource"]["id"],
                 )
             except exception.ChartBuildError as e:
                 data["error_msg"] = e
@@ -225,11 +227,13 @@ class ChartsBuilderViewPlugin(p.SingletonPlugin):
         return utils.can_view_be_viewed(data_dict)
 
     def setup_template_variables(
-        self, context: types.Context, data_dict: dict[str, Any]
+        self,
+        context: types.Context,
+        data_dict: dict[str, Any],
     ) -> dict[str, Any]:
         form_builder = DEFAULT_CHART_FORM
 
-        data = {
+        return {
             "resource_id": data_dict["resource"]["id"],
             "settings": {
                 "engine": "plotly",
@@ -238,8 +242,6 @@ class ChartsBuilderViewPlugin(p.SingletonPlugin):
             },
             "form_builder": form_builder,
         }
-
-        return data
 
     def view_template(self, context: types.Context, data_dict: dict[str, Any]) -> str:
         return "charts/charts_builder_view.html"

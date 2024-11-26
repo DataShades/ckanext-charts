@@ -16,5 +16,5 @@ def data_frame():
             "name": ["Alice", "Bob"],
             "surname": ["Bing", "Right"],
             "age": [25, 30],
-        }
+        },
     )

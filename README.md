@@ -1,4 +1,4 @@
-[![Tests](https://github.com/DataShades/ckanext-charts/workflows/Tests/badge.svg?branch=main)](https://github.com/DataShades/ckanext-charts/actions)
+[![Tests](https://github.com/DataShades/ckanext-charts/actions/workflows/test.yml/badge.svg)](https://github.com/DataShades/ckanext-charts/actions/workflows/test.yml)
 
 # ckanext-charts
 

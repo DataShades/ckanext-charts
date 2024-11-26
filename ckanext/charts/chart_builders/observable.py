@@ -26,7 +26,7 @@ class ObservableBarBuilder(ObservableBuilder):
                 "type": "bar",
                 "data": self.df.to_dict(orient="records"),
                 "settings": self.settings,
-            }
+            },
         )
 
 
@@ -72,7 +72,7 @@ class ObservableHorizontalBarBuilder(ObservableBuilder):
                 "type": "horizontal-bar",
                 "data": self.df.to_dict(orient="records"),
                 "settings": self.settings,
-            }
+            },
         )
 
 
@@ -90,9 +90,9 @@ class ObservableLineBuilder(ObservableBuilder):
                 "settings": self.settings,
                 "plot": {
                     "x": {"reverse": self.settings.get("invert_x", False)},
-                    "y": {"reverse": self.settings.get("invert_y", False)}
-                }
-            }
+                    "y": {"reverse": self.settings.get("invert_y", False)},
+                },
+            },
         )
 
 
@@ -132,7 +132,7 @@ class ObservablePieBuilder(ObservableBuilder):
                 "type": "pie",
                 "data": self.df.to_dict(orient="records"),
                 "settings": self.settings,
-            }
+            },
         )
 
 
@@ -211,7 +211,7 @@ class ObservableScatterBuilder(ObservableBuilder):
                 "type": "scatter",
                 "data": self.df.to_dict(orient="records"),
                 "settings": self.settings,
-            }
+            },
         )
 
 
@@ -251,7 +251,7 @@ class ObservableAutoBuilder(ObservableBuilder):
                 "type": "auto",
                 "data": self.df.to_dict(orient="records"),
                 "settings": self.settings,
-            }
+            },
         )
 
 
