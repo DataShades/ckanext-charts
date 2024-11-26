@@ -246,10 +246,11 @@ class PlotlyScatterBuilder(PlotlyBuilder):
         if self.settings.get("skip_null_values"):
             self.df = self.df.loc[self.df[self.settings["y"]] != 0]
 
-        if self.df[self.settings["size"]].dtype not in ["int64", "float64"]:
+        size_column = self.df[self.settings.get("size", self.df.columns[0])]
+        is_numeric = pd.api.types.is_numeric_dtype(size_column)
+        if not is_numeric:
             raise exception.ChartBuildError(
-                """The 'size' source should be a field of positive integer 
-                or float type."""
+                "The 'Size' source should be a field of numeric type.",
             )
 
         fig = px.scatter(

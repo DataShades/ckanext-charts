@@ -85,6 +85,8 @@ class TestPlotlyBuilder:
                 "engine": "plotly",
                 "x": "name",
                 "y": "age",
+                "size": "age",
+                "size_max": 100,
             },
             data_frame,
         )
