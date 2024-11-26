@@ -360,7 +360,7 @@ class ChartJSBubbleBuilder(ChartJSScatterBuilder):
         }
 
         dataset_data = []
-        max_size = self.df[self.settings["size"]].max()
+        size_max = self.df[self.settings["size"]].max()
 
         for _, data_series in self.df.iterrows():
             for field in [self.settings["y"]]:
@@ -370,7 +370,7 @@ class ChartJSBubbleBuilder(ChartJSScatterBuilder):
                             data_series[self.settings["x"]],
                         ),
                         "y": self.convert_to_native_types(data_series[field]),
-                        "r": self._calculate_bubble_radius(data_series, max_size),
+                        "r": self._calculate_bubble_radius(data_series, size_max),
                     },
                 )
 
@@ -381,22 +381,22 @@ class ChartJSBubbleBuilder(ChartJSScatterBuilder):
 
         return json.dumps(self._configure_date_axis(data))
 
-    def _calculate_bubble_radius(self, data_series: pd.Series, max_size: int) -> int:
+    def _calculate_bubble_radius(self, data_series: pd.Series, size_max: int) -> int:
         """Calculate bubble radius based on the size column"""
         size_column: str = self.settings["size"]
 
-        # Handle cases where max_size is zero or NaN values are present
+        # Handle cases where size_max is zero or NaN values are present
         # or the column is not numeric
         try:
-            pd.to_numeric(max_size)
+            pd.to_numeric(size_max)
         except ValueError as e:
             raise ChartBuildError(f"Column '{size_column}' is not numeric") from e
 
-        if max_size == 0 or np.isnan(max_size):
+        if size_max == 0 or np.isnan(size_max):
             bubble_radius = self.min_bubble_radius
         else:
             data_series_size = np.nan_to_num(data_series[size_column], nan=0)
-            bubble_radius = (data_series_size / max_size) * 30
+            bubble_radius = (data_series_size / size_max) * 30
 
         if bubble_radius < self.min_bubble_radius:
             bubble_radius = self.min_bubble_radius

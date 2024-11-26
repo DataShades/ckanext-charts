@@ -4,12 +4,13 @@ jobs:
   test:
     runs-on: ubuntu-latest
     container:
-      image: ckan/ckan-dev:2.10.3
+      image: ckan/ckan-dev:2.10-py3.10
+      options: --user root
     services:
       solr:
         image: ckan/ckan-solr:2.10
       postgres:
-        image: ckan/ckan-postgres-dev:2.9
+        image: ckan/ckan-postgres-dev:2.10
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -30,7 +31,7 @@ jobs:
       # Install any extra requirements your extension has here (dev requirements, other extensions etc)
       run: |
         pip install --upgrade pip
-        pip install -e '.[dev]'
+        pip install -e '.[dev, pyarrow]'
     - name: Setup extension
       # Extra initialization steps
       run: |
