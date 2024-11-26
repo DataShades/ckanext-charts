@@ -86,8 +86,7 @@ class TestPlotlyBuilder:
                 "x": "name",
                 "y": "age",
                 "size": "age",
-                "size_max": 10
-
+                "size_max": 100,
             },
             data_frame,
         )
