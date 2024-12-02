@@ -30,6 +30,8 @@ plugins:
             show_symbol_type_heading: true
             show_source: false
             docstring_section_style: spacy
+        mkdocstrings_handlers:
+          handler_config_option: yes
   - search:
       separator: '[\s\-\.\_]+'
 
@@ -81,6 +83,9 @@ nav:
 
   - Engines:
     - engines/index.md
+    - engines/plotly.md
+    - engines/chartjs.md
+    - engines/observable.md
     - engines/custom.md
 
   - Caching:

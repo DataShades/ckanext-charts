@@ -1,0 +1,29 @@
+{% for field in fields %}
+    {% if not field.exclude_from_mkdocs %}
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            {{ field.label }}
+            (<code>{{ field.field_name }}</code>)
+
+            {% if field.required %}
+                <span class="doc-field-required-label" style="color: red;font-size: 0.7rem;">[Required]</span>
+            {% endif %}
+        </h4>
+        <p class="doc-field-description">{{ field.help_text }}</p>
+        <p class="doc-field-type"><b>Type</b>: <code>{{ field.type }}</code></p>
+
+        {% if field.default %}
+            <p class="doc-field-default"><b>Default</b>: <code>{{ field.default }}</code></p>
+        {% endif %}
+
+        {% if field.choices %}
+            <p class="doc-field-choices"><b>Choices</b>:
+                {% for choice in field.choices %}
+                    <code>{{ choice.label or choice.text }}</code>{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            </p>
+        {% endif %}
+    </div>
+    <hr>
+    {% endif %}
+{% endfor %}

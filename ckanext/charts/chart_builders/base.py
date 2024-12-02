@@ -265,6 +265,7 @@ class BaseChartForm(ABC):
             "required": True,
             "choices": choices,
             "group": "Data",
+            "type": "str",
             "validators": [
                 self.get_validator("ignore_empty"),
                 self.get_validator("unicode_safe"),
@@ -278,6 +279,8 @@ class BaseChartForm(ABC):
             "preset": "title",
             "form_placeholder": "Chart title",
             "group": "General",
+            "type": "str",
+            "help_text": "Title of the chart view",
             "validators": [
                 self.get_validator("ignore_empty"),
                 self.get_validator("unicode_safe"),
@@ -291,6 +294,8 @@ class BaseChartForm(ABC):
             "preset": "title",
             "form_placeholder": "Chart title",
             "group": "Styles",
+            "type": "str",
+            "help_text": "Title of the chart itself",
             "validators": [
                 self.get_validator("default")(" "),
                 self.get_validator("unicode_safe"),
@@ -303,6 +308,8 @@ class BaseChartForm(ABC):
             "label": "Chart X axe label",
             "form_placeholder": "X label",
             "group": "Styles",
+            "type": "str",
+            "help_text": "Label for the X-axis",
             "validators": [
                 self.get_validator("ignore_empty"),
                 self.get_validator("unicode_safe"),
@@ -315,6 +322,8 @@ class BaseChartForm(ABC):
             "label": "Chart Y axe left label",
             "form_placeholder": "Left Y label",
             "group": "Styles",
+            "type": "str",
+            "help_text": "Label for the Y-axis on the left side",
             "validators": [
                 self.get_validator("ignore_empty"),
                 self.get_validator("unicode_safe"),
@@ -327,6 +336,8 @@ class BaseChartForm(ABC):
             "label": "Chart Y axe right label",
             "form_placeholder": "Right Y label",
             "group": "Styles",
+            "type": "str",
+            "help_text": "Label for the Y-axis on the right side",
             "validators": [
                 self.get_validator("ignore_empty"),
                 self.get_validator("unicode_safe"),
@@ -340,6 +351,8 @@ class BaseChartForm(ABC):
             "form_snippet": "markdown.html",
             "form_placeholder": "Information about my view",
             "group": "General",
+            "type": "str",
+            "help_text": "Description of the chart view",
             "validators": [
                 self.get_validator("ignore_empty"),
                 self.get_validator("unicode_safe"),
@@ -354,6 +367,9 @@ class BaseChartForm(ABC):
             "required": True,
             "choices": tk.h.get_available_chart_engines_options(),
             "group": "Structure",
+            "type": "str",
+            "help_text": "Select the chart engine to use",
+            "default": "plotly",
             "validators": [
                 self.get_validator("default")("plotly"),
                 self.get_validator("unicode_safe"),
@@ -385,6 +401,9 @@ class BaseChartForm(ABC):
                 "hx-target": ".charts-view--form",
                 "data-module-clear-button": True,
             },
+            "help_text": "Select the type of the chart, e.g. Line, Bar, Scatter, etc.",
+            "type": "str",
+            "default": "Line",
         }
 
     def x_axis_field(self, choices: list[dict[str, str]]) -> dict[str, Any]:
@@ -395,6 +414,8 @@ class BaseChartForm(ABC):
             "required": True,
             "choices": choices,
             "group": "Data",
+            "type": "str",
+            "help_text": "Select a column for the X-axes",
             "validators": [
                 self.get_validator("charts_if_empty_same_as")("values"),
                 self.get_validator("unicode_safe"),
@@ -411,6 +432,7 @@ class BaseChartForm(ABC):
                     self.get_validator("charts_if_empty_same_as")("names"),
                     self.get_validator("unicode_safe"),
                 ],
+                "help_text": "Select a column for the Y-axis",
             },
         )
 
@@ -444,6 +466,7 @@ class BaseChartForm(ABC):
                 "data-module-multiple": "true",
                 "multiple": 1,
             },
+            "type": "List[str]",
             "help_text": help_text,
         }
 
@@ -498,6 +521,8 @@ class BaseChartForm(ABC):
                 "Split data into different columns by years based on datetime "
                 "column stated for the x-axis"
             ),
+            "type": "bool",
+            "default": False,
         }
 
     def skip_null_values_field(self) -> dict[str, Any]:
@@ -511,6 +536,7 @@ class BaseChartForm(ABC):
             ],
             "help_text": """Entries of the data with missing values will not be
                             graphed or will be skipped""",
+            "type": "bool",
         }
 
     def break_chart_field(self) -> dict[str, Any]:
@@ -523,6 +549,7 @@ class BaseChartForm(ABC):
                 self.get_validator("boolean_validator"),
             ],
             "help_text": "Break the graph at missing values",
+            "type": "bool",
         }
 
     def sort_x_field(self) -> dict[str, Any]:
@@ -535,6 +562,9 @@ class BaseChartForm(ABC):
                 self.get_validator("default")(False),
                 self.get_validator("boolean_validator"),
             ],
+            "help_text": "Sort the X-axis values",
+            "type": "bool",
+            "default": False,
         }
 
     def sort_y_field(self) -> dict[str, Any]:
@@ -547,6 +577,9 @@ class BaseChartForm(ABC):
                 self.get_validator("default")(False),
                 self.get_validator("boolean_validator"),
             ],
+            "help_text": "Sort the Y-axis values",
+            "type": "bool",
+            "default": False,
         }
 
     def invert_x_field(self) -> dict[str, Any]:
@@ -559,6 +592,9 @@ class BaseChartForm(ABC):
                 self.get_validator("default")(False),
                 self.get_validator("boolean_validator"),
             ],
+            "help_text": "Invert the X-axis",
+            "type": "bool",
+            "default": False,
         }
 
     def invert_y_field(self) -> dict[str, Any]:
@@ -571,6 +607,9 @@ class BaseChartForm(ABC):
                 self.get_validator("default")(False),
                 self.get_validator("boolean_validator"),
             ],
+            "help_text": "Invert the Y-axis",
+            "type": "bool",
+            "default": False,
         }
 
     def log_x_field(self) -> dict[str, Any]:
@@ -583,6 +622,9 @@ class BaseChartForm(ABC):
                 self.get_validator("default")(False),
                 self.get_validator("boolean_validator"),
             ],
+            "help_text": "Use log scale for the X-axis",
+            "type": "bool",
+            "default": False,
         }
 
     def log_y_field(self) -> dict[str, Any]:
@@ -595,6 +637,9 @@ class BaseChartForm(ABC):
                 self.get_validator("default")(False),
                 self.get_validator("boolean_validator"),
             ],
+            "help_text": "Use log scale for the Y-axis",
+            "type": "bool",
+            "default": False,
         }
 
     def color_field(self, choices: list[dict[str, str]]) -> dict[str, Any]:
@@ -608,6 +653,8 @@ class BaseChartForm(ABC):
                 self.get_validator("ignore_empty"),
                 self.get_validator("unicode_safe"),
             ],
+            "help_text": "Select a column for the color",
+            "type": "str",
         }
 
     def animation_frame_field(self, choices: list[dict[str, str]]) -> dict[str, Any]:
@@ -621,6 +668,8 @@ class BaseChartForm(ABC):
                 self.get_validator("ignore_empty"),
                 self.get_validator("unicode_safe"),
             ],
+            "help_text": "Select a column for the animation frame",
+            "type": "str",
         }
 
     def opacity_field(self) -> dict[str, Any]:
@@ -634,6 +683,9 @@ class BaseChartForm(ABC):
                 self.get_validator("default")(1),
                 self.get_validator("float_validator"),
             ],
+            "help_text": "Opacity level of the chart",
+            "type": "float",
+            "default": 1,
         }
 
     def limit_field(self, default: int = 100, maximum: int = 10000) -> dict[str, Any]:
@@ -649,6 +701,9 @@ class BaseChartForm(ABC):
                 self.get_validator("limit_to_configured_maximum")("", maximum),
             ],
             "group": "Data",
+            "help_text": "Limit the number of rows to show in the chart",
+            "type": "int",
+            "default": default,
         }
 
     def values_field(self, choices: list[dict[str, str]]) -> dict[str, Any]:
@@ -694,6 +749,9 @@ class BaseChartForm(ABC):
                 self.get_validator("limit_to_configured_maximum")("", 1000),
             ],
             "group": "Data",
+            "help_text": "Width of the chart",
+            "type": "int",
+            "default": 640,
         }
 
     def height_field(self) -> dict[str, Any]:
@@ -709,6 +767,9 @@ class BaseChartForm(ABC):
                 self.get_validator("limit_to_configured_maximum")("", 1000),
             ],
             "group": "Data",
+            "help_text": "Height of the chart",
+            "type": "int",
+            "default": 400,
         }
 
     def more_info_button_field(self) -> dict[str, Any]:
@@ -721,11 +782,20 @@ class BaseChartForm(ABC):
             "label": "More info",
             "form_snippet": "chart_more_info_button.html",
             "group": "Data",
+            "exclude_from_mkdocs": True,
         }
 
     def size_field(self, choices: list[dict[str, str]]) -> dict[str, Any]:
         field = self.column_field(choices)
-        field.update({"field_name": "size", "label": "Size", "group": "Structure"})
+        field.update(
+            {
+                "field_name": "size",
+                "label": "Size",
+                "group": "Structure",
+                "help_text": "Select a column for the size",
+                "type": "str"
+            }
+        )
 
         return field
 
@@ -740,6 +810,7 @@ class BaseChartForm(ABC):
                 self.get_validator("unicode_safe"),
             ],
             "group": "Filter",
+            "exclude_from_mkdocs": True,
         }
 
     def engine_details_field(self) -> dict[str, Any]:
@@ -751,4 +822,5 @@ class BaseChartForm(ABC):
             "label": "Engine details",
             "form_snippet": "chart_engine_details.html",
             "group": "Structure",
+            "exclude_from_mkdocs": True,
         }

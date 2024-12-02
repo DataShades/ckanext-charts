@@ -24,28 +24,26 @@ class ChartJsBuilder(BaseChartBuilder):
             ChartJSRadarForm,
         ]
 
-    def create_zoom_and_title_options(self, options: str[dict, Any]) -> dict[str, Any]:
+    def _create_zoom_and_title_options(self, options: dict[str, Any]) -> dict[str, Any]:
         """Add zoom and title plugin options to the provided options dictionary"""
-        zoom_options = {
-            "zoom": {
-                "wheel": {"enabled": True},
-                "pinch": {"enabled": True},
-                "drag": {"enabled": True},
-                "mode": "xy",
-            },
-            "pan": {
-                "enabled": True,
-                "modifierKey": "shift",
-                "mode": "xy",
-            },
-        }
-
         if "plugins" not in options:
             options["plugins"] = {}
 
         options["plugins"].update(
             {
-                "zoom": zoom_options,
+                "zoom": {
+                    "zoom": {
+                        "wheel": {"enabled": True},
+                        "pinch": {"enabled": True},
+                        "drag": {"enabled": True},
+                        "mode": "xy",
+                    },
+                    "pan": {
+                        "enabled": True,
+                        "modifierKey": "shift",
+                        "mode": "xy",
+                    },
+                },
                 "title": {
                     "display": True,
                     "position": "bottom",
@@ -95,7 +93,7 @@ class ChartJSBarBuilder(ChartJsBuilder):
             )
 
         data["data"]["datasets"] = datasets
-        data["options"] = self.create_zoom_and_title_options(data["options"])
+        data["options"] = self._create_zoom_and_title_options(data["options"])
 
         return data
 
@@ -126,7 +124,6 @@ class ChartJSBarForm(BaseChartForm):
             self.limit_field(),
             self.filter_field(columns),
         ]
-
 
 class ChartJSHorizontalBarBuilder(ChartJSBarBuilder):
     def to_json(self) -> str:
@@ -167,7 +164,7 @@ class ChartJSLineBuilder(ChartJsBuilder):
                 "reverse": self.settings.get("invert_y", False),
             },
         }
-        data["options"] = self.create_zoom_and_title_options(data["options"])
+        data["options"] = self._create_zoom_and_title_options(data["options"])
         return json.dumps(data)
 
 
@@ -292,7 +289,7 @@ class ChartJSScatterBuilder(ChartJsBuilder):
                 "data": dataset_data,
             },
         ]
-        data["options"] = self.create_zoom_and_title_options(data["options"])
+        data["options"] = self._create_zoom_and_title_options(data["options"])
         return json.dumps(self._configure_date_axis(data))
 
     def _configure_date_axis(self, data: dict[str, Any]) -> dict[str, Any]:
@@ -377,7 +374,7 @@ class ChartJSBubbleBuilder(ChartJSScatterBuilder):
         data["data"]["datasets"] = [
             {"label": self.settings["y"], "data": dataset_data},
         ]
-        data["options"] = self.create_zoom_and_title_options(data["options"])
+        data["options"] = self._create_zoom_and_title_options(data["options"])
 
         return json.dumps(self._configure_date_axis(data))
 

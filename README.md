@@ -8,6 +8,8 @@ The extension includes features such as chart creation, chart editing, chart emb
 
 With ckanext-charts, users can easily generate interactive and visually appealing charts to enhance data analysis and presentation in CKAN.
 
+See the [documentation](https://datashades.github.io/ckanext-charts/) for more information.
+
 ## Quick start
 
 - Install it with `PyPi` with `pip install ckanext-charts[pyarrow]`

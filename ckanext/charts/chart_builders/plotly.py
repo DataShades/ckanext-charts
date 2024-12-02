@@ -14,6 +14,11 @@ from ckanext.charts.chart_builders.base import BaseChartBuilder, BaseChartForm
 
 
 class PlotlyBuilder(BaseChartBuilder):
+    """Base class for Plotly chart builders.
+
+    Defines supported chart types for Plotly engine.
+    """
+
     @classmethod
     def get_supported_forms(cls) -> list[type[Any]]:
         return [
