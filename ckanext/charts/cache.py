@@ -21,29 +21,58 @@ log = logging.getLogger(__name__)
 
 
 class CacheStrategy(ABC):
-    """Cache strategy interface"""
+    """Cache strategy interface.
+
+    Defines the abstracts methods for cache strategies.
+    """
 
     @abstractmethod
     def get_data(self, key: str) -> pd.DataFrame | None:
+        """Return data from cache if exists.
+
+        Args:
+            key: The cache  key to retrieve the data.
+
+        Returns:
+            The data if exists, otherwise None.
+        """
         pass
 
     @abstractmethod
     def set_data(self, key: str, data: pd.DataFrame):
+        """Store data to cache.
+
+        Args:
+            key: The cache key to store the data.
+            data: The data to be stored.
+        """
         pass
 
     @abstractmethod
     def invalidate(self, key: str) -> None:
+        """Invalidate cache by key.
+
+        Args:
+            key: The cache key to invalidate.
+        """
         pass
 
 
 class RedisCache(CacheStrategy):
-    """Cache data to Redis"""
+    """Cache data to Redis as a CSV string"""
 
     def __init__(self):
         self.client = connect_to_redis()
 
     def get_data(self, key: str) -> pd.DataFrame | None:
-        """Return data from cache if exists"""
+        """Return data from cache if exists.
+
+        Args:
+            key: The cache key to retrieve the data.
+
+        Returns:
+            The data if exists, otherwise None.
+        """
         raw_data = self.client.get(key)
 
         if not raw_data:
@@ -52,7 +81,15 @@ class RedisCache(CacheStrategy):
         return pd.read_csv(BytesIO(raw_data))  # type: ignore
 
     def set_data(self, key: str, data: pd.DataFrame):
-        """Serialize data and save to redis"""
+        """Serialize data and save to Redis.
+
+        Args:
+            key: The cache key to store the data.
+            data: The data to be stored.
+
+        Raises:
+            Exception: If failed to save data to Redis.
+        """
         cache_ttl = config.get_redis_cache_ttl()
 
         try:
@@ -64,11 +101,19 @@ class RedisCache(CacheStrategy):
             log.exception("Failed to save data to Redis")
 
     def invalidate(self, key: str):
+        """Remove data from cache.
+
+        Args:
+            key: The cache key to invalidate.
+        """
         self.client.delete(key)
 
 
 class FileCache(CacheStrategy):
-    """Cache data as file"""
+    """Cache data as file.
+
+    We store the cached files in a separate folder in the CKAN storage.
+    """
 
     FILE_FORMAT = ""
 
@@ -76,7 +121,14 @@ class FileCache(CacheStrategy):
         self.directory = get_file_cache_path()
 
     def get_data(self, key: str) -> pd.DataFrame | None:
-        """Return data from cache if exists"""
+        """Return data from cache if exists.
+
+        Args:
+            key: The cache key to retrieve the data.
+
+        Returns:
+            The data if exists, otherwise None.
+        """
 
         file_path = self.make_file_path_from_key(key)
 
@@ -91,40 +143,87 @@ class FileCache(CacheStrategy):
 
     @abstractmethod
     def read_data(self, file: IO) -> pd.DataFrame | None:
+        """Read cached data from a file object.
+
+        Args:
+            file: The file object to read the data.
+
+        Returns:
+            The data if exists, otherwise None.
+        """
         pass
 
     def set_data(self, key: str, data: pd.DataFrame) -> None:
-        """Save data to cache. The data will be stored as an ORC file."""
+        """Store data to cache.
+
+        Args:
+            key: The cache key to store the data.
+            data: The data to be stored.
+        """
         file_path = self.make_file_path_from_key(key)
 
         self.write_data(file_path, data)
 
     @abstractmethod
     def write_data(self, file_path: str, data: pd.DataFrame) -> None:
+        """Defines how to write data to a file.
+
+        Args:
+            file_path: The path to the file.
+            data: The data to be stored.
+        """
         pass
 
     def invalidate(self, key: str) -> None:
-        """Remove data from cache"""
+        """Remove data from cache.
+
+        Args:
+            key: The cache key to invalidate.
+        """
         file_path = self.make_file_path_from_key(key)
 
         if os.path.exists(file_path):
             os.remove(file_path)
 
     def make_file_path_from_key(self, key: str) -> str:
+        """Generate file path based on the key
+
+        Args:
+            key: The cache key to generate the file path.
+
+        Returns:
+            The file path.
+        """
         return os.path.join(
             self.directory,
             f"{self.generate_unique_consistent_filename(key)}.{self.FILE_FORMAT}",
         )
 
     def generate_unique_consistent_filename(self, key: str) -> str:
-        """Generate unique and consistent filename based on the key"""
+        """Generate unique and consistent filename based on the key.
+
+        Args:
+            key: The cache key to generate the filename.
+
+        Returns:
+            The filename.
+        """
         hash_object = hashlib.sha256()
         hash_object.update(key.encode("utf-8"))
         return hash_object.hexdigest()
 
     @staticmethod
     def is_file_cache_expired(file_path: str) -> bool:
-        """Check if file cache is expired. If TTL is 0 then cache never expires."""
+        """Check if file cache is expired.
+
+        If TTL is 0 then cache never expires.
+
+        Args:
+            file_path: The path to the file.
+
+        Returns:
+            True if file cache is expired, otherwise False.
+        """
         file_ttl = config.get_file_cache_ttl()
 
         if not file_ttl:
@@ -139,11 +238,25 @@ class FileCacheORC(FileCache):
     FILE_FORMAT = "orc"
 
     def read_data(self, file: IO) -> pd.DataFrame | None:
+        """Read cached data from an ORC file.
+
+        Args:
+            file: The file object to read the data.
+
+        Returns:
+            The data if exists, otherwise None.
+        """
         from pyarrow import orc
 
         return orc.ORCFile(file).read().to_pandas()
 
     def write_data(self, file_path: str, data: pd.DataFrame) -> None:
+        """Write data to an ORC file.
+
+        Args:
+            file_path: The path to the file.
+            data: The data to be stored.
+        """
         for col in data.select_dtypes(include=["object"]).columns:
             data[col] = data[col].astype(str)
 
@@ -156,9 +269,23 @@ class FileCacheCSV(FileCache):
     FILE_FORMAT = "csv"
 
     def read_data(self, file: IO) -> pd.DataFrame | None:
+        """Read cached data from a CSV file.
+
+        Args:
+            file: The file object to read the data.
+
+        Returns:
+            The data if exists, otherwise None.
+        """
         return pd.read_csv(file)
 
     def write_data(self, file_path: str, data: pd.DataFrame) -> None:
+        """Write data to a CSV file.
+
+        Args:
+            file_path: The path to the file.
+            data: The data to be stored.
+        """
         data.to_csv(file_path, index=False)
 
 

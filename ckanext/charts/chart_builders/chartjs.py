@@ -398,8 +398,7 @@ class ChartJSBubbleBuilder(ChartJSScatterBuilder):
             data_series_size = np.nan_to_num(data_series[size_column], nan=0)
             bubble_radius = (data_series_size / size_max) * 30
 
-        if bubble_radius < self.min_bubble_radius:
-            bubble_radius = self.min_bubble_radius
+        bubble_radius = max(bubble_radius, self.min_bubble_radius)
 
         return self.convert_to_native_types(bubble_radius)
 

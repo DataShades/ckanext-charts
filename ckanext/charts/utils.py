@@ -13,14 +13,35 @@ from ckanext.charts.fetchers import DatastoreDataFetcher
 
 
 def get_column_options(resource_id: str) -> list[dict[str, str]]:
-    """Get column options for the given resource"""
+    """Get column options for the given resource.
+
+    Args:
+        resource_id: Resource ID
+
+    Returns:
+        List of column options
+    """
     df = DatastoreDataFetcher(resource_id).fetch_data()
 
     return [{"text": col, "value": col} for col in df.columns]
 
 
 def printable_file_size(size_bytes: int) -> str:
-    """Convert file size in bytes to human-readable format"""
+    """Convert file size in bytes to human-readable format.
+
+    Args:
+        size_bytes: File size in bytes
+
+    Returns:
+        str: Human-readable file size
+
+    Examples:
+        >>> printable_file_size(123456789)
+        '117.7 MB'
+
+        >>> printable_file_size(7777)
+        '7.6 KB'
+    """
     if size_bytes == 0:
         return "0 bytes"
 
@@ -33,6 +54,7 @@ def printable_file_size(size_bytes: int) -> str:
 
 
 def get_chart_form_builder(engine: str, chart_type: str):
+    """Get form builder for the given engine and chart type."""
     builders = get_chart_engines()
 
     if engine not in builders:
@@ -41,13 +63,31 @@ def get_chart_form_builder(engine: str, chart_type: str):
     return builders[engine].get_form_for_type(chart_type)
 
 
-def build_chart_for_data(settings: dict[str, Any], data: pd.DataFrame):
-    """Build chart for the given dataframe"""
+def build_chart_for_data(settings: dict[str, Any], data: pd.DataFrame) -> str | None:
+    """Build chart for the given dataframe and settings.
+
+    Args:
+        settings: Chart settings
+        data: Dataframe with data
+
+    Returns:
+        Chart config as JSON string
+    """
     return _build_chart(settings, data)
 
 
-def build_chart_for_resource(settings: dict[str, Any], resource_id: str):
-    """Build chart for the given resource ID"""
+def build_chart_for_resource(settings: dict[str, Any], resource_id: str) -> str | None:
+    """Build chart for the given resource ID.
+
+    Uses a DatastoreDataFetcher to fetch data from the resource.
+
+    Args:
+        settings: Chart settings
+        resource_id: Resource ID
+
+    Returns:
+        str | None: Chart config as JSON string or None if the chart can't be built
+    """
     settings.pop("__extras", None)
 
     try:
@@ -77,7 +117,17 @@ def _build_chart(settings: dict[str, Any], dataframe: pd.DataFrame) -> str | Non
     return chart_config
 
 
-def can_view_be_viewed(data_dict: dict[str, Any]) -> bool:
+def can_view(data_dict: dict[str, Any]) -> bool:
+    """Check if the resource can be viewed as a chart.
+
+    For now, we work only with resources stored with the DataStore.
+
+    Args:
+        data_dict: Resource data dictionary
+
+    Returns:
+        bool: True if the resource can be viewed as a chart, False otherwise
+    """
     if data_dict["resource"].get("datastore_active"):
         return True
 

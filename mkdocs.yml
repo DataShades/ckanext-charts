@@ -1,0 +1,103 @@
+site_name: ckanext-charts
+site_url: https://.github.io/ckanext-charts/
+
+repo_url:  https://github.com/DataShades/ckanext-charts
+
+markdown_extensions:
+    - pymdownx.snippets
+    - admonition
+    - pymdownx.details
+    - pymdownx.emoji:
+        emoji_index: !!python/name:material.extensions.emoji.twemoji
+        emoji_generator: !!python/name:material.extensions.emoji.to_svg
+    - pymdownx.superfences:
+        custom_fences:
+          - name: mermaid
+            class: mermaid
+            format: !!python/name:pymdownx.superfences.fence_code_format
+    - pymdownx.tabbed:
+            alternate_style: true
+
+
+plugins:
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: ["ckanext"]
+          options:
+            show_root_full_path: false
+            show_root_toc_entry: false
+            show_symbol_type_heading: true
+            show_source: false
+            docstring_section_style: spacy
+  - search:
+      separator: '[\s\-\.\_]+'
+
+watch:
+  - README.md
+  - ckanext/charts/
+
+theme:
+  name: material
+  logo: image/logo.png
+  favicon: image/favicon.ico
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+
+  features:
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.footer
+    - navigation.indexes
+    - navigation.top
+    - content.code.copy
+    - content.code.select
+    - content.code.annotate
+
+nav:
+  - index.md
+  - install.md
+  - usage.md
+  - configuration.md
+
+  - Engines:
+    - engines/index.md
+    - engines/custom.md
+
+  - Caching:
+    - caching/index.md
+    - caching/base.md
+    - caching/redis.md
+    - caching/file.md
+
+  - Fetchers:
+    - fetchers/index.md
+    - fetchers/base.md
+    - fetchers/datastore.md
+    - fetchers/url.md
+    - fetchers/file.md
+    - fetchers/hardcode.md
+
+  - validators.md
+  - utils.md
+  - helpers.md
+  - troubleshooting.md

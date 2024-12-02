@@ -71,7 +71,7 @@ class ChartsViewPlugin(p.SingletonPlugin):
         }
 
     def can_view(self, data_dict: dict[str, Any]) -> bool:
-        return utils.can_view_be_viewed(data_dict)
+        return utils.can_view(data_dict)
 
     def setup_template_variables(
         self,
@@ -224,7 +224,7 @@ class ChartsBuilderViewPlugin(p.SingletonPlugin):
         }
 
     def can_view(self, data_dict: dict[str, Any]) -> bool:
-        return utils.can_view_be_viewed(data_dict)
+        return utils.can_view(data_dict)
 
     def setup_template_variables(
         self,

@@ -25,21 +25,44 @@ class DataFetcherStrategy(ABC):
 
     @abstractmethod
     def fetch_data(self) -> pd.DataFrame:
+        """This method should implement the data fetch logic.
+
+        All the necessary information should be provided in the constructor.
+
+        Returns:
+            pd.DataFrame: The fetched data
+        """
         pass
 
     @abstractmethod
     def make_cache_key(self) -> str:
+        """This method should generate a cache key for the fetched data.
+
+        Every data fetcher should implement this method to support caching.
+
+        Returns:
+            str: The cache key
+        """
         pass
 
     def invalidate_cache(self):
+        """Invalidate the cache for the data fetcher."""
         self.cache.invalidate(self.make_cache_key())
 
     def get_cached_data(self) -> pd.DataFrame | None:
+        """Fetch data from the cache.
+
+        Returns:
+            pd.DataFrame | None: The cached data or None if not found
+        """
         return self.cache.get_data(self.make_cache_key())
 
 
 class DatastoreDataFetcher(DataFetcherStrategy):
-    """Fetch data from the DataStore"""
+    """Fetch dataset resource data from the DataStore.
+
+    This fetcher is used to fetch data from the DataStore using the resource ID.
+    """
 
     def __init__(
         self,
@@ -47,14 +70,22 @@ class DatastoreDataFetcher(DataFetcherStrategy):
         limit: int = 2000000,
         cache_strategy: str | None = None,
     ):
+        """Initialize the DatastoreDataFetcher.
+
+        Args:
+            resource_id (str): The ID of the resource to fetch data for.
+            limit (int, optional): The maximum number of rows to fetch.
+            cache_strategy (str, optional): The cache strategy to use. If not provided,
+                the configured cache strategy will be used.
+        """
+
         super().__init__(cache_strategy=cache_strategy)
 
         self.resource_id = resource_id
         self.limit = limit
 
     def fetch_data(self) -> pd.DataFrame:
-        """We are working with resources, that are stored with DataStore in
-        a separate table.
+        """Fetch data from the DataStore.
 
         Returns:
             pd.DataFrame: Data from the DataStore
@@ -97,10 +128,27 @@ class DatastoreDataFetcher(DataFetcherStrategy):
         return df
 
     def make_cache_key(self) -> str:
+        """Generate a cache key for the DataStore data fetcher.
+
+        Uses the resource ID as the part of a cache key.
+
+        Returns:
+            str: The cache key
+        """
         return f"ckanext-charts:datastore:{self.resource_id}"
 
 
 class URLDataFetcher(DataFetcherStrategy):
+    """Fetch data from a URL.
+
+    This fetcher is used to fetch data from a URL.
+
+    Supported formats:
+        - `CSV`
+        - `XLSX`
+        - `XLS`
+        - `XML`
+    """
     SUPPORTED_FORMATS = ["csv", "xlsx", "xls", "xml"]
 
     def __init__(
@@ -110,6 +158,15 @@ class URLDataFetcher(DataFetcherStrategy):
         timeout: int = 0,
         cache_strategy: str | None = None,
     ):
+        """Initialize the URLDataFetcher.
+
+        Args:
+            url (str): The URL to fetch data from.
+            file_format (str, optional): The format of the file.
+            timeout (int, optional): The timeout for the request in seconds.
+            cache_strategy (str, optional): The cache strategy to use. If not provided,
+                the configured cache strategy will be used.
+        """
         super().__init__(cache_strategy=cache_strategy)
 
         self.url = url
@@ -117,6 +174,11 @@ class URLDataFetcher(DataFetcherStrategy):
         self.timeout = timeout
 
     def fetch_data(self) -> pd.DataFrame:
+        """Fetch data from the URL.
+
+        Returns:
+            pd.DataFrame: Data fetched from the URL
+        """
         if config.is_cache_enabled():
             cached_df = self.get_cached_data()
 
@@ -148,10 +210,24 @@ class URLDataFetcher(DataFetcherStrategy):
         return df
 
     def make_cache_key(self) -> str:
+        """Generate a cache key for the URL data fetcher.
+
+        Uses the URL as the part of a cache key.
+
+        Returns:
+            str: The cache key
+        """
         return f"ckanext-charts:url:{self.url}"
 
     def make_request(self) -> bytes:
-        """Make a request to the URL and return the response text"""
+        """Make a request to the URL and return the response content.
+
+        Returns:
+            bytes: The response content
+
+        Raises:
+            DataFetchError: If an error occurs during the request
+        """
         try:
             response = requests.get(self.url)
             response.raise_for_status()
@@ -174,6 +250,16 @@ class URLDataFetcher(DataFetcherStrategy):
 
 
 class FileSystemDataFetcher(DataFetcherStrategy):
+    """Fetch data from the file system.
+
+    This fetcher is used to fetch data from a file on the file system.
+
+    Supported formats:
+        - `CSV`
+        - `XLSX`
+        - `XLS`
+        - `XML`
+    """
     SUPPORTED_FORMATS = ["csv", "xlsx", "xls", "xml"]
 
     def __init__(
@@ -182,13 +268,25 @@ class FileSystemDataFetcher(DataFetcherStrategy):
         file_format: str = "csv",
         cache_strategy: str | None = None,
     ):
+        """Initialize the FileSystemDataFetcher.
+
+        Args:
+            file_path (str): The path to the file.
+            file_format (str, optional): The format of the file.
+            cache_strategy (str, optional): The cache strategy to use. If not provided,
+                the configured cache strategy will be used.
+        """
         super().__init__(cache_strategy=cache_strategy)
 
         self.file_path = file_path
         self.file_format = file_format
 
     def fetch_data(self) -> pd.DataFrame:
-        """Fetch data from the file system"""
+        """Fetch data from the file system.
+
+        Returns:
+            pd.DataFrame: Data fetched from the file system
+        """
 
         if config.is_cache_enabled():
             cached_df = self.get_cached_data()
@@ -225,15 +323,36 @@ class FileSystemDataFetcher(DataFetcherStrategy):
         return df
 
     def make_cache_key(self) -> str:
+        """Generate a cache key for the FileSystem data fetcher.
+
+        Uses the file path as the part of a cache key.
+
+        Returns:
+            str: The cache key
+        """
         return f"ckanext-charts:url:{self.file_path}"
 
 
 class HardcodedDataFetcher(DataFetcherStrategy):
+    """Fetch hardcoded data.
+
+    This fetcher is used to make a dataframe from hardcoded data, so you can
+    build a chart from it.
+    """
     def __init__(self, data: dict[str, list[Any]]):
+        """Initialize the HardcodedDataFetcher.
+
+        Args:
+            data (dict[str, list[Any]]): The hardcoded data.
+        """
         self.data = data
 
     def fetch_data(self) -> pd.DataFrame:
-        """Transform arbitrary data into a dataframe"""
+        """Transform arbitrary data into a dataframe.
+
+        Returns:
+            pd.DataFrame: The hardcoded data as a dataframe
+        """
         try:
             df = pd.DataFrame(self.data)
         except ValueError as e:

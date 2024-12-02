@@ -8,5 +8,5 @@ Schema = Dict[str, Any]
 
 
 @validator_args
-def settings_schema(validate_chart_extras) -> Schema:
-    return {"__extras": [validate_chart_extras]}
+def settings_schema(charts_validate_extras) -> Schema:
+    return {"__extras": [charts_validate_extras]}

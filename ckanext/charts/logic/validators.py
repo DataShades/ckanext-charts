@@ -10,6 +10,14 @@ from ckanext.charts.chart_builders import DEFAULT_CHART_FORM
 
 
 def float_validator(value: Any) -> float:
+    """A validator for decimal numbers.
+
+    Args:
+        value (Any): The value to validate
+
+    Returns:
+        float: The value as a float
+    """
     try:
         return float(value)
     except ValueError:
@@ -17,7 +25,17 @@ def float_validator(value: Any) -> float:
 
 
 def charts_if_empty_same_as(other_key: str) -> Callable[..., Any]:
-    """A custom version of if_empty_same_as validator for charts"""
+    """A custom version of if_empty_same_as validator for charts.
+
+    This validator is used to set the value of a field to the value of another
+    field if it is empty or missing.
+
+    Args:
+        other_key (str): The key of the field to copy the value from
+
+    Returns:
+        Callable[..., Any]: The validator function
+    """
 
     def callable(key, data, errors, context):
         value = data.get(key)
@@ -31,6 +49,17 @@ def charts_if_empty_same_as(other_key: str) -> Callable[..., Any]:
 
 
 def charts_strategy_support(strategy: str) -> str:
+    """Check if the cache strategy is supported.
+
+    Args:
+        strategy (str): The cache strategy
+
+    Returns:
+        str: The cache strategy if it is supported
+
+    Raises:
+        tk.Invalid: If the cache strategy is not supported
+    """
     if strategy not in const.SUPPORTED_CACHE_STRATEGIES:
         raise tk.Invalid(tk._("Invalid cache strategy"))
 
@@ -48,13 +77,20 @@ def charts_strategy_support(strategy: str) -> str:
     return strategy
 
 
-def validate_chart_extras(
+def charts_validate_extras(
     key: types.FlattenKey,
     data: types.FlattenDataDict,
     errors: types.FlattenErrorDict,
     context: types.Context,
 ):
-    """Use a custom validation schema for specific chart types."""
+    """Validate charts settings according to the chart type and engine schema.
+
+    Args:
+        key (types.FlattenKey): The key of the field
+        data (types.FlattenDataDict): The data to validate
+        errors (types.FlattenErrorDict): The errors dict
+        context (types.Context): The context
+    """
     settings = _extract_setting(data)
 
     if "engine" not in settings or "type" not in settings:
@@ -93,15 +129,29 @@ def _extract_setting(data: types.FlattenDataDict) -> dict[str, Any]:
 
 
 def charts_to_list_if_string(value: Any) -> Any:
-    """Convert a string to a list"""
+    """Convert a string to a list.
+
+    Args:
+        value (Any): The value to convert
+
+    Returns:
+        list[Any]: The value in a list
+    """
     if isinstance(value, str):
         return [value]
 
     return value
 
 
-def charts_list_to_csv(data: list[str] | str):
-    """Convert a list of strings to a CSV string"""
+def charts_list_to_csv(data: list[str] | str) -> str:
+    """Convert a list of strings to a CSV string.
+
+    Args:
+        data (list[str] | str): The data to convert
+
+    Returns:
+        str: The comma separated string
+    """
     if not isinstance(data, list):
         return data
 
@@ -109,6 +159,14 @@ def charts_list_to_csv(data: list[str] | str):
 
 
 def charts_list_length_validator(max_length: int) -> Callable[..., Any]:
+    """A validator to check the length of a list.
+
+    Args:
+        max_length (int): The maximum length of the list
+
+    Returns:
+        Callable[..., Any]: The validator function
+    """
     def callable(
         key: types.FlattenKey,
         data: types.FlattenDataDict,
