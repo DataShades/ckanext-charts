@@ -53,7 +53,19 @@
          <lastmod>2024-12-02</lastmod>
     </url>
     <url>
+         <loc>https://.github.io/ckanext-charts/engines/chartjs/</loc>
+         <lastmod>2024-12-02</lastmod>
+    </url>
+    <url>
          <loc>https://.github.io/ckanext-charts/engines/custom/</loc>
+         <lastmod>2024-12-02</lastmod>
+    </url>
+    <url>
+         <loc>https://.github.io/ckanext-charts/engines/observable/</loc>
+         <lastmod>2024-12-02</lastmod>
+    </url>
+    <url>
+         <loc>https://.github.io/ckanext-charts/engines/plotly/</loc>
          <lastmod>2024-12-02</lastmod>
     </url>
     <url>
