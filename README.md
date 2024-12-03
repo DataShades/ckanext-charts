@@ -42,6 +42,15 @@ We are using `mkdocs` to build the documentation. To build and deploy the docume
 We need to set the `CHARTS_FIELDS` for our custom handler, that autogenerate documentation
 for chart types fields.
 
+The CKAN instance will be initialized, because we will call validators and helpers in this code. Therefore, you'll need
+another environment variable to set the CKAN configuration file path:
+
+    export CKAN_INI=$PWD/config/ckan.ini
+
+The config file must enable the `ckanext-charts` plugin:
+
+    ckan.plugins = ... charts_view charts_builder_view ...
+
 If you're working on the documentation, you can run the following command to start a live-reloading server without
 gathering the chart types fields data. It will speed up the process significantly, as we won't need to wait for the
 CKAN initialization:
