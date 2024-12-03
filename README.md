@@ -33,6 +33,21 @@ To run the tests, do:
     pytest --ckan-ini=test.ini
 
 
+## Building the documentation
+
+We are using `mkdocs` to build the documentation. To build and deploy the documentation, do:
+
+    CHARTS_FIELDS=1 mkdocs build && mkdocs gh-deploy
+
+We need to set the `CHARTS_FIELDS` for our custom handler, that autogenerate documentation
+for chart types fields.
+
+If you're working on the documentation, you can run the following command to start a live-reloading server without
+gathering the chart types fields data. It will speed up the process significantly, as we won't need to wait for the
+CKAN initialization:
+
+    mkdocs serve -a 127.0.0.1:8001
+
 ## License
 
 [AGPL](https://www.gnu.org/licenses/agpl-3.0.en.html)

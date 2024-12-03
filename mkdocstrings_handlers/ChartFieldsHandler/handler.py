@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import importlib
 from typing import Mapping, MutableMapping, Any
 from unittest.mock import patch, MagicMock
 
@@ -19,7 +18,7 @@ if not os.path.exists(config_path):
 
 
 class ChartFieldsHandler(BaseHandler):
-    """Custom handler for documenting the chart engine fields according to the
+    """Custom handler for documenting different chart types fields according to the
     form fields schema."""
     def collect(
         self, identifier: str, config: MutableMapping[str, Any]

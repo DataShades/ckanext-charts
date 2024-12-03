@@ -23,7 +23,7 @@ Compatibility with core CKAN versions:
     pip install ckanext-charts[pyarrow]
     ```
 
-2. Enable the main plugin and harvesters you want to use in your CKAN configuration file (e.g. `ckan.ini` or `production.ini`):
+2. Enable the view and builder plugins in your CKAN configuration file (e.g. `ckan.ini` or `production.ini`):
 
     ```ini
     ckan.plugins = ... charts_view charts_builder_view ...
