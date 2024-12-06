@@ -12,6 +12,9 @@ from plotly.subplots import make_subplots
 from ckanext.charts import exception
 from ckanext.charts.chart_builders.base import BaseChartBuilder, BaseChartForm
 
+# silence SettingWithCopyWarning
+pd.options.mode.chained_assignment = None
+
 
 class PlotlyBuilder(BaseChartBuilder):
     """Base class for Plotly chart builders.
@@ -182,7 +185,6 @@ class PlotlyLineBuilder(PlotlyBuilder):
                 name=self.settings["y"][0],
                 connectgaps=not self.settings.get("break_chart"),
             ),
-            secondary_y=False,
         )
 
         if len(self.settings["y"]) > 1:
@@ -196,7 +198,6 @@ class PlotlyLineBuilder(PlotlyBuilder):
                         name=column,
                         connectgaps=not self.settings.get("break_chart"),
                     ),
-                    secondary_y=True,
                 )
 
         if self.settings.get("split_data") and len(self.settings["years"]) > 1:
