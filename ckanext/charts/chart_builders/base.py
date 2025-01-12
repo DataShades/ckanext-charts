@@ -74,10 +74,10 @@ class BaseChartBuilder(ABC):
 
             self.df = filtered_df
 
-        if self.settings.pop("sort_x", False):
+        if self.settings.get("sort_x", False):
             self.df.sort_values(by=self.settings["x"], inplace=True)
 
-        if self.settings.pop("sort_y", False):
+        if self.settings.get("sort_y", False):
             self.df.sort_values(by=self.settings["y"], inplace=True)
 
         self.df = self.df.head(self.get_limit())
@@ -316,11 +316,11 @@ class BaseChartForm(ABC):
             ],
         }
 
-    def chart_ylabel_left_field(self) -> dict[str, Any]:
+    def chart_ylabel_field(self) -> dict[str, Any]:
         return {
-            "field_name": "chart_ylabel_left",
-            "label": "Chart Y axe left label",
-            "form_placeholder": "Left Y label",
+            "field_name": "chart_ylabel",
+            "label": "Chart Y axe label",
+            "form_placeholder": "Y label",
             "group": "Styles",
             "type": "str",
             "help_text": "Label for the Y-axis on the left side",
@@ -793,8 +793,8 @@ class BaseChartForm(ABC):
                 "label": "Size",
                 "group": "Structure",
                 "help_text": "Select a column for the size",
-                "type": "str"
-            }
+                "type": "str",
+            },
         )
 
         return field
@@ -823,4 +823,19 @@ class BaseChartForm(ABC):
             "form_snippet": "chart_engine_details.html",
             "group": "Structure",
             "exclude_from_mkdocs": True,
+        }
+
+    def size_max_field(self) -> dict[str, Any]:
+        return {
+            "field_name": "size_max",
+            "label": "Size Max",
+            "form_snippet": "chart_range.html",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "group": "Structure",
+            "validators": [
+                self.get_validator("default")(100),
+                self.get_validator("int_validator"),
+            ],
         }

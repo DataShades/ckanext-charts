@@ -18,13 +18,14 @@ ckan.module("charts-render-observable", function ($, _) {
 
             switch (this.options.config.type) {
                 case "bar":
-                    plot = Plot.barY(this.options.config.data, this.options.config.settings).plot();
+                    plot = Plot.barY(this.options.config.data, this.options.config.settings).plot(this.options.config.plot);
                     break;
                 case "horizontal-bar":
-                    plot = Plot.barX(this.options.config.data, this.options.config.settings).plot();
+                    plot = Plot.barX(this.options.config.data, this.options.config.settings).plot(this.options.config.plot);
                     break;
                 case "scatter":
-                    plot = Plot.dot(this.options.config.data, this.options.config.settings).plot();
+                    this.options.config.settings["r"] = (d) => d.radius;
+                    plot = Plot.dot(this.options.config.data, this.options.config.settings).plot(this.options.config.plot);
                     break;
                 case "line":
                     plot = Plot.line(this.options.config.data, this.options.config.settings).plot(this.options.config.plot);

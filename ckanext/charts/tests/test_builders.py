@@ -19,7 +19,7 @@ class TestPlotlyBuilder:
                 "type": "Bar",
                 "engine": "plotly",
                 "x": "name",
-                "y": ["age"],
+                "y": "age",
             },
             data_frame,
         )
@@ -34,7 +34,7 @@ class TestPlotlyBuilder:
                 "type": "Horizontal Bar",
                 "engine": "plotly",
                 "x": "age",
-                "y": ["name"],
+                "y": "name",
             },
             data_frame,
         )

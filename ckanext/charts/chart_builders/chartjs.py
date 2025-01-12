@@ -6,6 +6,9 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from pandas.core.frame import DataFrame
+from pandas.errors import ParserError
+
 from ckanext.charts.chart_builders.base import BaseChartBuilder, BaseChartForm
 from ckanext.charts.exception import ChartBuildError
 
@@ -53,20 +56,90 @@ class ChartJsBuilder(BaseChartBuilder):
         return options
 
 
+    def _set_chart_global_options(self, options: dict[str, Any]) -> dict[str, Any]:
+        """Set chart's global options on the base of certain config fields values.
+
+        Args:
+            options (dict[str, Any]): options data dictionary
+
+        Returns:
+            dict[str, Any]: updated options
+        """
+        if "plugins" not in options:
+            options["plugins"] = {}
+
+        if "scales" not in options:
+            options["scales"] = {
+                "x": {},
+                "y": {},
+            }
+
+        if chart_title := self.settings.get("chart_title"):
+            options["plugins"]["subtitle"] = {
+                "display": True,
+                "position": "top",
+                "text": chart_title,
+            }
+
+        if chart_xlabel := self.settings.get("chart_xlabel"):
+            options["scales"]["x"]["title"] = {
+                "display": True,
+                "text": chart_xlabel,
+            }
+        else:
+            options["scales"]["x"]["title"] = {
+                "display": True,
+                "text": self.settings["x"],
+            }
+
+        if chart_ylabel := self.settings.get("chart_ylabel"):
+            options["scales"]["y"]["title"] = {
+                "display": True,
+                "text": chart_ylabel,
+            }
+        else:
+            options["scales"]["y"]["title"] = {
+                "display": True,
+                "text": (
+                    self.settings["y"]
+                    if type(self.settings["y"]) is str
+                    else self.settings["y"][0]),
+            }
+
+        if chart_ylabel_right := self.settings.get("chart_ylabel_right"):
+            options["scales"]["y1"] = {
+                "type": "linear",
+                "display": True,
+                "position": "right",
+                "title": {
+                    "display": True,
+                    "text": chart_ylabel_right,
+                },
+            }
+
+
 class ChartJSBarBuilder(ChartJsBuilder):
     def _prepare_data(self) -> dict[str, Any]:
         data: dict[str, Any] = {
             "type": "bar",
-            "data": {"labels": self.get_unique_values(self.df[self.settings["x"]])},
             "options": self.settings,
         }
 
         data["options"].update(
             {
                 "indexAxis": "x",
-                "elements": {"bar": {"borderWidth": 1}},
-                "plugins": {"legend": {"position": "top"}},
-                "scales": {"y": {"beginAtZero": True}},
+                "elements": {
+                    "bar": {"borderWidth": 1},
+                },
+                "plugins": {
+                    "legend": {"position": "top"},
+                },
+                "scales": {
+                    "x": {},
+                    "y": {
+                        "beginAtZero": True,
+                    },
+                },
             },
         )
 
@@ -74,6 +147,20 @@ class ChartJSBarBuilder(ChartJsBuilder):
 
         for field in self.settings["y"]:
             dataset_data = []
+
+            if len(self.settings["y"]) == 1:
+                if self.settings.get("skip_null_values"):
+                    self.df = self.df[self.df[field].notna()]
+
+                if self.settings.get("sort_x", False):
+                    self.df.sort_values(by=self.settings["x"], inplace=True)
+
+                if self.settings.get("sort_y", False):
+                    self.df.sort_values(by=field, inplace=True)
+
+            data["data"] = {
+                "labels": self.df[self.settings["x"]].to_list(),
+            }
 
             for label in data["data"]["labels"]:
                 try:
@@ -93,6 +180,7 @@ class ChartJSBarBuilder(ChartJsBuilder):
             )
 
         data["data"]["datasets"] = datasets
+        self._set_chart_global_options(data["options"])
         data["options"] = self._create_zoom_and_title_options(data["options"])
 
         return data
@@ -121,7 +209,18 @@ class ChartJSBarForm(BaseChartForm):
             self.x_axis_field(columns),
             self.y_multi_axis_field(columns),
             self.more_info_button_field(),
-            self.limit_field(),
+            self.log_x_field(),
+            self.log_y_field(),
+            self.sort_x_field(),
+            self.sort_y_field(),
+            self.skip_null_values_field(),
+            self.limit_field(maximum=1000000),
+            self.chart_title_field(),
+            self.chart_xlabel_field(),
+            self.chart_ylabel_field(),
+            self.color_field(columns),
+            self.animation_frame_field(columns),
+            self.opacity_field(),
             self.filter_field(columns),
         ]
 
@@ -141,30 +240,148 @@ class ChartJSHorizontalBarForm(ChartJSBarForm):
 
 
 class ChartJSLineBuilder(ChartJsBuilder):
-    def to_json(self) -> str:
-        data: dict[str, Any] = {
-            "type": "line",
-            "data": {"labels": self.df[self.settings["x"]].to_list()},
-            "options": self.settings,
-        }
+    def _split_data_by_year(self) -> None:
+        """
+        Prepare data for a line chart. It splits the data by year stated
+        in the date format column used for x-axis.
+        """
+        self.df.drop_duplicates(subset=[self.settings["x"]], inplace=True)
+        self.df = self.df[[self.settings["x"], self.settings["y"][0]]]
+        self.df["year"] = pd.to_datetime(self.df[self.settings["x"]]).dt.year
 
-        datasets = []
+        self.df = self.df.pivot(
+            index=self.settings["x"],
+            columns="year",
+            values=self.settings["y"][0],
+        )
 
-        for field in self.settings["y"]:
-            dataset: dict[str, Any] = {"label": field, "data": self.df[field].tolist()}
+        self.settings["y"] = self.df.columns.to_list()
+        self.df[self.settings["x"]] = self.df.index
+        self.df[self.settings["x"]] = pd.to_datetime(
+            self.df[self.settings["x"]],
+            unit="ns",
+        ).dt.strftime("%b %d %H:%M")
 
-            datasets.append(dataset)
 
-        data["data"]["datasets"] = datasets
-        data["options"]["scales"] = {
+    def _skip_null_values(self) -> DataFrame:
+        """
+        Return dataframe after removing missing values.
+        """
+        df = self.df
+
+        if self.settings.get("skip_null_values"):
+            if self.settings.get("break_chart") and len(self.settings["years"]) > 1:
+                df = self._break_chart_by_missing_data(df)
+            df = df.fillna("null")
+        else:
+            df = df.fillna(0)
+
+        return df
+
+
+    def _break_chart_by_missing_data(self, df: DataFrame) -> DataFrame:
+        """
+        Find gaps in date column and fill them with missing dates.
+        """
+        if self.settings.get("split_data"):
+            df[self.settings["x"]] = df.index
+
+        df["temp_date"] = pd.to_datetime(df[self.settings["x"]]).dt.date
+
+        all_dates = pd.date_range(
+            start=df["temp_date"].min(),
+            end=df["temp_date"].max(),
+            freq="D",
+            unit="ns",
+        ).date
+
+        date_range_df = pd.DataFrame({"temp_date": all_dates})
+        df = pd.merge(date_range_df, df, on="temp_date", how="left")
+        df[self.settings["x"]].fillna(
+            pd.to_datetime(df["temp_date"]).dt.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            inplace=True,
+        )
+
+        if self.settings.get("split_data"):
+            df[self.settings["x"]] = pd.to_datetime(
+                df[self.settings["x"]],
+                utc=True,
+                format="ISO8601",
+            ).dt.strftime("%b %d %H:%M")
+
+        return df
+
+
+    def _set_line_chart_options(self, options: dict[str, Any]) -> None:
+        """Set chart's options on the base of certain config fields values.
+
+        Args:
+            options (dict[str, Any]): chart options data dictionary
+        """
+        options["scales"] = {
             "x": {
                 "reverse": self.settings.get("invert_x", False),
+                "type": "time",
+                "time": {
+                    "unit": "day",
+                },
             },
             "y": {
                 "reverse": self.settings.get("invert_y", False),
             },
         }
-        data["options"] = self._create_zoom_and_title_options(data["options"])
+
+        if self.settings.get("split_data") and len(self.settings["years"]) > 1:
+            options["scales"]["x"]["time"]["tooltipFormat"] = "MMM DD HH:mm"
+
+        self._set_chart_global_options(options)
+        options = self._create_zoom_and_title_options(options)
+
+
+    def to_json(self) -> str:
+        try:
+            dates = pd.to_datetime(self.df[self.settings["x"]], unit="ns")
+            self.settings["years"] = list(dates.dt.strftime("%Y").unique())
+        except (ParserError, ValueError):
+            self.settings["years"] = []
+
+        if self.settings.get("split_data", False) and len(self.settings["years"]) > 1:
+            self._split_data_by_year()
+
+        data: dict[str, Any] = {
+            "type": "line",
+            "options": self.settings,
+            "plugins": {},
+        }
+
+        datasets = []
+
+        for idx, column in enumerate(self.settings["y"]):
+            df = self._skip_null_values()
+
+            data["data"] = {
+                "labels": df[self.settings["x"]].tolist(),
+            }
+
+            dataset: dict[str, Any] = {
+                "label": column,
+                "data": df[column].tolist(),
+                "spanGaps": not self.settings.get("break_chart"),
+            }
+
+            if len(self.settings["y"]) > 1 and \
+                self.settings.get("chart_ylabel_right"):
+                if idx == 0:
+                    dataset["yAxisID"] = "y"
+                if idx == 1:
+                    dataset["yAxisID"] = "y1"
+
+            datasets.append(dataset)
+
+        data["data"]["datasets"] = datasets
+
+        self._set_line_chart_options(data["options"])
+
         return json.dumps(data)
 
 
@@ -190,9 +407,16 @@ class ChartJSLineForm(BaseChartForm):
             self.more_info_button_field(),
             self.sort_x_field(),
             self.sort_y_field(),
-            self.limit_field(),
             self.invert_x_field(),
             self.invert_y_field(),
+            self.split_data_field(),
+            self.skip_null_values_field(),
+            self.break_chart_field(),
+            self.limit_field(maximum=1000000),
+            self.chart_title_field(),
+            self.chart_xlabel_field(),
+            self.chart_ylabel_field(),
+            self.chart_ylabel_right_field(),
             self.filter_field(columns),
         ]
 
@@ -248,7 +472,8 @@ class ChartJSPieForm(BaseChartForm):
             self.values_field(columns),
             self.names_field(columns),
             self.more_info_button_field(),
-            self.limit_field(),
+            self.opacity_field(),
+            self.limit_field(maximum=1000000),
             self.filter_field(columns),
         ]
 
@@ -270,8 +495,12 @@ class ChartJSScatterBuilder(ChartJsBuilder):
             "options": self.settings,
         }
 
-        dataset_data = []
+        if self.settings.get("skip_null_values"):
+            self.df = self.df.fillna("null")
+        else:
+            self.df = self.df.fillna(0)
 
+        dataset_data = []
         for _, data_series in self.df.iterrows():
             for field in [self.settings["y"]]:
                 dataset_data.append(
@@ -289,8 +518,12 @@ class ChartJSScatterBuilder(ChartJsBuilder):
                 "data": dataset_data,
             },
         ]
+
+        self._set_chart_global_options(data["options"])
         data["options"] = self._create_zoom_and_title_options(data["options"])
+
         return json.dumps(self._configure_date_axis(data))
+
 
     def _configure_date_axis(self, data: dict[str, Any]) -> dict[str, Any]:
         """
@@ -324,7 +557,6 @@ class ChartJSScatterForm(BaseChartForm):
 
     def get_form_fields(self):
         columns = [{"value": col, "label": col} for col in self.df.columns]
-
         chart_types = [
             {"value": form.name, "label": form.name}
             for form in self.builder.get_supported_forms()
@@ -341,7 +573,11 @@ class ChartJSScatterForm(BaseChartForm):
             self.more_info_button_field(),
             self.sort_x_field(),
             self.sort_y_field(),
-            self.limit_field(),
+            self.skip_null_values_field(),
+            self.limit_field(maximum=1000000),
+            self.chart_title_field(),
+            self.chart_xlabel_field(),
+            self.chart_ylabel_field(),
             self.filter_field(columns),
         ]
 
@@ -356,9 +592,14 @@ class ChartJSBubbleBuilder(ChartJSScatterBuilder):
             "options": self.settings,
         }
 
-        dataset_data = []
         size_max = self.df[self.settings["size"]].max()
 
+        if self.settings.get("skip_null_values"):
+            self.df = self.df.fillna("null")
+        else:
+            self.df = self.df.fillna(0)
+
+        dataset_data = []
         for _, data_series in self.df.iterrows():
             for field in [self.settings["y"]]:
                 dataset_data.append(
@@ -372,11 +613,17 @@ class ChartJSBubbleBuilder(ChartJSScatterBuilder):
                 )
 
         data["data"]["datasets"] = [
-            {"label": self.settings["y"], "data": dataset_data},
+            {
+                "label": self.settings["y"],
+                "data": dataset_data,
+            },
         ]
+
+        self._set_chart_global_options(data["options"])
         data["options"] = self._create_zoom_and_title_options(data["options"])
 
         return json.dumps(self._configure_date_axis(data))
+
 
     def _calculate_bubble_radius(self, data_series: pd.Series, size_max: int) -> int:
         """Calculate bubble radius based on the size column"""
@@ -389,11 +636,11 @@ class ChartJSBubbleBuilder(ChartJSScatterBuilder):
         except ValueError as e:
             raise ChartBuildError(f"Column '{size_column}' is not numeric") from e
 
-        if size_max == 0 or np.isnan(size_max):
-            bubble_radius = self.min_bubble_radius
-        else:
-            data_series_size = np.nan_to_num(data_series[size_column], nan=0)
+        data_series_size = np.nan_to_num(data_series[size_column], nan=0)
+        try:
             bubble_radius = (data_series_size / size_max) * 30
+        except (ZeroDivisionError, TypeError):
+            bubble_radius = self.min_bubble_radius
 
         bubble_radius = max(bubble_radius, self.min_bubble_radius)
 
@@ -469,6 +716,6 @@ class ChartJSRadarForm(BaseChartForm):
                 ),
             ),
             self.more_info_button_field(),
-            self.limit_field(),
+            self.limit_field(maximum=1000000),
             self.filter_field(columns),
         ]

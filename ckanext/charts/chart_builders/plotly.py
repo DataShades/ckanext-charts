@@ -26,7 +26,7 @@ class PlotlyBuilder(BaseChartBuilder):
     def get_supported_forms(cls) -> list[type[Any]]:
         return [
             PlotlyBarForm,
-            PlotlyHoriontalBarForm,
+            PlotlyHorizontalBarForm,
             PlotlyPieForm,
             PlotlyLineForm,
             PlotlyScatterForm,
@@ -45,11 +45,29 @@ class PlotlyBarBuilder(PlotlyBuilder):
             data_frame=self.df,
             x=self.settings["x"],
             y=self.settings["y"],
+            log_x=self.settings.get("log_x", False),
+            log_y=self.settings.get("log_y", False),
+            opacity=self.settings.get("opacity", 1),
+            animation_frame=self.settings.get("animation_frame"),
+            color=self.settings.get("color"),
         )
 
         fig.update_xaxes(
             type="category",
         )
+
+        if chart_title := self.settings.get("chart_title"):
+            fig.update_layout(title_text=chart_title)
+
+        if chart_xlabel := self.settings.get("chart_xlabel"):
+            fig.update_xaxes(title_text=chart_xlabel)
+        else:
+            fig.update_xaxes(title_text=self.settings["x"])
+
+        if chart_ylabel := self.settings.get("chart_ylabel"):
+            fig.update_yaxes(title_text=chart_ylabel)
+        else:
+            fig.update_yaxes(title_text=self.settings["y"][0])
 
         return fig.to_json()
 
@@ -64,14 +82,32 @@ class PlotlyHorizontalBarBuilder(PlotlyBuilder):
 
         fig = px.bar(
             data_frame=self.df,
-            y=self.settings["x"],
             x=self.settings["y"],
+            y=self.settings["x"],
+            log_x=self.settings.get("log_y", False),
+            log_y=self.settings.get("log_x", False),
+            opacity=self.settings.get("opacity", 1),
+            animation_frame=self.settings.get("animation_frame"),
+            color=self.settings.get("color"),
             orientation="h",
         )
 
         fig.update_yaxes(
             type="category",
         )
+
+        if chart_title := self.settings.get("chart_title"):
+            fig.update_layout(title_text=chart_title)
+
+        if chart_xlabel := self.settings.get("chart_xlabel"):
+            fig.update_xaxes(title_text=chart_xlabel)
+        else:
+            fig.update_xaxes(title_text=self.settings["y"])
+
+        if chart_ylabel := self.settings.get("chart_ylabel"):
+            fig.update_yaxes(title_text=chart_ylabel)
+        else:
+            fig.update_yaxes(title_text=self.settings["x"])
 
         return fig.to_json()
 
@@ -211,8 +247,8 @@ class PlotlyLineBuilder(PlotlyBuilder):
         else:
             fig.update_xaxes(title_text=self.settings["x"])
 
-        if chart_ylabel_left := self.settings.get("chart_ylabel_left"):
-            fig.update_yaxes(title_text=chart_ylabel_left)
+        if chart_ylabel := self.settings.get("chart_ylabel"):
+            fig.update_yaxes(title_text=chart_ylabel)
         else:
             fig.update_yaxes(title_text=self.settings["y"][0])
 
@@ -258,8 +294,11 @@ class PlotlyScatterBuilder(PlotlyBuilder):
             data_frame=self.df,
             x=self.settings["x"],
             y=self.settings["y"],
-            size=self.settings["size"],
-            size_max=self.settings["size_max"],
+            color=self.settings.get("color"),
+            animation_frame=self.settings.get("animation_frame"),
+            opacity=self.settings.get("opacity"),
+            size=self.settings.get("size"),
+            size_max=self.settings.get("size_max", 100),
         )
 
         fig.update_xaxes(
@@ -299,10 +338,13 @@ class PlotlyBarForm(BasePlotlyForm):
             self.sort_x_field(),
             self.sort_y_field(),
             self.skip_null_values_field(),
+            self.limit_field(maximum=1000000),
+            self.chart_title_field(),
+            self.chart_xlabel_field(),
+            self.chart_ylabel_field(),
             self.color_field(columns),
             self.animation_frame_field(columns),
             self.opacity_field(),
-            self.limit_field(),
             self.filter_field(columns),
         ]
 
@@ -329,12 +371,12 @@ class PlotlyPieForm(BasePlotlyForm):
             self.names_field(columns),
             self.more_info_button_field(),
             self.opacity_field(),
-            self.limit_field(),
+            self.limit_field(maximum=1000000),
             self.filter_field(columns),
         ]
 
 
-class PlotlyHoriontalBarForm(PlotlyBarForm):
+class PlotlyHorizontalBarForm(PlotlyBarForm):
     name = "Horizontal Bar"
     builder = PlotlyHorizontalBarBuilder
 
@@ -382,7 +424,7 @@ class PlotlyLineForm(BasePlotlyForm):
             self.limit_field(maximum=1000000),
             self.chart_title_field(),
             self.chart_xlabel_field(),
-            self.chart_ylabel_left_field(),
+            self.chart_ylabel_field(),
             self.chart_ylabel_right_field(),
             self.filter_field(columns),
         ]
@@ -391,21 +433,6 @@ class PlotlyLineForm(BasePlotlyForm):
 class PlotlyScatterForm(BasePlotlyForm):
     name = "Scatter"
     builder = PlotlyScatterBuilder
-
-    def size_max_field(self) -> dict[str, Any]:
-        return {
-            "field_name": "size_max",
-            "label": "Size Max",
-            "form_snippet": "chart_range.html",
-            "min": 0,
-            "max": 100,
-            "step": 1,
-            "group": "Structure",
-            "validators": [
-                self.get_validator("default")(100),
-                self.get_validator("int_validator"),
-            ],
-        }
 
     def get_form_fields(self):
         """Get the form fields for the Plotly scatter chart."""
@@ -431,7 +458,7 @@ class PlotlyScatterForm(BasePlotlyForm):
             self.skip_null_values_field(),
             self.size_field(columns),
             self.size_max_field(),
-            self.limit_field(),
+            self.limit_field(maximum=1000000),
             self.color_field(columns),
             self.animation_frame_field(columns),
             self.opacity_field(),
