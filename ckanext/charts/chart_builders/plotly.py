@@ -21,6 +21,12 @@ class PlotlyBuilder(BaseChartBuilder):
 
     Defines supported chart types for Plotly engine.
     """
+    DEFAULT_AXIS_TICKS_NUMBER = 12
+    DEFAULT_DATETIME_FORMAT = "ISO8601"
+    ISO_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
+    YEAR_DATETIME_FORMAT = "%Y"
+    DEFAULT_PLOT_HEIGHT = 400
+    DEFAULT_NAN_FILL_VALUE = 0
 
     @classmethod
     def get_supported_forms(cls) -> list[type[Any]]:
@@ -45,9 +51,9 @@ class PlotlyBarBuilder(PlotlyBuilder):
             data_frame=self.df,
             x=self.settings["x"],
             y=self.settings["y"],
-            log_x=self.settings.get("log_x", False),
-            log_y=self.settings.get("log_y", False),
-            opacity=self.settings.get("opacity", 1),
+            log_x=self.settings.get("log_x"),
+            log_y=self.settings.get("log_y"),
+            opacity=self.settings.get("opacity"),
             animation_frame=self.settings.get("animation_frame"),
             color=self.settings.get("color"),
         )
@@ -59,13 +65,13 @@ class PlotlyBarBuilder(PlotlyBuilder):
         if chart_title := self.settings.get("chart_title"):
             fig.update_layout(title_text=chart_title)
 
-        if chart_xlabel := self.settings.get("chart_xlabel"):
-            fig.update_xaxes(title_text=chart_xlabel)
+        if x_axis_label := self.settings.get("x_axis_label"):
+            fig.update_xaxes(title_text=x_axis_label)
         else:
             fig.update_xaxes(title_text=self.settings["x"])
 
-        if chart_ylabel := self.settings.get("chart_ylabel"):
-            fig.update_yaxes(title_text=chart_ylabel)
+        if y_axis_label := self.settings.get("y_axis_label"):
+            fig.update_yaxes(title_text=y_axis_label)
         else:
             fig.update_yaxes(title_text=self.settings["y"][0])
 
@@ -84,9 +90,9 @@ class PlotlyHorizontalBarBuilder(PlotlyBuilder):
             data_frame=self.df,
             x=self.settings["y"],
             y=self.settings["x"],
-            log_x=self.settings.get("log_y", False),
-            log_y=self.settings.get("log_x", False),
-            opacity=self.settings.get("opacity", 1),
+            log_x=self.settings.get("log_y"),
+            log_y=self.settings.get("log_x"),
+            opacity=self.settings.get("opacity"),
             animation_frame=self.settings.get("animation_frame"),
             color=self.settings.get("color"),
             orientation="h",
@@ -99,13 +105,13 @@ class PlotlyHorizontalBarBuilder(PlotlyBuilder):
         if chart_title := self.settings.get("chart_title"):
             fig.update_layout(title_text=chart_title)
 
-        if chart_xlabel := self.settings.get("chart_xlabel"):
-            fig.update_xaxes(title_text=chart_xlabel)
+        if x_axis_label := self.settings.get("x_axis_label"):
+            fig.update_xaxes(title_text=x_axis_label)
         else:
             fig.update_xaxes(title_text=self.settings["y"])
 
-        if chart_ylabel := self.settings.get("chart_ylabel"):
-            fig.update_yaxes(title_text=chart_ylabel)
+        if y_axis_label := self.settings.get("y_axis_label"):
+            fig.update_yaxes(title_text=y_axis_label)
         else:
             fig.update_yaxes(title_text=self.settings["x"])
 
@@ -121,35 +127,52 @@ class PlotlyLineBuilder(PlotlyBuilder):
     def to_json(self) -> Any:
         return self.build_line_chart()
 
+
     def _split_data_by_year(self) -> None:
-        """
-        Prepare data for a line chart. It splits the data by year stated
+        """Prepare data for a line chart. It splits the data by year stated
         in the date format column which is used for x-axis.
         """
+        # Check if the datetime column contains dates for less than two years
+        # and there is nothing to split
         if len(self.settings["years"]) <= 1:
             return
 
-        self.df.drop_duplicates(subset=[self.settings["x"]], inplace=True)
+        # Remove unnecessary columns and duplicates from x-axis column
         self.df = self.df[[self.settings["x"], self.settings["y"][0]]]
-        self.df["year"] = pd.to_datetime(self.df[self.settings["x"]]).dt.year
+        self.df.drop_duplicates(subset=[self.settings["x"]], inplace=True)
+        # Create a new column with years on the base of the original
+        # datetime column
+        self.df["_year_"] = pd.to_datetime(self.df[self.settings["x"]]).dt.year
 
+        # Reshape dataframe to be readable by Plotly
         self.df = self.df.pivot(
             index=self.settings["x"],
-            columns="year",
+            columns="_year_",
             values=self.settings["y"][0],
         )
 
         self.settings["y"] = self.df.columns.to_list()
         self.df[self.settings["x"]] = self.df.index
+        # Convert original datetime column to the format `Jan 01 00:00`
+        # to be able to split the graph by year on the same layout
         self.df[self.settings["x"]] = pd.to_datetime(
             self.df[self.settings["x"]],
             unit="ns",
         ).dt.strftime("%m-%d %H:%M")
 
+
     def _skip_null_values(self, column: str) -> tuple[Any, Any]:
+        """Return values for x-axis and y-axis after removing missing values.
+
+        Args:
+            column (str): column to handle with its NaN or NULL values
+
+        Returns:
+            Tuple of columns representing x and y axes
         """
-        Return values for x-axis and y-axis after removing missing values.
-        """
+        # If split_data_field is True and the datetime column contains dates
+        # for more than one year remove records with NaN or NULL values in the
+        # certain column
         if self.settings.get("split_data") and len(self.settings["years"]) > 1:
             df = self.df.dropna(subset=column)
         else:
@@ -163,18 +186,27 @@ class PlotlyLineBuilder(PlotlyBuilder):
                 y = df[column]
         else:
             x = df[self.settings["x"]]
-            y = df[column].fillna(0)
+            y = df[column].fillna(self.DEFAULT_NAN_FILL_VALUE)
 
         return x, y
+
 
     def _break_chart_by_missing_data(
         self,
         df: DataFrame,
         column: str,
     ) -> tuple[Any, Any]:
+        """Find gaps in date column and fill them with missing dates.
+
+        Args:
+            df (DataFrame): dataframe to transform
+            column (str): dataframe column to manage with missing dates
+
+        Returns:
+            Tuple of two columns representing x and y axes
         """
-        Find gaps in date column and fill them with missing dates.
-        """
+        # If the datetime column contains dates for less than two years return
+        # tuple of two columns for x and y axes from incoming dataframe
         if len(self.settings["years"]) <= 1:
             return df[self.settings["x"]], df[column]
 
@@ -183,35 +215,46 @@ class PlotlyLineBuilder(PlotlyBuilder):
         if self.settings.get("split_data"):
             df[self.settings["x"]] = df.index
 
+        # Create a new column with date values e.g. `2025-01-01`
         df["date"] = pd.to_datetime(df[self.settings["x"]]).dt.date
 
+        # Create range of dates from min date to max date with daily frequency
+        # and of the date format e.g. `2025-01-01`
         all_dates = pd.date_range(
             start=df["date"].min(),
             end=df["date"].max(),
             unit="ns",
         ).date
 
+        # Merge the date range of all dates to the temporal date column in order
+        # to add missing dates
         date_range_df = pd.DataFrame({"date": all_dates})
         df = pd.merge(date_range_df, df, on="date", how="left")
 
         return df["xaxis"], df[column]
+
 
     def build_line_chart(self) -> Any:
         """
         Build a line chart. It supports multi columns for y-axis
         to display on the line chart.
         """
+        # Check if the column representing x axis contains values of datetime
+        # format, get these values and create a new settings `years` with unique
+        # year values based on this column
         try:
             dates = pd.to_datetime(self.df[self.settings["x"]], unit="ns")
             self.settings["years"] = dates.dt.year.unique()
         except (ParserError, ValueError):
             self.settings["years"] = []
 
+        # Prepare data for Plotly
         if self.settings.get("split_data", False):
             self._split_data_by_year()
 
         x, y = self._skip_null_values(self.settings["y"][0])
 
+        # Create instance of plotly graph
         fig = make_subplots(specs=[[{"secondary_y": True}]])
 
         fig.add_trace(
@@ -236,32 +279,33 @@ class PlotlyLineBuilder(PlotlyBuilder):
                     ),
                 )
 
+        # Prepare chart settings
         if self.settings.get("split_data") and len(self.settings["years"]) > 1:
             fig.update_layout(xaxis={"categoryorder": "category ascending"})
 
         if chart_title := self.settings.get("chart_title"):
             fig.update_layout(title_text=chart_title)
 
-        if chart_xlabel := self.settings.get("chart_xlabel"):
-            fig.update_xaxes(title_text=chart_xlabel)
+        if x_axis_label := self.settings.get("x_axis_label"):
+            fig.update_xaxes(title_text=x_axis_label)
         else:
             fig.update_xaxes(title_text=self.settings["x"])
 
-        if chart_ylabel := self.settings.get("chart_ylabel"):
-            fig.update_yaxes(title_text=chart_ylabel)
+        if y_axis_label := self.settings.get("y_axis_label"):
+            fig.update_yaxes(title_text=y_axis_label, secondary_y=False)
         else:
-            fig.update_yaxes(title_text=self.settings["y"][0])
+            fig.update_yaxes(title_text=self.settings["y"][0], secondary_y=False)
 
         if len(self.settings["y"]) > 1:
-            if chart_ylabel_right := self.settings.get("chart_ylabel_right"):
+            if y_axis_label_right := self.settings.get("y_axis_label_right"):
                 fig.update_yaxes(
+                    title_text=y_axis_label_right,
                     secondary_y=True,
-                    title_text=chart_ylabel_right,
                 )
             else:
                 fig.update_yaxes(
-                    secondary_y=True,
                     title_text=self.settings["y"][1],
+                    secondary_y=True,
                 )
 
         if self.settings.get("invert_x", False):
@@ -278,11 +322,13 @@ class PlotlyScatterBuilder(PlotlyBuilder):
         return self.build_scatter_chart()
 
     def build_scatter_chart(self) -> Any:
-        self.df = self.df.fillna(0)
+        # Fill NaN or NULL values in dataframe with 0
+        self.df = self.df.fillna(self.DEFAULT_NAN_FILL_VALUE)
 
         if self.settings.get("skip_null_values"):
             self.df = self.df.loc[self.df[self.settings["y"]] != 0]
 
+        # Manage with size and size_max fields' values
         size_column = self.df[self.settings.get("size", self.df.columns[0])]
         is_numeric = pd.api.types.is_numeric_dtype(size_column)
         if not is_numeric:
@@ -290,6 +336,7 @@ class PlotlyScatterBuilder(PlotlyBuilder):
                 "The 'Size' source should be a field of numeric type.",
             )
 
+        # Create an instance of the scatter graph
         fig = px.scatter(
             data_frame=self.df,
             x=self.settings["x"],
@@ -298,7 +345,7 @@ class PlotlyScatterBuilder(PlotlyBuilder):
             animation_frame=self.settings.get("animation_frame"),
             opacity=self.settings.get("opacity"),
             size=self.settings.get("size"),
-            size_max=self.settings.get("size_max", 100),
+            size_max=self.settings.get("size_max"),
         )
 
         fig.update_xaxes(
@@ -340,8 +387,8 @@ class PlotlyBarForm(BasePlotlyForm):
             self.skip_null_values_field(),
             self.limit_field(maximum=1000000),
             self.chart_title_field(),
-            self.chart_xlabel_field(),
-            self.chart_ylabel_field(),
+            self.x_axis_label_field(),
+            self.y_axis_label_field(),
             self.color_field(columns),
             self.animation_frame_field(columns),
             self.opacity_field(),
@@ -423,9 +470,9 @@ class PlotlyLineForm(BasePlotlyForm):
             self.break_chart_field(),
             self.limit_field(maximum=1000000),
             self.chart_title_field(),
-            self.chart_xlabel_field(),
-            self.chart_ylabel_field(),
-            self.chart_ylabel_right_field(),
+            self.x_axis_label_field(),
+            self.y_axis_label_field(),
+            self.y_axis_label_right_field(),
             self.filter_field(columns),
         ]
 

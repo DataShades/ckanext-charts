@@ -302,9 +302,9 @@ class BaseChartForm(ABC):
             ],
         }
 
-    def chart_xlabel_field(self) -> dict[str, Any]:
+    def x_axis_label_field(self) -> dict[str, Any]:
         return {
-            "field_name": "chart_xlabel",
+            "field_name": "x_axis_label",
             "label": "Chart X axe label",
             "form_placeholder": "X label",
             "group": "Styles",
@@ -316,23 +316,23 @@ class BaseChartForm(ABC):
             ],
         }
 
-    def chart_ylabel_field(self) -> dict[str, Any]:
+    def y_axis_label_field(self) -> dict[str, Any]:
         return {
-            "field_name": "chart_ylabel",
+            "field_name": "y_axis_label",
             "label": "Chart Y axe label",
             "form_placeholder": "Y label",
             "group": "Styles",
             "type": "str",
-            "help_text": "Label for the Y-axis on the left side",
+            "help_text": "Label for the Y-axis",
             "validators": [
                 self.get_validator("ignore_empty"),
                 self.get_validator("unicode_safe"),
             ],
         }
 
-    def chart_ylabel_right_field(self) -> dict[str, Any]:
+    def y_axis_label_right_field(self) -> dict[str, Any]:
         return {
-            "field_name": "chart_ylabel_right",
+            "field_name": "y_axis_label_right",
             "label": "Chart Y axe right label",
             "form_placeholder": "Right Y label",
             "group": "Styles",
@@ -838,4 +838,6 @@ class BaseChartForm(ABC):
                 self.get_validator("default")(100),
                 self.get_validator("int_validator"),
             ],
+            "type": "int",
+            "help_text": "Maximum size of dots or bubbles",
         }

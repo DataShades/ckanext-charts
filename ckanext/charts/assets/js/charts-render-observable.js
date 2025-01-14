@@ -24,7 +24,6 @@ ckan.module("charts-render-observable", function ($, _) {
                     plot = Plot.barX(this.options.config.data, this.options.config.settings).plot(this.options.config.plot);
                     break;
                 case "scatter":
-                    this.options.config.settings["r"] = (d) => d.radius;
                     plot = Plot.dot(this.options.config.data, this.options.config.settings).plot(this.options.config.plot);
                     break;
                 case "line":
