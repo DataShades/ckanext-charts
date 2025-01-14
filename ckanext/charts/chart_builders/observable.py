@@ -9,6 +9,14 @@ from ckanext.charts.chart_builders.base import BaseChartBuilder, BaseChartForm
 
 
 class ObservableBuilder(BaseChartBuilder):
+    DEFAULT_AXIS_TICKS_NUMBER = 12
+    DEFAULT_DATETIME_FORMAT = "ISO8601"
+    ISO_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
+    YEAR_DATETIME_FORMAT = "%Y"
+    DEFAULT_PLOT_HEIGHT = 400
+    DEFAULT_NAN_FILL_VALUE = 0
+    MAX_DOT_RADIUS = 30
+
     @classmethod
     def get_supported_forms(cls) -> list[type[Any]]:
         return [
@@ -27,10 +35,10 @@ class ObservableBuilder(BaseChartBuilder):
             column (str): name of the column to check
 
         Returns:
-            bool: True if values can be converted to datetime type, otherwise - False
+            True if values can be converted to datetime type, otherwise - False
         """
         try:
-            pd.to_datetime(self.df[column], format="ISO8601")
+            pd.to_datetime(self.df[column], format=self.DEFAULT_DATETIME_FORMAT)
         except ValueError:
             return False
         return True
@@ -43,7 +51,7 @@ class ObservableBuilder(BaseChartBuilder):
             data (dict[str, Any]): settings data dictionary
 
         Returns:
-            dict[str, Any]: updated settings data dictionary
+            Updated settings data dictionary
         """
         if "settings" not in data:
             data["settings"] = {}
@@ -66,14 +74,14 @@ class ObservableBuilder(BaseChartBuilder):
             {
                 "x": {
                     "label": (
-                        self.settings.get("chart_xlabel") or
+                        self.settings.get("x_axis_label") or
                         self.settings.get("x")
                     ),
                     "reverse": self.settings.get("invert_x", False),
                 },
                 "y": {
                     "label": (
-                        self.settings.get("chart_ylabel") or
+                        self.settings.get("y_axis_label") or
                         self.settings.get("y")
                     ),
                     "reverse": self.settings.get("invert_y", False),
@@ -91,21 +99,23 @@ class ObservableBarBuilder(ObservableBuilder):
         """Prepare bar chart data before serializing to JSON formatted string.
 
         Returns:
-            dict[str, Any]: bar chart data dictionary
+            Bar chart data dictionary
         """
+        # Fill NA/NaN values in the incoming data/dataframe
         if self.settings.get("skip_null_values"):
             self.df = self.df.dropna(subset=self.settings["y"]).fillna("null")
         else:
-            self.df = self.df.fillna(0)
+            self.df = self.df.fillna(self.DEFAULT_NAN_FILL_VALUE)
 
+        # Set global chart settings
         data: dict[str, Any] = {
             "type": "bar",
             "data": self.df.to_dict(orient="records"),
             "settings": self.settings,
         }
-
         self._set_chart_global_settings(data)
 
+        # Set additional chart settings
         data["plot"]["y"]["grid"] = True
 
         return data
@@ -148,8 +158,8 @@ class ObservableBarForm(BaseChartForm):
             self.skip_null_values_field(),
             self.limit_field(maximum=1000000),
             self.chart_title_field(),
-            self.chart_xlabel_field(),
-            self.chart_ylabel_field(),
+            self.x_axis_label_field(),
+            self.y_axis_label_field(),
             self.fill_field(columns),
             self.opacity_field(),
             self.filter_field(columns),
@@ -162,23 +172,24 @@ class ObservableHorizontalBarBuilder(ObservableBuilder):
         formatted string.
 
         Returns:
-            dict[str, Any]: horizontal bar chart data dictionary
+            Horizontal bar chart data dictionary
         """
+        # Fill NA/NaN values in the incoming data/dataframe
         if self.settings.get("skip_null_values"):
             self.df = self.df.dropna(subset=self.settings["x"]).fillna("null")
         else:
-            self.df = self.df.fillna(0)
+            self.df = self.df.fillna(self.DEFAULT_NAN_FILL_VALUE)
 
+        # Set global chart settings
         data: dict[str, Any] = {
             "type": "horizontal-bar",
             "data": self.df.to_dict(orient="records"),
             "settings": self.settings,
-            "plot": {},
         }
-
         self._set_chart_global_settings(data)
 
-        data["plot"]["height"] = 400
+        # Set additional chart settings
+        data["plot"]["height"] = self.DEFAULT_PLOT_HEIGHT
         data["plot"]["x"]["grid"] = True
 
         return data
@@ -195,72 +206,88 @@ class ObservableHorizontalBarForm(ObservableBarForm):
 
 class ObservableLineBuilder(ObservableBuilder):
     def _break_chart_by_missing_data(self) -> None:
+        """Find gaps in date column and fill them with missing dates.
         """
-        Find gaps in date column and fill them with missing dates.
-        """
-        self.df["temp_date"] = pd.to_datetime(self.df[self.settings["x"]]).dt.date
+        # Create a new column with date values e.g. `2025-01-01`
+        self.df["_temp_date_"] = pd.to_datetime(
+            self.df[self.settings["x"]],
+        ).dt.date
 
+        # Create range of dates from min date to max date with daily frequency
+        # and of the date format e.g. `2025-01-01`
         all_dates = pd.date_range(
-            start=self.df["temp_date"].min(),
-            end=self.df["temp_date"].max(),
+            start=self.df["_temp_date_"].min(),
+            end=self.df["_temp_date_"].max(),
             freq="D",
             unit="ns",
         ).date
 
-        date_range_df = pd.DataFrame({"temp_date": all_dates})
-        self.df = pd.merge(date_range_df, self.df, on="temp_date", how="left")
-
+        # Merge the date range of all dates to the temporal date column in order
+        # to add missing dates
+        date_range_df = pd.DataFrame({"_temp_date_": all_dates})
+        self.df = pd.merge(date_range_df, self.df, on="_temp_date_", how="left")
+        # Fill NAN or NULL dates in the original datetime column with missing
+        # dates in ISO8601 format
         self.df[self.settings["x"]].fillna(
             pd.to_datetime(
-                self.df["temp_date"],
+                self.df["_temp_date_"],
                 utc=True,
-                format="ISO8601",
-            ).dt.strftime("%Y-%m-%dT%H:%M:%S"),
+                format=self.DEFAULT_DATETIME_FORMAT,
+            ).dt.strftime(self.ISO_DATETIME_FORMAT),
             inplace=True,
         )
 
-        self.df.drop(["temp_date"], axis=1, inplace=True)
-        self.df["year"] = pd.to_datetime(self.df[self.settings["x"]]).dt.strftime("%Y")
+        # Remove temporal date column and create categorical `_year_` column
+        self.df.drop(["_temp_date_"], axis=1, inplace=True)
+        self.df["_year_"] = pd.to_datetime(
+            self.df[self.settings["x"]],
+        ).dt.strftime(self.YEAR_DATETIME_FORMAT)
 
     def _prepare_data(self) -> dict[str, Any]:
         """Prepare line chart data before serializing to JSON formatted string.
 
         Returns:
-            dict[str, Any]: line chart data dictionary
+            Line chart data dictionary
         """
         if self.is_column_datetime(self.settings["x"]):
+            # Remove unnecessary columns and duplicates from x-axis column
             self.df = self.df[[self.settings["x"], self.settings["y"][0]]]
             self.df.drop_duplicates(subset=[self.settings["x"]], inplace=True)
 
             if self.settings.get("split_data"):
-                self.df["year"] = pd.to_datetime(
+                # Create a new column with years on the base of the original
+                # datetime column
+                self.df["_year_"] = pd.to_datetime(
                     self.df[self.settings["x"]],
-                ).dt.strftime("%Y")
+                ).dt.strftime(self.YEAR_DATETIME_FORMAT)
 
             if self.settings.get("break_chart"):
                 self._break_chart_by_missing_data()
         else:
+            # Unpivot the dataframe/create a `long table` dataframe with
+            # categorical column `category`
             self.df = pd.melt(
                 self.df,
                 id_vars=self.settings["x"],
                 value_vars=self.settings["y"],
-                var_name="category",
+                var_name="_category_",
             )
 
+        # Fill NA/NaN values in the incoming data/dataframe
         if self.settings.get("skip_null_values"):
             self.df = self.df.fillna("null")
         else:
-            self.df = self.df.fillna(0)
+            self.df = self.df.fillna(self.DEFAULT_NAN_FILL_VALUE)
 
-        # Chart settings preparing
+        # Chart global settings
         data: dict[str, Any] = {
             "type": "line",
             "data": self.df.to_dict(orient="records"),
             "settings": self.settings,
         }
-
         self._set_chart_global_settings(data)
 
+        # Chart additional settings
         if "settings" not in data:
             data["settings"] = {}
 
@@ -268,7 +295,7 @@ class ObservableLineBuilder(ObservableBuilder):
             data["plot"] = {}
 
         data["plot"]["grid"] = True
-        data["plot"]["x"]["ticks"] = 13
+        data["plot"]["x"]["ticks"] = self.DEFAULT_AXIS_TICKS_NUMBER
 
         if self.is_column_datetime(self.settings["x"]):
             data["plot"]["x"]["type"] = "utc"
@@ -276,7 +303,7 @@ class ObservableLineBuilder(ObservableBuilder):
             if self.settings.get("split_data"):
                 data["settings"].update(
                     {
-                        "stroke": "year",
+                        "stroke": "_year_",
                         "marker": False,
                     },
                 )
@@ -286,7 +313,7 @@ class ObservableLineBuilder(ObservableBuilder):
             data["settings"].update(
             {
                 "y": "value",
-                "stroke": "category",
+                "stroke": "_category_",
                 "marker": True,
             },
         )
@@ -326,9 +353,9 @@ class ObservableLineForm(BaseChartForm):
             self.break_chart_field(),
             self.limit_field(maximum=1000000),
             self.chart_title_field(),
-            self.chart_xlabel_field(),
-            self.chart_ylabel_field(),
-            self.chart_ylabel_right_field(),
+            self.x_axis_label_field(),
+            self.y_axis_label_field(),
+            self.y_axis_label_right_field(),
             self.filter_field(columns),
         ]
 
@@ -338,15 +365,18 @@ class ObservablePieBuilder(ObservableBuilder):
         """Prepare pie chart data before serializing to JSON formatted string.
 
         Returns:
-            dict[str, Any]: pie chart data dictionary
+            Pie chart data dictionary
         """
+        # Reduce dataframe by removing unnecessary columns
         self.df = self.df[[self.settings["names"], self.settings["values"]]]
 
+        # Fill NA/NaN values in the incoming data/dataframe
         if self.settings.get("skip_null_values"):
             self.df = self.df.dropna(subset=self.settings["values"])
         else:
-            self.df = self.df.fillna(0)
+            self.df = self.df.fillna(self.DEFAULT_NAN_FILL_VALUE)
 
+        # Chart global settings
         data: dict[str, Any] = {
             "type": "pie",
             "data": self.df.to_dict(orient="records"),
@@ -369,6 +399,7 @@ class ObservablePieForm(BaseChartForm):
             "label": "Inner Radius",
             "input_type": "number",
             "group": "Styles",
+            "type": "number",
             "validators": [
                 self.get_validator("default")(0),
                 self.get_validator("float_validator"),
@@ -433,44 +464,34 @@ class ObservableScatterBuilder(ObservableBuilder):
         """Prepare scatter chart data before serializing to JSON formatted string.
 
         Returns:
-            dict[str, Any]: scatter chart data dictionary
+            Scatter chart data dictionary
         """
+        # Fill NA/NaN values in the incoming data/dataframe
         if self.settings.get("skip_null_values"):
             self.df = self.df.dropna(
                 subset=[self.settings["x"], self.settings["y"]],
             ).fillna("null")
         else:
-            self.df = self.df.fillna(0)
+            self.df = self.df.fillna(self.DEFAULT_NAN_FILL_VALUE)
 
-        size_column = self.df[self.settings.get("size", self.df.columns[0])]
-        is_numeric = pd.api.types.is_numeric_dtype(size_column)
-        if not is_numeric:
-            raise exception.ChartBuildError(
-                "The 'Size' source should be a field of numeric type.",
-            )
-
-        self.df["radius"] = size_column.apply(
-            lambda x: int(x * self.settings["size_max"] / 10),
-        )
-
+        # Chart global settings
         data: dict[str, Any] = {
             "type": "scatter",
             "data": self.df.to_dict(orient="records"),
             "settings": self.settings,
         }
-
         self._set_chart_global_settings(data)
 
-        data["settings"]["r"] = "radius"
+        # Chart additional settings
+        data["settings"]["r"] = self.settings["size_max"] * self.MAX_DOT_RADIUS / 100
         data["settings"]["fill"] = self.settings.get("color", "blue")
         data["plot"]["grid"] = True
-        data["plot"]["x"]["ticks"] = 12
+        data["plot"]["x"]["ticks"] = self.DEFAULT_AXIS_TICKS_NUMBER
 
         return data
 
     def to_json(self) -> str:
         return json.dumps(self._prepare_data())
-
 
 
 class ObservableScatterForm(BaseChartForm):
@@ -490,7 +511,6 @@ class ObservableScatterForm(BaseChartForm):
             self.engine_field(),
             self.type_field(chart_types),
             self.engine_details_field(),
-            self.size_field(columns),
             self.size_max_field(),
             self.x_axis_field(columns),
             self.y_axis_field(columns),
@@ -500,8 +520,8 @@ class ObservableScatterForm(BaseChartForm):
             self.skip_null_values_field(),
             self.limit_field(maximum=1000000),
             self.chart_title_field(),
-            self.chart_xlabel_field(),
-            self.chart_ylabel_field(),
+            self.x_axis_label_field(),
+            self.y_axis_label_field(),
             self.color_field(columns),
             self.opacity_field(),
             self.filter_field(columns),

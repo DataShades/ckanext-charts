@@ -61,13 +61,3 @@ The scatter plot is a chart that uses Cartesian coordinates to display values fo
     options:
       engine: observable
       chart_type: Scatter
-
-## Auto chart
-
-The auto chart is a chart that automatically selects the best chart type based on the data. It is useful for quickly visualizing data without having to manually select a chart type.
-
-::: Chart form fields
-    handler: ChartFieldsHandler
-    options:
-      engine: observable
-      chart_type: Auto
