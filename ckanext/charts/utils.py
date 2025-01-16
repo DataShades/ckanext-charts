@@ -73,6 +73,13 @@ def build_chart_for_data(settings: dict[str, Any], data: pd.DataFrame) -> str | 
     Returns:
         Chart config as JSON string
     """
+
+    builder = get_chart_form_builder(settings["engine"], settings["type"])(
+        dataframe=data
+    )
+
+    settings, _ = tk.navl_validate(settings, builder.get_validation_schema(), {})
+
     return _build_chart(settings, data)
 
 

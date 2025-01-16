@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../../image/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.44">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.42">
     
     
       
@@ -485,6 +485,15 @@
   <a href="#scatter-plot" class="md-nav__link">
     <span class="md-ellipsis">
       Scatter plot
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#choropleth-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      Choropleth map
     </span>
   </a>
   
@@ -1018,6 +1027,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#choropleth-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      Choropleth map
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1059,14 +1077,17 @@
         <p>Base class for Plotly chart builders.</p>
 <p>Defines supported chart types for Plotly engine.</p>
 
-
-
-
-
-
               <details class="quote">
-                <summary>Source code in <code>ckanext/charts/chart_builders/plotly.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">16</span>
+                <summary>Source code in <code>ckanext/charts/chart_builders/plotly/base.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
 <span class="normal">17</span>
 <span class="normal">18</span>
 <span class="normal">19</span>
@@ -1080,20 +1101,36 @@
 <span class="normal">27</span>
 <span class="normal">28</span>
 <span class="normal">29</span>
-<span class="normal">30</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">PlotlyBuilder</span><span class="p">(</span><span class="n">BaseChartBuilder</span><span class="p">):</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">PlotlyBuilder</span><span class="p">(</span><span class="n">BaseChartBuilder</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for Plotly chart builders.</span>
 
 <span class="sd">    Defines supported chart types for Plotly engine.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">DEFAULT_NAN_FILL_VALUE</span> <span class="o">=</span> <span class="mi">0</span>
+
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_supported_forms</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">type</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
+        <span class="kn">from</span> <span class="nn">ckanext.charts.chart_builders.plotly.choropleth</span> <span class="kn">import</span> <span class="n">PlotlyChoroplethForm</span>
+        <span class="kn">from</span> <span class="nn">ckanext.charts.chart_builders.plotly.line</span> <span class="kn">import</span> <span class="n">PlotlyLineForm</span>
+        <span class="kn">from</span> <span class="nn">ckanext.charts.chart_builders.plotly.pie</span> <span class="kn">import</span> <span class="n">PlotlyPieForm</span>
+        <span class="kn">from</span> <span class="nn">ckanext.charts.chart_builders.plotly.scatter</span> <span class="kn">import</span> <span class="n">PlotlyScatterForm</span>
+        <span class="kn">from</span> <span class="nn">ckanext.charts.chart_builders.plotly.bar</span> <span class="kn">import</span> <span class="p">(</span>
+            <span class="n">PlotlyBarForm</span><span class="p">,</span>
+            <span class="n">PlotlyHorizontalBarForm</span><span class="p">,</span>
+        <span class="p">)</span>
+
         <span class="k">return</span> <span class="p">[</span>
             <span class="n">PlotlyBarForm</span><span class="p">,</span>
-            <span class="n">PlotlyHoriontalBarForm</span><span class="p">,</span>
+            <span class="n">PlotlyHorizontalBarForm</span><span class="p">,</span>
             <span class="n">PlotlyPieForm</span><span class="p">,</span>
             <span class="n">PlotlyLineForm</span><span class="p">,</span>
             <span class="n">PlotlyScatterForm</span><span class="p">,</span>
+            <span class="n">PlotlyChoroplethForm</span><span class="p">,</span>
         <span class="p">]</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -1131,6 +1168,8 @@
         <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
 
         
+            <p class="doc-field-default"><b>Default</b>: <code>Chart</code></p>
+        
 
         
     </div>
@@ -1215,7 +1254,9 @@
                 
                     <code>Line</code>, 
                 
-                    <code>Scatter</code>
+                    <code>Scatter</code>, 
+                
+                    <code>Choropleth</code>
                 
             </p>
         
@@ -1361,6 +1402,80 @@
     
     <div class="doc-field">
         <h4 class="doc-field-title">
+            Limit
+            (<code>limit</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Limit the number of rows to show in the chart</p>
+        <p class="doc-field-type"><b>Type</b>: <code>int</code></p>
+
+        
+            <p class="doc-field-default"><b>Default</b>: <code>100</code></p>
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Chart Title
+            (<code>chart_title</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Title of the chart itself</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Chart X axe label
+            (<code>x_axis_label</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Label for the X-axis</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Chart Y axe label
+            (<code>y_axis_label</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Label for the Y-axis</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
             Color
             (<code>color</code>)
 
@@ -1407,26 +1522,6 @@
 
         
             <p class="doc-field-default"><b>Default</b>: <code>1</code></p>
-        
-
-        
-    </div>
-    <hr>
-    
-
-    
-    <div class="doc-field">
-        <h4 class="doc-field-title">
-            Limit
-            (<code>limit</code>)
-
-            
-        </h4>
-        <p class="doc-field-description">Limit the number of rows to show in the chart</p>
-        <p class="doc-field-type"><b>Type</b>: <code>int</code></p>
-
-        
-            <p class="doc-field-default"><b>Default</b>: <code>100</code></p>
         
 
         
@@ -1450,6 +1545,8 @@
         <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
 
         
+            <p class="doc-field-default"><b>Default</b>: <code>Chart</code></p>
+        
 
         
     </div>
@@ -1534,7 +1631,9 @@
                 
                     <code>Line</code>, 
                 
-                    <code>Scatter</code>
+                    <code>Scatter</code>, 
+                
+                    <code>Choropleth</code>
                 
             </p>
         
@@ -1680,6 +1779,80 @@
     
     <div class="doc-field">
         <h4 class="doc-field-title">
+            Limit
+            (<code>limit</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Limit the number of rows to show in the chart</p>
+        <p class="doc-field-type"><b>Type</b>: <code>int</code></p>
+
+        
+            <p class="doc-field-default"><b>Default</b>: <code>100</code></p>
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Chart Title
+            (<code>chart_title</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Title of the chart itself</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Chart X axe label
+            (<code>x_axis_label</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Label for the X-axis</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Chart Y axe label
+            (<code>y_axis_label</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Label for the Y-axis</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
             Color
             (<code>color</code>)
 
@@ -1726,26 +1899,6 @@
 
         
             <p class="doc-field-default"><b>Default</b>: <code>1</code></p>
-        
-
-        
-    </div>
-    <hr>
-    
-
-    
-    <div class="doc-field">
-        <h4 class="doc-field-title">
-            Limit
-            (<code>limit</code>)
-
-            
-        </h4>
-        <p class="doc-field-description">Limit the number of rows to show in the chart</p>
-        <p class="doc-field-type"><b>Type</b>: <code>int</code></p>
-
-        
-            <p class="doc-field-default"><b>Default</b>: <code>100</code></p>
         
 
         
@@ -1769,6 +1922,8 @@
         <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
 
         
+            <p class="doc-field-default"><b>Default</b>: <code>Chart</code></p>
+        
 
         
     </div>
@@ -1853,7 +2008,9 @@
                 
                     <code>Line</code>, 
                 
-                    <code>Scatter</code>
+                    <code>Scatter</code>, 
+                
+                    <code>Choropleth</code>
                 
             </p>
         
@@ -1999,6 +2156,80 @@
     
     <div class="doc-field">
         <h4 class="doc-field-title">
+            Limit
+            (<code>limit</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Limit the number of rows to show in the chart</p>
+        <p class="doc-field-type"><b>Type</b>: <code>int</code></p>
+
+        
+            <p class="doc-field-default"><b>Default</b>: <code>100</code></p>
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Chart Title
+            (<code>chart_title</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Title of the chart itself</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Chart X axe label
+            (<code>x_axis_label</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Label for the X-axis</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Chart Y axe label
+            (<code>y_axis_label</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Label for the Y-axis</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
             Color
             (<code>color</code>)
 
@@ -2053,26 +2284,6 @@
     
 
     
-    <div class="doc-field">
-        <h4 class="doc-field-title">
-            Limit
-            (<code>limit</code>)
-
-            
-        </h4>
-        <p class="doc-field-description">Limit the number of rows to show in the chart</p>
-        <p class="doc-field-type"><b>Type</b>: <code>int</code></p>
-
-        
-            <p class="doc-field-default"><b>Default</b>: <code>100</code></p>
-        
-
-        
-    </div>
-    <hr>
-    
-
-    
 <h2 id="pie-chart">Pie chart</h2>
 <p>The pie chart is a circular statistical graphic that is divided into slices to illustrate numerical proportions. The arc length of each slice is proportional to the quantity it represents.</p>
 
@@ -2087,6 +2298,8 @@
         <p class="doc-field-description">Title of the chart view</p>
         <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
 
+        
+            <p class="doc-field-default"><b>Default</b>: <code>Chart</code></p>
         
 
         
@@ -2172,7 +2385,9 @@
                 
                     <code>Line</code>, 
                 
-                    <code>Scatter</code>
+                    <code>Scatter</code>, 
+                
+                    <code>Choropleth</code>
                 
             </p>
         
@@ -2280,6 +2495,8 @@
         <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
 
         
+            <p class="doc-field-default"><b>Default</b>: <code>Chart</code></p>
+        
 
         
     </div>
@@ -2364,7 +2581,9 @@
                 
                     <code>Line</code>, 
                 
-                    <code>Scatter</code>
+                    <code>Scatter</code>, 
+                
+                    <code>Choropleth</code>
                 
             </p>
         
@@ -2535,8 +2754,8 @@
 
             
         </h4>
-        <p class="doc-field-description"></p>
-        <p class="doc-field-type"><b>Type</b>: <code></code></p>
+        <p class="doc-field-description">Maximum size of dots or bubbles</p>
+        <p class="doc-field-type"><b>Type</b>: <code>int</code></p>
 
         
 
@@ -2614,6 +2833,432 @@
 
         
             <p class="doc-field-default"><b>Default</b>: <code>1</code></p>
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+<h2 id="choropleth-map">Choropleth map</h2>
+<p>The choropleth map is a thematic map in which areas are shaded or patterned in proportion to the value of a variable being represented. It is useful for visualizing data that varies across geographic regions.</p>
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Title
+            (<code>title</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Title of the chart view</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+            <p class="doc-field-default"><b>Default</b>: <code>Chart</code></p>
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Description
+            (<code>description</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Description of the chart view</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Engine
+            (<code>engine</code>)
+
+            
+                <span class="doc-field-required-label" style="color: red;font-size: 0.7rem;">[Required]</span>
+            
+        </h4>
+        <p class="doc-field-description">Select the chart engine to use</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+            <p class="doc-field-default"><b>Default</b>: <code>plotly</code></p>
+        
+
+        
+            <p class="doc-field-choices"><b>Choices</b>:
+                
+                    <code>plotly</code>, 
+                
+                    <code>observable</code>, 
+                
+                    <code>chartjs</code>
+                
+            </p>
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Type
+            (<code>type</code>)
+
+            
+                <span class="doc-field-required-label" style="color: red;font-size: 0.7rem;">[Required]</span>
+            
+        </h4>
+        <p class="doc-field-description">Select the type of the chart, e.g. Line, Bar, Scatter, etc.</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+            <p class="doc-field-default"><b>Default</b>: <code>Line</code></p>
+        
+
+        
+            <p class="doc-field-choices"><b>Choices</b>:
+                
+                    <code>Bar</code>, 
+                
+                    <code>Horizontal Bar</code>, 
+                
+                    <code>Pie</code>, 
+                
+                    <code>Line</code>, 
+                
+                    <code>Scatter</code>, 
+                
+                    <code>Choropleth</code>
+                
+            </p>
+        
+    </div>
+    <hr>
+    
+
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            X Axis
+            (<code>x</code>)
+
+            
+                <span class="doc-field-required-label" style="color: red;font-size: 0.7rem;">[Required]</span>
+            
+        </h4>
+        <p class="doc-field-description">Select a column for the X-axes</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Y Axis
+            (<code>y</code>)
+
+            
+                <span class="doc-field-required-label" style="color: red;font-size: 0.7rem;">[Required]</span>
+            
+        </h4>
+        <p class="doc-field-description">Select a column for the Y-axis</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Infer ISO alpha-3 country code
+            (<code>infer_iso_a3</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Try to infer the ISO_A3 code from the country name.</p>
+        <p class="doc-field-type"><b>Type</b>: <code>bool</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Projection
+            (<code>projection</code>)
+
+            
+                <span class="doc-field-required-label" style="color: red;font-size: 0.7rem;">[Required]</span>
+            
+        </h4>
+        <p class="doc-field-description">Set the map projection type.</p>
+        <p class="doc-field-type"><b>Type</b>: <code>text</code></p>
+
+        
+            <p class="doc-field-default"><b>Default</b>: <code>eckert5</code></p>
+        
+
+        
+            <p class="doc-field-choices"><b>Choices</b>:
+                
+                    <code>airy</code>, 
+                
+                    <code>aitoff</code>, 
+                
+                    <code>albers</code>, 
+                
+                    <code>albers usa</code>, 
+                
+                    <code>august</code>, 
+                
+                    <code>azimuthal equal area</code>, 
+                
+                    <code>azimuthal equidistant</code>, 
+                
+                    <code>baker</code>, 
+                
+                    <code>bertin1953</code>, 
+                
+                    <code>boggs</code>, 
+                
+                    <code>bonne</code>, 
+                
+                    <code>bottomley</code>, 
+                
+                    <code>bromley</code>, 
+                
+                    <code>collignon</code>, 
+                
+                    <code>conic conformal</code>, 
+                
+                    <code>conic equal area</code>, 
+                
+                    <code>conic equidistant</code>, 
+                
+                    <code>craig</code>, 
+                
+                    <code>craster</code>, 
+                
+                    <code>cylindrical equalarea</code>, 
+                
+                    <code>cylindrical stereographic</code>, 
+                
+                    <code>eckert1</code>, 
+                
+                    <code>eckert2</code>, 
+                
+                    <code>eckert3</code>, 
+                
+                    <code>eckert4</code>, 
+                
+                    <code>eckert5</code>, 
+                
+                    <code>eckert6</code>, 
+                
+                    <code>eisenlohr</code>, 
+                
+                    <code>equal earth</code>, 
+                
+                    <code>equirectangular</code>, 
+                
+                    <code>fahey</code>, 
+                
+                    <code>foucaut</code>, 
+                
+                    <code>foucaut sinusoidal</code>, 
+                
+                    <code>ginzburg4</code>, 
+                
+                    <code>ginzburg5</code>, 
+                
+                    <code>ginzburg6</code>, 
+                
+                    <code>ginzburg8</code>, 
+                
+                    <code>ginzburg9</code>, 
+                
+                    <code>gnomonic</code>, 
+                
+                    <code>gringorten</code>, 
+                
+                    <code>gringorten quincuncial</code>, 
+                
+                    <code>guyou</code>, 
+                
+                    <code>hammer</code>, 
+                
+                    <code>hill</code>, 
+                
+                    <code>homolosine</code>, 
+                
+                    <code>hufnagel</code>, 
+                
+                    <code>hyperelliptical</code>, 
+                
+                    <code>kavrayskiy7</code>, 
+                
+                    <code>lagrange</code>, 
+                
+                    <code>larrivee</code>, 
+                
+                    <code>laskowski</code>, 
+                
+                    <code>loximuthal</code>, 
+                
+                    <code>mercator</code>, 
+                
+                    <code>miller</code>, 
+                
+                    <code>mollweide</code>, 
+                
+                    <code>mt flat polar parabolic</code>, 
+                
+                    <code>mt flat polar quartic</code>, 
+                
+                    <code>mt flat polar sinusoidal</code>, 
+                
+                    <code>natural earth</code>, 
+                
+                    <code>natural earth1</code>, 
+                
+                    <code>natural earth2</code>, 
+                
+                    <code>nell hammer</code>, 
+                
+                    <code>nicolosi</code>, 
+                
+                    <code>orthographic</code>, 
+                
+                    <code>patterson</code>, 
+                
+                    <code>peirce quincuncial</code>, 
+                
+                    <code>polyconic</code>, 
+                
+                    <code>rectangular polyconic</code>, 
+                
+                    <code>robinson</code>, 
+                
+                    <code>satellite</code>, 
+                
+                    <code>sinu mollweide</code>, 
+                
+                    <code>sinusoidal</code>, 
+                
+                    <code>stereographic</code>, 
+                
+                    <code>times</code>, 
+                
+                    <code>transverse mercator</code>, 
+                
+                    <code>van der grinten</code>, 
+                
+                    <code>van der grinten2</code>, 
+                
+                    <code>van der grinten3</code>, 
+                
+                    <code>van der grinten4</code>, 
+                
+                    <code>wagner4</code>, 
+                
+                    <code>wagner6</code>, 
+                
+                    <code>wiechel</code>, 
+                
+                    <code>winkel tripel</code>, 
+                
+                    <code>winkel3</code>
+                
+            </p>
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Location
+            (<code>location_mode</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Set the location to display on the map.</p>
+        <p class="doc-field-type"><b>Type</b>: <code>text</code></p>
+
+        
+            <p class="doc-field-default"><b>Default</b>: <code>world</code></p>
+        
+
+        
+            <p class="doc-field-choices"><b>Choices</b>:
+                
+                    <code>World</code>, 
+                
+                    <code>Europe</code>, 
+                
+                    <code>North America</code>, 
+                
+                    <code>South America</code>, 
+                
+                    <code>Africa</code>, 
+                
+                    <code>Asia</code>, 
+                
+                    <code>Oceania (Australia &amp; Pacific Islands)</code>
+                
+            </p>
+        
+    </div>
+    <hr>
+    
+
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Limit
+            (<code>limit</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Limit the number of rows to show in the chart</p>
+        <p class="doc-field-type"><b>Type</b>: <code>int</code></p>
+
+        
+            <p class="doc-field-default"><b>Default</b>: <code>1000</code></p>
         
 
         

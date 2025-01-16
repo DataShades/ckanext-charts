@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../../image/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.44">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.42">
     
     
       
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#bar-chart" class="md-skip">
+        <a href="#charts.chart_builders.observable.ObservableBuilder.is_column_datetime" class="md-skip">
           Skip to content
         </a>
       
@@ -488,6 +488,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#charts.chart_builders.observable.ObservableBuilder.is_column_datetime" class="md-nav__link">
+    <span class="md-ellipsis">
+      is_column_datetime
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#bar-chart" class="md-nav__link">
     <span class="md-ellipsis">
       Bar chart
@@ -527,15 +536,6 @@
   <a href="#scatter-plot" class="md-nav__link">
     <span class="md-ellipsis">
       Scatter plot
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#auto-chart" class="md-nav__link">
-    <span class="md-ellipsis">
-      Auto chart
     </span>
   </a>
   
@@ -983,6 +983,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#charts.chart_builders.observable.ObservableBuilder.is_column_datetime" class="md-nav__link">
+    <span class="md-ellipsis">
+      is_column_datetime
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#bar-chart" class="md-nav__link">
     <span class="md-ellipsis">
       Bar chart
@@ -1027,15 +1036,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#auto-chart" class="md-nav__link">
-    <span class="md-ellipsis">
-      Auto chart
-    </span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -1075,16 +1075,9 @@
     <div class="doc doc-contents first">
 
 
-
-
-
-
-
               <details class="quote">
                 <summary>Source code in <code>ckanext/charts/chart_builders/observable.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">11</span>
 <span class="normal">12</span>
 <span class="normal">13</span>
 <span class="normal">14</span>
@@ -1092,17 +1085,165 @@
 <span class="normal">16</span>
 <span class="normal">17</span>
 <span class="normal">18</span>
-<span class="normal">19</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">ObservableBuilder</span><span class="p">(</span><span class="n">BaseChartBuilder</span><span class="p">):</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span>
+<span class="normal">83</span>
+<span class="normal">84</span>
+<span class="normal">85</span>
+<span class="normal">86</span>
+<span class="normal">87</span>
+<span class="normal">88</span>
+<span class="normal">89</span>
+<span class="normal">90</span>
+<span class="normal">91</span>
+<span class="normal">92</span>
+<span class="normal">93</span>
+<span class="normal">94</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">ObservableBuilder</span><span class="p">(</span><span class="n">BaseChartBuilder</span><span class="p">):</span>
+    <span class="n">DEFAULT_AXIS_TICKS_NUMBER</span> <span class="o">=</span> <span class="mi">12</span>
+    <span class="n">DEFAULT_DATETIME_FORMAT</span> <span class="o">=</span> <span class="s2">&quot;ISO8601&quot;</span>
+    <span class="n">ISO_DATETIME_FORMAT</span> <span class="o">=</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">T%H:%M:%S&quot;</span>
+    <span class="n">YEAR_DATETIME_FORMAT</span> <span class="o">=</span> <span class="s2">&quot;%Y&quot;</span>
+    <span class="n">DEFAULT_PLOT_HEIGHT</span> <span class="o">=</span> <span class="mi">400</span>
+    <span class="n">DEFAULT_NAN_FILL_VALUE</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">MAX_DOT_RADIUS</span> <span class="o">=</span> <span class="mi">30</span>
+
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_supported_forms</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">type</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
         <span class="k">return</span> <span class="p">[</span>
             <span class="n">ObservableBarForm</span><span class="p">,</span>
-            <span class="n">ObservableHoriontalBarForm</span><span class="p">,</span>
+            <span class="n">ObservableHorizontalBarForm</span><span class="p">,</span>
             <span class="n">ObservableLineForm</span><span class="p">,</span>
             <span class="n">ObservablePieForm</span><span class="p">,</span>
             <span class="n">ObservableScatterForm</span><span class="p">,</span>
-            <span class="n">ObservableAutoForm</span><span class="p">,</span>
         <span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">is_column_datetime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">column</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if string values of the certain column are convertable</span>
+<span class="sd">        to datetime type.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            column (str): name of the column to check</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            True if values can be converted to datetime type, otherwise - False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_DATETIME_FORMAT</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">_set_chart_global_settings</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set chart&#39;s global settings and plot configs.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (dict[str, Any]): settings data dictionary</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Updated settings data dictionary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;settings&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;settings&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="s2">&quot;plot&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;plot&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="n">chart_title</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;chart_title&quot;</span><span class="p">):</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;plot&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">chart_title</span><span class="p">})</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;sort_x&quot;</span><span class="p">]:</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;settings&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;sort&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="s2">&quot;x&quot;</span><span class="p">}})</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;sort_y&quot;</span><span class="p">]:</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;settings&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;sort&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="s2">&quot;y&quot;</span><span class="p">}})</span>
+
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;settings&quot;</span><span class="p">][</span><span class="s2">&quot;tip&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;plot&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;x_axis_label&quot;</span><span class="p">)</span> <span class="ow">or</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+                    <span class="p">),</span>
+                    <span class="s2">&quot;reverse&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;invert_x&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;y_axis_label&quot;</span><span class="p">)</span> <span class="ow">or</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">)</span>
+                    <span class="p">),</span>
+                    <span class="s2">&quot;reverse&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;invert_y&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;legend&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;marks&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -1117,6 +1258,107 @@
 
 
 
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="charts.chart_builders.observable.ObservableBuilder.is_column_datetime" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">is_column_datetime</span><span class="p">(</span><span class="n">column</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Check if string values of the certain column are convertable
+to datetime type.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>column</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>name of the column to check</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code>bool</code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>True if values can be converted to datetime type, otherwise - False</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+            <details class="quote">
+              <summary>Source code in <code>ckanext/charts/chart_builders/observable.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">is_column_datetime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">column</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if string values of the certain column are convertable</span>
+<span class="sd">    to datetime type.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        column (str): name of the column to check</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        True if values can be converted to datetime type, otherwise - False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">],</span> <span class="nb">format</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_DATETIME_FORMAT</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
 
 
 
@@ -1138,6 +1380,8 @@
         <p class="doc-field-description">Title of the chart view</p>
         <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
 
+        
+            <p class="doc-field-default"><b>Default</b>: <code>Chart</code></p>
         
 
         
@@ -1223,9 +1467,7 @@
                 
                     <code>Pie</code>, 
                 
-                    <code>Scatter</code>, 
-                
-                    <code>Auto</code>
+                    <code>Scatter</code>
                 
             </p>
         
@@ -1316,6 +1558,135 @@
     
     <div class="doc-field">
         <h4 class="doc-field-title">
+            Invert X-axis
+            (<code>invert_x</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Invert the X-axis</p>
+        <p class="doc-field-type"><b>Type</b>: <code>bool</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Invert Y-axis
+            (<code>invert_y</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Invert the Y-axis</p>
+        <p class="doc-field-type"><b>Type</b>: <code>bool</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Skip N/A and NULL values
+            (<code>skip_null_values</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Entries of the data with missing values will not be
+                            graphed or will be skipped</p>
+        <p class="doc-field-type"><b>Type</b>: <code>bool</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Limit
+            (<code>limit</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Limit the number of rows to show in the chart</p>
+        <p class="doc-field-type"><b>Type</b>: <code>int</code></p>
+
+        
+            <p class="doc-field-default"><b>Default</b>: <code>100</code></p>
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Chart Title
+            (<code>chart_title</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Title of the chart itself</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Chart X axe label
+            (<code>x_axis_label</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Label for the X-axis</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Chart Y axe label
+            (<code>y_axis_label</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Label for the Y-axis</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
             Fill
             (<code>fill</code>)
 
@@ -1344,26 +1715,6 @@
 
         
             <p class="doc-field-default"><b>Default</b>: <code>1</code></p>
-        
-
-        
-    </div>
-    <hr>
-    
-
-    
-    <div class="doc-field">
-        <h4 class="doc-field-title">
-            Limit
-            (<code>limit</code>)
-
-            
-        </h4>
-        <p class="doc-field-description">Limit the number of rows to show in the chart</p>
-        <p class="doc-field-type"><b>Type</b>: <code>int</code></p>
-
-        
-            <p class="doc-field-default"><b>Default</b>: <code>100</code></p>
         
 
         
@@ -1387,6 +1738,8 @@
         <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
 
         
+            <p class="doc-field-default"><b>Default</b>: <code>Chart</code></p>
+        
 
         
     </div>
@@ -1471,9 +1824,7 @@
                 
                     <code>Pie</code>, 
                 
-                    <code>Scatter</code>, 
-                
-                    <code>Auto</code>
+                    <code>Scatter</code>
                 
             </p>
         
@@ -1564,6 +1915,135 @@
     
     <div class="doc-field">
         <h4 class="doc-field-title">
+            Invert X-axis
+            (<code>invert_x</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Invert the X-axis</p>
+        <p class="doc-field-type"><b>Type</b>: <code>bool</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Invert Y-axis
+            (<code>invert_y</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Invert the Y-axis</p>
+        <p class="doc-field-type"><b>Type</b>: <code>bool</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Skip N/A and NULL values
+            (<code>skip_null_values</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Entries of the data with missing values will not be
+                            graphed or will be skipped</p>
+        <p class="doc-field-type"><b>Type</b>: <code>bool</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Limit
+            (<code>limit</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Limit the number of rows to show in the chart</p>
+        <p class="doc-field-type"><b>Type</b>: <code>int</code></p>
+
+        
+            <p class="doc-field-default"><b>Default</b>: <code>100</code></p>
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Chart Title
+            (<code>chart_title</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Title of the chart itself</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Chart X axe label
+            (<code>x_axis_label</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Label for the X-axis</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Chart Y axe label
+            (<code>y_axis_label</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Label for the Y-axis</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
             Fill
             (<code>fill</code>)
 
@@ -1600,26 +2080,6 @@
     
 
     
-    <div class="doc-field">
-        <h4 class="doc-field-title">
-            Limit
-            (<code>limit</code>)
-
-            
-        </h4>
-        <p class="doc-field-description">Limit the number of rows to show in the chart</p>
-        <p class="doc-field-type"><b>Type</b>: <code>int</code></p>
-
-        
-            <p class="doc-field-default"><b>Default</b>: <code>100</code></p>
-        
-
-        
-    </div>
-    <hr>
-    
-
-    
 <h2 id="line-chart">Line chart</h2>
 <p>The line chart is a chart that displays information as a series of data points called 'markers' connected by straight line segments. It is useful for showing trends over time.</p>
 
@@ -1634,6 +2094,8 @@
         <p class="doc-field-description">Title of the chart view</p>
         <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
 
+        
+            <p class="doc-field-default"><b>Default</b>: <code>Chart</code></p>
         
 
         
@@ -1719,9 +2181,7 @@
                 
                     <code>Pie</code>, 
                 
-                    <code>Scatter</code>, 
-                
-                    <code>Auto</code>
+                    <code>Scatter</code>
                 
             </p>
         
@@ -1761,8 +2221,8 @@
                 <span class="doc-field-required-label" style="color: red;font-size: 0.7rem;">[Required]</span>
             
         </h4>
-        <p class="doc-field-description">Select a column for the Y-axis</p>
-        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+        <p class="doc-field-description">Select one or more columns for the Y-axis</p>
+        <p class="doc-field-type"><b>Type</b>: <code>List[str]</code></p>
 
         
 
@@ -1848,6 +2308,61 @@
     
     <div class="doc-field">
         <h4 class="doc-field-title">
+            Split by years
+            (<code>split_data</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Split data into different columns by years based on datetime column stated for the x-axis</p>
+        <p class="doc-field-type"><b>Type</b>: <code>bool</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Skip N/A and NULL values
+            (<code>skip_null_values</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Entries of the data with missing values will not be
+                            graphed or will be skipped</p>
+        <p class="doc-field-type"><b>Type</b>: <code>bool</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Break the chart
+            (<code>break_chart</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Break the graph at missing values</p>
+        <p class="doc-field-type"><b>Type</b>: <code>bool</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
             Limit
             (<code>limit</code>)
 
@@ -1858,6 +2373,78 @@
 
         
             <p class="doc-field-default"><b>Default</b>: <code>100</code></p>
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Chart Title
+            (<code>chart_title</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Title of the chart itself</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Chart X axe label
+            (<code>x_axis_label</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Label for the X-axis</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Chart Y axe label
+            (<code>y_axis_label</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Label for the Y-axis</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Chart Y axe right label
+            (<code>y_axis_label_right</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Label for the Y-axis on the right side</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
         
 
         
@@ -1880,6 +2467,8 @@
         <p class="doc-field-description">Title of the chart view</p>
         <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
 
+        
+            <p class="doc-field-default"><b>Default</b>: <code>Chart</code></p>
         
 
         
@@ -1965,9 +2554,7 @@
                 
                     <code>Pie</code>, 
                 
-                    <code>Scatter</code>, 
-                
-                    <code>Auto</code>
+                    <code>Scatter</code>
                 
             </p>
         
@@ -2022,6 +2609,25 @@
     
     <div class="doc-field">
         <h4 class="doc-field-title">
+            Skip N/A and NULL values
+            (<code>skip_null_values</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Entries of the data with missing values will not be
+                            graphed or will be skipped</p>
+        <p class="doc-field-type"><b>Type</b>: <code>bool</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
             Opacity
             (<code>opacity</code>)
 
@@ -2048,7 +2654,7 @@
             
         </h4>
         <p class="doc-field-description"></p>
-        <p class="doc-field-type"><b>Type</b>: <code></code></p>
+        <p class="doc-field-type"><b>Type</b>: <code>number</code></p>
 
         
 
@@ -2169,253 +2775,7 @@
         <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
 
         
-
-        
-    </div>
-    <hr>
-    
-
-    
-    <div class="doc-field">
-        <h4 class="doc-field-title">
-            Description
-            (<code>description</code>)
-
-            
-        </h4>
-        <p class="doc-field-description">Description of the chart view</p>
-        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
-
-        
-
-        
-    </div>
-    <hr>
-    
-
-    
-    <div class="doc-field">
-        <h4 class="doc-field-title">
-            Engine
-            (<code>engine</code>)
-
-            
-                <span class="doc-field-required-label" style="color: red;font-size: 0.7rem;">[Required]</span>
-            
-        </h4>
-        <p class="doc-field-description">Select the chart engine to use</p>
-        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
-
-        
-            <p class="doc-field-default"><b>Default</b>: <code>plotly</code></p>
-        
-
-        
-            <p class="doc-field-choices"><b>Choices</b>:
-                
-                    <code>plotly</code>, 
-                
-                    <code>observable</code>, 
-                
-                    <code>chartjs</code>
-                
-            </p>
-        
-    </div>
-    <hr>
-    
-
-    
-    <div class="doc-field">
-        <h4 class="doc-field-title">
-            Type
-            (<code>type</code>)
-
-            
-                <span class="doc-field-required-label" style="color: red;font-size: 0.7rem;">[Required]</span>
-            
-        </h4>
-        <p class="doc-field-description">Select the type of the chart, e.g. Line, Bar, Scatter, etc.</p>
-        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
-
-        
-            <p class="doc-field-default"><b>Default</b>: <code>Line</code></p>
-        
-
-        
-            <p class="doc-field-choices"><b>Choices</b>:
-                
-                    <code>Bar</code>, 
-                
-                    <code>Horizontal Bar</code>, 
-                
-                    <code>Line</code>, 
-                
-                    <code>Pie</code>, 
-                
-                    <code>Scatter</code>, 
-                
-                    <code>Auto</code>
-                
-            </p>
-        
-    </div>
-    <hr>
-    
-
-    
-
-    
-    <div class="doc-field">
-        <h4 class="doc-field-title">
-            X Axis
-            (<code>x</code>)
-
-            
-                <span class="doc-field-required-label" style="color: red;font-size: 0.7rem;">[Required]</span>
-            
-        </h4>
-        <p class="doc-field-description">Select a column for the X-axes</p>
-        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
-
-        
-
-        
-    </div>
-    <hr>
-    
-
-    
-    <div class="doc-field">
-        <h4 class="doc-field-title">
-            Y Axis
-            (<code>y</code>)
-
-            
-                <span class="doc-field-required-label" style="color: red;font-size: 0.7rem;">[Required]</span>
-            
-        </h4>
-        <p class="doc-field-description">Select a column for the Y-axis</p>
-        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
-
-        
-
-        
-    </div>
-    <hr>
-    
-
-    
-
-    
-    <div class="doc-field">
-        <h4 class="doc-field-title">
-            Sort X-axis
-            (<code>sort_x</code>)
-
-            
-        </h4>
-        <p class="doc-field-description">Sort the X-axis values</p>
-        <p class="doc-field-type"><b>Type</b>: <code>bool</code></p>
-
-        
-
-        
-    </div>
-    <hr>
-    
-
-    
-    <div class="doc-field">
-        <h4 class="doc-field-title">
-            Sort Y-axis
-            (<code>sort_y</code>)
-
-            
-        </h4>
-        <p class="doc-field-description">Sort the Y-axis values</p>
-        <p class="doc-field-type"><b>Type</b>: <code>bool</code></p>
-
-        
-
-        
-    </div>
-    <hr>
-    
-
-    
-    <div class="doc-field">
-        <h4 class="doc-field-title">
-            Color
-            (<code>color</code>)
-
-            
-        </h4>
-        <p class="doc-field-description">Select a column for the color</p>
-        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
-
-        
-
-        
-    </div>
-    <hr>
-    
-
-    
-    <div class="doc-field">
-        <h4 class="doc-field-title">
-            Opacity
-            (<code>opacity</code>)
-
-            
-        </h4>
-        <p class="doc-field-description">Opacity level of the chart</p>
-        <p class="doc-field-type"><b>Type</b>: <code>float</code></p>
-
-        
-            <p class="doc-field-default"><b>Default</b>: <code>1</code></p>
-        
-
-        
-    </div>
-    <hr>
-    
-
-    
-    <div class="doc-field">
-        <h4 class="doc-field-title">
-            Limit
-            (<code>limit</code>)
-
-            
-        </h4>
-        <p class="doc-field-description">Limit the number of rows to show in the chart</p>
-        <p class="doc-field-type"><b>Type</b>: <code>int</code></p>
-
-        
-            <p class="doc-field-default"><b>Default</b>: <code>100</code></p>
-        
-
-        
-    </div>
-    <hr>
-    
-
-    
-<h2 id="auto-chart">Auto chart</h2>
-<p>The auto chart is a chart that automatically selects the best chart type based on the data. It is useful for quickly visualizing data without having to manually select a chart type.</p>
-
-    
-    <div class="doc-field">
-        <h4 class="doc-field-title">
-            Title
-            (<code>title</code>)
-
-            
-        </h4>
-        <p class="doc-field-description">Title of the chart view</p>
-        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
-
+            <p class="doc-field-default"><b>Default</b>: <code>Chart</code></p>
         
 
         
@@ -2501,9 +2861,7 @@
                 
                     <code>Pie</code>, 
                 
-                    <code>Scatter</code>, 
-                
-                    <code>Auto</code>
+                    <code>Scatter</code>
                 
             </p>
         
@@ -2511,6 +2869,24 @@
     <hr>
     
 
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Size Max
+            (<code>size_max</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Maximum size of dots or bubbles</p>
+        <p class="doc-field-type"><b>Type</b>: <code>int</code></p>
+
+        
+
+        
+    </div>
+    <hr>
     
 
     
@@ -2594,6 +2970,99 @@
     
     <div class="doc-field">
         <h4 class="doc-field-title">
+            Skip N/A and NULL values
+            (<code>skip_null_values</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Entries of the data with missing values will not be
+                            graphed or will be skipped</p>
+        <p class="doc-field-type"><b>Type</b>: <code>bool</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Limit
+            (<code>limit</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Limit the number of rows to show in the chart</p>
+        <p class="doc-field-type"><b>Type</b>: <code>int</code></p>
+
+        
+            <p class="doc-field-default"><b>Default</b>: <code>100</code></p>
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Chart Title
+            (<code>chart_title</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Title of the chart itself</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Chart X axe label
+            (<code>x_axis_label</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Label for the X-axis</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Chart Y axe label
+            (<code>y_axis_label</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Label for the Y-axis</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
             Color
             (<code>color</code>)
 
@@ -2622,26 +3091,6 @@
 
         
             <p class="doc-field-default"><b>Default</b>: <code>1</code></p>
-        
-
-        
-    </div>
-    <hr>
-    
-
-    
-    <div class="doc-field">
-        <h4 class="doc-field-title">
-            Limit
-            (<code>limit</code>)
-
-            
-        </h4>
-        <p class="doc-field-description">Limit the number of rows to show in the chart</p>
-        <p class="doc-field-type"><b>Type</b>: <code>int</code></p>
-
-        
-            <p class="doc-field-default"><b>Default</b>: <code>100</code></p>
         
 
         

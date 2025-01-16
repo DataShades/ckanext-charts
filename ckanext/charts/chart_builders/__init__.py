@@ -3,7 +3,8 @@ from __future__ import annotations
 from .base import BaseChartBuilder
 from .chartjs import ChartJSBarBuilder
 from .observable import ObservableBuilder
-from .plotly import PlotlyBarForm, PlotlyBuilder
+from .plotly import PlotlyBuilder
+from .plotly.bar import PlotlyBarForm
 
 DEFAULT_CHART_FORM = PlotlyBarForm
 

@@ -10,7 +10,7 @@ import ckan.plugins.toolkit as tk
 from ckan import types
 
 from ckanext.charts import const, fetchers
-from ckanext.charts.exception import ChartTypeNotImplementedError
+from ckanext.charts.exception import ChartTypeNotImplementedError, ChartBuildError
 
 
 class FilterDecoder:
@@ -176,11 +176,19 @@ class BaseChartBuilder(ABC):
 class BaseChartForm(ABC):
     name = ""
 
-    def __init__(self, resource_id: str) -> None:
-        try:
-            self.df = fetchers.DatastoreDataFetcher(resource_id).fetch_data()
-        except tk.ValidationError:
-            return
+    def __init__(
+        self, resource_id: str | None = None, dataframe: pd.DataFrame | None = None
+    ) -> None:
+        if dataframe is not None:
+            self.df = dataframe
+        else:
+            if not resource_id:
+                raise ChartBuildError("Resource ID is required")
+
+            try:
+                self.df = fetchers.DatastoreDataFetcher(resource_id).fetch_data()
+            except tk.ValidationError:
+                return
 
     def get_validator(self, name: str) -> types.ValueValidator:
         """Get the validator by name. Replaces the tk.get_validator to get rid
@@ -242,15 +250,20 @@ class BaseChartForm(ABC):
     def get_validation_schema(self, for_show: bool = False) -> dict[str, Any]:
         fields = self.get_form_fields()
 
-        return {
-            field["field_name"]: (
-                field["validators"]
-                if not for_show
-                else field.get("output_validators", field["validators"])
-            )
-            for field in fields
-            if "validators" in field
-        }
+        try:
+            validation_schema = {
+                field["field_name"]: (
+                    field["validators"]
+                    if not for_show
+                    else field.get("output_validators", field["validators"])
+                )
+                for field in fields
+                if "validators" in field
+            }
+        except KeyError:
+            raise ChartBuildError("Form field missing 'field_name' key")
+
+        return validation_schema
 
     def get_fields_by_tab(self, tab: str) -> list[dict[str, Any]]:
         fields = self.get_expanded_form_fields()
@@ -280,9 +293,10 @@ class BaseChartForm(ABC):
             "form_placeholder": "Chart title",
             "group": "General",
             "type": "str",
+            "default": "Chart",
             "help_text": "Title of the chart view",
             "validators": [
-                self.get_validator("ignore_empty"),
+                self.get_validator("default")("Chart"),
                 self.get_validator("unicode_safe"),
             ],
         }
@@ -737,7 +751,7 @@ class BaseChartForm(ABC):
         return field
 
     def width_field(self) -> dict[str, Any]:
-        """The limit field represent an amount of rows to show in the chart."""
+        """Width of the chart."""
         return {
             "field_name": "width",
             "label": "Width",
@@ -755,7 +769,7 @@ class BaseChartForm(ABC):
         }
 
     def height_field(self) -> dict[str, Any]:
-        """The limit field represent an amount of rows to show in the chart."""
+        """Height of the chart."""
         return {
             "field_name": "height",
             "label": "Height",

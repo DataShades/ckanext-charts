@@ -18,11 +18,17 @@ def update_chart(resource_id: str) -> str:
     data = parse_params(tk.request.args)
 
     try:
-        builder = _get_form_builder(data)
+        builder = _get_form_builder(data) # type: ignore
     except exception.ChartTypeNotImplementedError:
         return tk.render(ERROR_TEMPLATE)
 
-    data, errors = tk.navl_validate(data, builder.get_validation_schema(), {})
+    try:
+        data, errors = tk.navl_validate(data, builder.get_validation_schema(), {})
+    except exception.ChartBuildError as e:
+            return tk.render(
+                ERROR_TEMPLATE,
+                {"error_msg": tk._(f"Error building chart: {e}")},
+            )
 
     if errors:
         return tk.render_snippet(ERROR_TEMPLATE, {"error_msg": errors})
@@ -63,7 +69,13 @@ def update_form():
     except exception.ChartTypeNotImplementedError:
         return tk.render(ERROR_TEMPLATE)
 
-    data, errors = tk.navl_validate(data, builder.get_validation_schema(), {})
+    try:
+        data, errors = tk.navl_validate(data, builder.get_validation_schema(), {})
+    except exception.ChartBuildError as e:
+            return tk.render(
+                ERROR_TEMPLATE,
+                {"error_msg": tk._(f"Error building chart: {e}")},
+            )
 
     extra_vars = {
         "builder": builder,
@@ -118,7 +130,7 @@ def _clear_chart(
     )
 
 
-def _get_form_builder(data: dict):
+def _get_form_builder(data: dict[str, str]):
     """Get form builder for the given engine and chart type"""
     if "engine" not in data or "type" not in data:
         raise exception.ChartTypeNotImplementedError

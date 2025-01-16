@@ -18,3 +18,13 @@ def data_frame():
             "age": [25, 30],
         },
     )
+
+
+@pytest.fixture
+def map_data_frame():
+    return pd.DataFrame(
+        {
+            "country": ["USA", "UKR"],
+            "population": [100, 200],
+        },
+    )

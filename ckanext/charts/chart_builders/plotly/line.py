@@ -3,130 +3,20 @@ from __future__ import annotations
 from typing import Any
 
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 from pandas.core.frame import DataFrame
 from pandas.errors import ParserError
 from plotly.subplots import make_subplots
 
-from ckanext.charts import exception
-from ckanext.charts.chart_builders.base import BaseChartBuilder, BaseChartForm
+from .base import PlotlyBuilder, BasePlotlyForm
 
 # silence SettingWithCopyWarning
 pd.options.mode.chained_assignment = None
 
 
-class PlotlyBuilder(BaseChartBuilder):
-    """Base class for Plotly chart builders.
-
-    Defines supported chart types for Plotly engine.
-    """
-    DEFAULT_AXIS_TICKS_NUMBER = 12
-    DEFAULT_DATETIME_FORMAT = "ISO8601"
-    ISO_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
-    YEAR_DATETIME_FORMAT = "%Y"
-    DEFAULT_PLOT_HEIGHT = 400
-    DEFAULT_NAN_FILL_VALUE = 0
-
-    @classmethod
-    def get_supported_forms(cls) -> list[type[Any]]:
-        return [
-            PlotlyBarForm,
-            PlotlyHorizontalBarForm,
-            PlotlyPieForm,
-            PlotlyLineForm,
-            PlotlyScatterForm,
-        ]
-
-
-class PlotlyBarBuilder(PlotlyBuilder):
-    def to_json(self) -> str:
-        return self.build_bar_chart()
-
-    def build_bar_chart(self) -> Any:
-        if self.settings.get("skip_null_values"):
-            self.df = self.df[self.df[self.settings["y"]].notna()]
-
-        fig = px.bar(
-            data_frame=self.df,
-            x=self.settings["x"],
-            y=self.settings["y"],
-            log_x=self.settings.get("log_x"),
-            log_y=self.settings.get("log_y"),
-            opacity=self.settings.get("opacity"),
-            animation_frame=self.settings.get("animation_frame"),
-            color=self.settings.get("color"),
-        )
-
-        fig.update_xaxes(
-            type="category",
-        )
-
-        if chart_title := self.settings.get("chart_title"):
-            fig.update_layout(title_text=chart_title)
-
-        if x_axis_label := self.settings.get("x_axis_label"):
-            fig.update_xaxes(title_text=x_axis_label)
-        else:
-            fig.update_xaxes(title_text=self.settings["x"])
-
-        if y_axis_label := self.settings.get("y_axis_label"):
-            fig.update_yaxes(title_text=y_axis_label)
-        else:
-            fig.update_yaxes(title_text=self.settings["y"][0])
-
-        return fig.to_json()
-
-
-class PlotlyHorizontalBarBuilder(PlotlyBuilder):
-    def to_json(self) -> Any:
-        return self.build_horizontal_bar_chart()
-
-    def build_horizontal_bar_chart(self) -> Any:
-        if self.settings.get("skip_null_values"):
-            self.df = self.df[self.df[self.settings["y"]].notna()]
-
-        fig = px.bar(
-            data_frame=self.df,
-            x=self.settings["y"],
-            y=self.settings["x"],
-            log_x=self.settings.get("log_y"),
-            log_y=self.settings.get("log_x"),
-            opacity=self.settings.get("opacity"),
-            animation_frame=self.settings.get("animation_frame"),
-            color=self.settings.get("color"),
-            orientation="h",
-        )
-
-        fig.update_yaxes(
-            type="category",
-        )
-
-        if chart_title := self.settings.get("chart_title"):
-            fig.update_layout(title_text=chart_title)
-
-        if x_axis_label := self.settings.get("x_axis_label"):
-            fig.update_xaxes(title_text=x_axis_label)
-        else:
-            fig.update_xaxes(title_text=self.settings["y"])
-
-        if y_axis_label := self.settings.get("y_axis_label"):
-            fig.update_yaxes(title_text=y_axis_label)
-        else:
-            fig.update_yaxes(title_text=self.settings["x"])
-
-        return fig.to_json()
-
-
-class PlotlyPieBuilder(PlotlyBuilder):
-    def to_json(self) -> Any:
-        return px.pie(self.df, **self.settings).to_json()
-
-
 class PlotlyLineBuilder(PlotlyBuilder):
     def to_json(self) -> Any:
         return self.build_line_chart()
-
 
     def _split_data_by_year(self) -> None:
         """Prepare data for a line chart. It splits the data by year stated
@@ -160,7 +50,6 @@ class PlotlyLineBuilder(PlotlyBuilder):
             unit="ns",
         ).dt.strftime("%m-%d %H:%M")
 
-
     def _skip_null_values(self, column: str) -> tuple[Any, Any]:
         """Return values for x-axis and y-axis after removing missing values.
 
@@ -189,7 +78,6 @@ class PlotlyLineBuilder(PlotlyBuilder):
             y = df[column].fillna(self.DEFAULT_NAN_FILL_VALUE)
 
         return x, y
-
 
     def _break_chart_by_missing_data(
         self,
@@ -232,7 +120,6 @@ class PlotlyLineBuilder(PlotlyBuilder):
         df = pd.merge(date_range_df, df, on="date", how="left")
 
         return df["xaxis"], df[column]
-
 
     def build_line_chart(self) -> Any:
         """
@@ -317,117 +204,6 @@ class PlotlyLineBuilder(PlotlyBuilder):
         return fig.to_json()
 
 
-class PlotlyScatterBuilder(PlotlyBuilder):
-    def to_json(self) -> Any:
-        return self.build_scatter_chart()
-
-    def build_scatter_chart(self) -> Any:
-        # Fill NaN or NULL values in dataframe with 0
-        self.df = self.df.fillna(self.DEFAULT_NAN_FILL_VALUE)
-
-        if self.settings.get("skip_null_values"):
-            self.df = self.df.loc[self.df[self.settings["y"]] != 0]
-
-        # Manage with size and size_max fields' values
-        size_column = self.df[self.settings.get("size", self.df.columns[0])]
-        is_numeric = pd.api.types.is_numeric_dtype(size_column)
-        if not is_numeric:
-            raise exception.ChartBuildError(
-                "The 'Size' source should be a field of numeric type.",
-            )
-
-        # Create an instance of the scatter graph
-        fig = px.scatter(
-            data_frame=self.df,
-            x=self.settings["x"],
-            y=self.settings["y"],
-            color=self.settings.get("color"),
-            animation_frame=self.settings.get("animation_frame"),
-            opacity=self.settings.get("opacity"),
-            size=self.settings.get("size"),
-            size_max=self.settings.get("size_max"),
-        )
-
-        fig.update_xaxes(
-            type="category",
-        )
-
-        return fig.to_json()
-
-
-class BasePlotlyForm(BaseChartForm):
-    pass
-
-
-class PlotlyBarForm(BasePlotlyForm):
-    name = "Bar"
-    builder = PlotlyBarBuilder
-
-    def get_form_fields(self):
-        """Get the form fields for the Plotly bar chart."""
-        columns = [{"value": col, "label": col} for col in self.df.columns]
-        chart_types = [
-            {"value": form.name, "label": form.name}
-            for form in self.builder.get_supported_forms()
-        ]
-
-        return [
-            self.title_field(),
-            self.description_field(),
-            self.engine_field(),
-            self.type_field(chart_types),
-            self.engine_details_field(),
-            self.x_axis_field(columns),
-            self.y_axis_field(columns),
-            self.more_info_button_field(),
-            self.log_x_field(),
-            self.log_y_field(),
-            self.sort_x_field(),
-            self.sort_y_field(),
-            self.skip_null_values_field(),
-            self.limit_field(maximum=1000000),
-            self.chart_title_field(),
-            self.x_axis_label_field(),
-            self.y_axis_label_field(),
-            self.color_field(columns),
-            self.animation_frame_field(columns),
-            self.opacity_field(),
-            self.filter_field(columns),
-        ]
-
-
-class PlotlyPieForm(BasePlotlyForm):
-    name = "Pie"
-    builder = PlotlyPieBuilder
-
-    def get_form_fields(self):
-        """Get the form fields for the Plotly pie chart."""
-        columns = [{"value": col, "label": col} for col in self.df.columns]
-        chart_types = [
-            {"value": form.name, "label": form.name}
-            for form in self.builder.get_supported_forms()
-        ]
-
-        return [
-            self.title_field(),
-            self.description_field(),
-            self.engine_field(),
-            self.type_field(chart_types),
-            self.engine_details_field(),
-            self.values_field(columns),
-            self.names_field(columns),
-            self.more_info_button_field(),
-            self.opacity_field(),
-            self.limit_field(maximum=1000000),
-            self.filter_field(columns),
-        ]
-
-
-class PlotlyHorizontalBarForm(PlotlyBarForm):
-    name = "Horizontal Bar"
-    builder = PlotlyHorizontalBarBuilder
-
-
 class PlotlyLineForm(BasePlotlyForm):
     name = "Line"
     builder = PlotlyLineBuilder
@@ -473,41 +249,5 @@ class PlotlyLineForm(BasePlotlyForm):
             self.x_axis_label_field(),
             self.y_axis_label_field(),
             self.y_axis_label_right_field(),
-            self.filter_field(columns),
-        ]
-
-
-class PlotlyScatterForm(BasePlotlyForm):
-    name = "Scatter"
-    builder = PlotlyScatterBuilder
-
-    def get_form_fields(self):
-        """Get the form fields for the Plotly scatter chart."""
-        columns = [{"value": col, "label": col} for col in self.df.columns]
-        chart_types = [
-            {"value": form.name, "label": form.name}
-            for form in self.builder.get_supported_forms()
-        ]
-
-        return [
-            self.title_field(),
-            self.description_field(),
-            self.engine_field(),
-            self.type_field(chart_types),
-            self.engine_details_field(),
-            self.x_axis_field(columns),
-            self.y_axis_field(columns),
-            self.more_info_button_field(),
-            self.log_x_field(),
-            self.log_y_field(),
-            self.sort_x_field(),
-            self.sort_y_field(),
-            self.skip_null_values_field(),
-            self.size_field(columns),
-            self.size_max_field(),
-            self.limit_field(maximum=1000000),
-            self.color_field(columns),
-            self.animation_frame_field(columns),
-            self.opacity_field(),
             self.filter_field(columns),
         ]
