@@ -32,9 +32,6 @@ ckan.module("charts-render-observable", function ($, _) {
                 case "pie":
                     plot = PieChart(this.options.config.data, this.options.config.settings);
                     break;
-                case "auto":
-                    plot = Plot.auto(this.options.config.data, this.options.config.settings).plot();
-                    break;
                 default:
                     return;
             }

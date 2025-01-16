@@ -27,7 +27,7 @@ class ObservableBuilder(BaseChartBuilder):
             ObservableScatterForm,
         ]
 
-    def is_column_datetime(self, column: str) -> bool:
+    def _is_column_datetime(self, column: str) -> bool:
         """Check if string values of the certain column are convertable
         to datetime type.
 
@@ -249,7 +249,7 @@ class ObservableLineBuilder(ObservableBuilder):
         Returns:
             Line chart data dictionary
         """
-        if self.is_column_datetime(self.settings["x"]):
+        if self._is_column_datetime(self.settings["x"]):
             # Remove unnecessary columns and duplicates from x-axis column
             self.df = self.df[[self.settings["x"], self.settings["y"][0]]]
             self.df.drop_duplicates(subset=[self.settings["x"]], inplace=True)
@@ -297,7 +297,7 @@ class ObservableLineBuilder(ObservableBuilder):
         data["plot"]["grid"] = True
         data["plot"]["x"]["ticks"] = self.DEFAULT_AXIS_TICKS_NUMBER
 
-        if self.is_column_datetime(self.settings["x"]):
+        if self._is_column_datetime(self.settings["x"]):
             data["plot"]["x"]["type"] = "utc"
             data["settings"]["y"] = self.settings["y"][0]
             if self.settings.get("split_data"):
