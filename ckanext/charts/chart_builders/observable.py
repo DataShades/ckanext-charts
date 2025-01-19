@@ -27,22 +27,6 @@ class ObservableBuilder(BaseChartBuilder):
             ObservableScatterForm,
         ]
 
-    def _is_column_datetime(self, column: str) -> bool:
-        """Check if string values of the certain column are convertable
-        to datetime type.
-
-        Args:
-            column (str): name of the column to check
-
-        Returns:
-            True if values can be converted to datetime type, otherwise - False
-        """
-        try:
-            pd.to_datetime(self.df[column], format=self.DEFAULT_DATETIME_FORMAT)
-        except ValueError:
-            return False
-        return True
-
     def _set_chart_global_settings(
         self, data: dict[str, Any]) -> dict[str, Any]:
         """Set chart's global settings and plot configs.

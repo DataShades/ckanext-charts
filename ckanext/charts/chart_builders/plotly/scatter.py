@@ -43,6 +43,10 @@ class PlotlyScatterBuilder(PlotlyBuilder):
             size_max=self.settings.get("size_max"),
         )
 
+        # Prepare global chart settings
+        self._set_chart_global_settings(fig)
+
+        # Prepare additional chart settings
         fig.update_xaxes(
             type="category",
         )
@@ -79,6 +83,9 @@ class PlotlyScatterForm(BasePlotlyForm):
             self.size_field(columns),
             self.size_max_field(),
             self.limit_field(maximum=1000000),
+            self.chart_title_field(),
+            self.x_axis_label_field(),
+            self.y_axis_label_field(),
             self.color_field(columns),
             self.animation_frame_field(columns),
             self.opacity_field(),

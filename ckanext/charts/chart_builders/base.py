@@ -44,6 +44,8 @@ class FilterDecoder:
 
 
 class BaseChartBuilder(ABC):
+    DEFAULT_DATETIME_FORMAT = "ISO8601"
+
     def __init__(
         self,
         dataframe: pd.DataFrame,
@@ -171,6 +173,22 @@ class BaseChartBuilder(ABC):
             return result
 
         return sorted(result)
+
+    def _is_column_datetime(self, column_name: str) -> bool:
+        """Check if string values of the certain column are convertible
+        to datetime type.
+
+        Args:
+            column (str): name of the column to check
+
+        Returns:
+            True if values can be converted to datetime type, otherwise - False
+        """
+        try:
+            pd.to_datetime(self.df[column_name], format=self.DEFAULT_DATETIME_FORMAT)
+        except ValueError:
+            return False
+        return True
 
 
 class BaseChartForm(ABC):

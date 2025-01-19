@@ -15,6 +15,7 @@ class PlotlyBarBuilder(PlotlyBuilder):
         if self.settings.get("skip_null_values"):
             self.df = self.df[self.df[self.settings["y"]].notna()]
 
+        # Create an instance of the scatter graph
         fig = px.bar(
             data_frame=self.df,
             x=self.settings["x"],
@@ -26,22 +27,13 @@ class PlotlyBarBuilder(PlotlyBuilder):
             color=self.settings.get("color"),
         )
 
+        # Prepare global chart settings
+        self._set_chart_global_settings(fig)
+
+        # Prepare additional chart settings
         fig.update_xaxes(
             type="category",
         )
-
-        if chart_title := self.settings.get("chart_title"):
-            fig.update_layout(title_text=chart_title)
-
-        if x_axis_label := self.settings.get("x_axis_label"):
-            fig.update_xaxes(title_text=x_axis_label)
-        else:
-            fig.update_xaxes(title_text=self.settings["x"])
-
-        if y_axis_label := self.settings.get("y_axis_label"):
-            fig.update_yaxes(title_text=y_axis_label)
-        else:
-            fig.update_yaxes(title_text=self.settings["y"][0])
 
         return fig.to_json()
 
@@ -91,6 +83,7 @@ class PlotlyHorizontalBarBuilder(PlotlyBuilder):
         if self.settings.get("skip_null_values"):
             self.df = self.df[self.df[self.settings["y"]].notna()]
 
+        # Create an instance of the scatter graph
         fig = px.bar(
             data_frame=self.df,
             x=self.settings["y"],
@@ -103,21 +96,18 @@ class PlotlyHorizontalBarBuilder(PlotlyBuilder):
             orientation="h",
         )
 
+        # Prepare global chart settings
+        self._set_chart_global_settings(fig)
+
+        # Prepare additional chart settings
         fig.update_yaxes(
             type="category",
         )
 
-        if chart_title := self.settings.get("chart_title"):
-            fig.update_layout(title_text=chart_title)
-
-        if x_axis_label := self.settings.get("x_axis_label"):
-            fig.update_xaxes(title_text=x_axis_label)
-        else:
+        if not self.settings.get("x_axis_label"):
             fig.update_xaxes(title_text=self.settings["y"])
 
-        if y_axis_label := self.settings.get("y_axis_label"):
-            fig.update_yaxes(title_text=y_axis_label)
-        else:
+        if not self.settings.get("y_axis_label"):
             fig.update_yaxes(title_text=self.settings["x"])
 
         return fig.to_json()
