@@ -205,6 +205,14 @@ class ChartsViewPlugin(p.SingletonPlugin):
             fetchers.DatastoreDataFetcher(resource["id"]).make_cache_key(),
         )
 
+    def after_resource_update(
+        self,
+        context: types.Context,
+        resource: dict[str, Any]) -> None:
+        cache.invalidate_by_key(
+            fetchers.DatastoreDataFetcher(resource["id"]).make_cache_key(),
+        )
+
 
 class ChartsBuilderViewPlugin(p.SingletonPlugin):
     p.implements(p.IResourceView)
