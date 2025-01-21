@@ -1,7 +1,18 @@
 {% asset "charts/plotly" %}
 
 {% if chart %}
-    <div id="chart-container" data-module="charts-render-plotly" data-module-config="{{ chart }}"></div>
+    <div
+        id="chart-container--{{ h.charts_generate_unique_id() }}"
+        class="chart-container"
+        data-module="charts-render-plotly"
+        data-module-config="{{ chart }}">
+    </div>
+
+    <div class="chart-control mt-2">
+        <a class="btn btn-primary" id="makeSnapshot" title="{{ _('Make Snapshot') }}">
+            <i class="fa fa-camera"></i>
+        </a>
+    </div>
 {% else %}
     <p class="text-muted">
         {{ _("Cannot build chart with current settings") }}

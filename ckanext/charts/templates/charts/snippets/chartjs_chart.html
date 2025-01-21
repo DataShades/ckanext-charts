@@ -1,11 +1,29 @@
 {% asset "charts/chartjs" %}
 
 {% if chart %}
-    <canvas id="chart-container" data-module="charts-render-chartjs" data-module-config="{{ chart }}"></canvas>
-    <div class="zoom-control">
-        <button class="btn btn-primary" id="resetZoom">Reset Zoom</button>
-        <button class="btn btn-primary" id="toggleZoom" class="btn btn-primary">Toggle Zoom</button>
-        <button class="btn btn-primary" id="togglePan" class="btn btn-primary">Toggle Pan</button>
+    <canvas
+        id="chart-container--{{ h.charts_generate_unique_id() }}"
+        class="chart-container"
+        data-module="charts-render-chartjs"
+        data-module-config="{{ chart }}">
+    </canvas>
+
+    <div class="chart-control mt-2">
+        <button class="btn btn-primary" id="resetZoom" title="{{ _('Reset') }}">
+            <i class="fa fa-home"></i>
+        </button>
+
+        <button class="btn btn-primary" id="toggleZoom" title="{{ _('Toggle Zoom') }}">
+            <i class="fa fa-search-plus"></i>
+        </button>
+
+        <button class="btn btn-primary" id="togglePan" title="{{ _('Toggle Pan') }}">
+            <i class="fa fa-arrows"></i>
+        </button>
+
+        <a class="btn btn-primary" id="makeSnapshot" title="{{ _('Make Snapshot') }}">
+            <i class="fa fa-camera"></i>
+        </a>
     </div>
 {% else %}
     <p class="text-muted">

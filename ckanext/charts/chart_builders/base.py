@@ -855,3 +855,18 @@ class BaseChartForm(ABC):
             "type": "int",
             "help_text": "Maximum size of dots or bubbles",
         }
+
+    def color_picker_field(self) -> dict[str, Any]:
+        return {
+            "field_name": "color_picker",
+            "label": "Color Picker",
+            "form_snippet": "chart_color_picker.html",
+            "group": "Styles",
+            "type": "str",
+            "validators": [
+                self.get_validator("default")("#ffffff"),
+                self.get_validator("unicode_safe"),
+            ],
+            "help_text": "Select a color",
+            "default": "#ffffff",
+        }

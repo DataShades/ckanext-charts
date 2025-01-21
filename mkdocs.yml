@@ -83,9 +83,35 @@ nav:
 
   - Engines:
     - engines/index.md
-    - engines/plotly.md
-    - engines/chartjs.md
-    - engines/observable.md
+
+    - Plotly:
+      - engines/plotly/index.md
+      - engines/plotly/bar.md
+      - engines/plotly/hbar.md
+      - engines/plotly/line.md
+      - engines/plotly/pie.md
+      - engines/plotly/scatter.md
+      - engines/plotly/choropleth.md
+
+    - ChartJS:
+      - engines/chartjs/index.md
+      - engines/chartjs/bar.md
+      - engines/chartjs/hbar.md
+      - engines/chartjs/line.md
+      - engines/chartjs/pie.md
+      - engines/chartjs/doughnut.md
+      - engines/chartjs/scatter.md
+      - engines/chartjs/bubble.md
+      - engines/chartjs/radar.md
+
+    - Observable:
+      - engines/observable/index.md
+      - engines/observable/bar.md
+      - engines/observable/hbar.md
+      - engines/observable/pie.md
+      - engines/observable/line.md
+      - engines/observable/scatter.md
+
     - engines/custom.md
 
   - Caching:

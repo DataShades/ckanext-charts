@@ -2,11 +2,14 @@ chartjs:
   filter: rjsmin
   output: ckanext-charts/%(version)s-chartjs.js
   contents:
+    # do not change the order of these files as they are dependent on each other
     - js/vendor/chartjs.min.js
     - js/vendor/chartjs-adapter-moment.js
-    - js/charts-render-chartjs.js
     - js/vendor/hammerjs.min.js
     - js/vendor/chartjs-plugin-zoom.min.js
+    ##############################
+
+    - js/charts-render-chartjs.js
   extra:
     preload:
       - base/main

@@ -13,6 +13,10 @@ from ckanext.charts.chart_builders.base import BaseChartBuilder, BaseChartForm
 from ckanext.charts.exception import ChartBuildError
 
 
+class ChartJSBaseForm(BaseChartForm):
+    pass
+
+
 class ChartJsBuilder(BaseChartBuilder):
     DEFAULT_AXIS_TICKS_NUMBER = 12
     DEFAULT_DATETIME_FORMAT = "ISO8601"
@@ -63,7 +67,6 @@ class ChartJsBuilder(BaseChartBuilder):
         )
         return options
 
-
     def _set_chart_global_options(self, options: dict[str, Any]) -> dict[str, Any]:
         """Set chart's global options on the base of certain config fields values.
 
@@ -111,7 +114,8 @@ class ChartJsBuilder(BaseChartBuilder):
                 "text": (
                     self.settings["y"]
                     if type(self.settings["y"]) is str
-                    else self.settings["y"][0]),
+                    else self.settings["y"][0]
+                ),
             }
 
         if y_axis_label_right := self.settings.get("y_axis_label_right"):
@@ -197,7 +201,7 @@ class ChartJSBarBuilder(ChartJsBuilder):
         return json.dumps(self._prepare_data())
 
 
-class ChartJSBarForm(BaseChartForm):
+class ChartJSBarForm(ChartJSBaseForm):
     name = "Bar"
     builder = ChartJSBarBuilder
 
@@ -231,6 +235,7 @@ class ChartJSBarForm(BaseChartForm):
             self.opacity_field(),
             self.filter_field(columns),
         ]
+
 
 class ChartJSHorizontalBarBuilder(ChartJSBarBuilder):
     def to_json(self) -> str:
@@ -275,10 +280,8 @@ class ChartJSLineBuilder(ChartJsBuilder):
             unit="ns",
         ).dt.strftime("%b %d %H:%M")
 
-
     def _skip_null_values(self) -> DataFrame:
-        """Return dataframe after removing missing values.
-        """
+        """Return dataframe after removing missing values."""
         df = self.df
 
         # Fill NA/NaN values in the incoming data/dataframe
@@ -291,10 +294,8 @@ class ChartJSLineBuilder(ChartJsBuilder):
 
         return df
 
-
     def _break_chart_by_missing_data(self, df: DataFrame) -> DataFrame:
-        """Find gaps in date column and fill them with missing dates.
-        """
+        """Find gaps in date column and fill them with missing dates."""
         if self.settings.get("split_data"):
             df[self.settings["x"]] = df.index
 
@@ -318,8 +319,7 @@ class ChartJSLineBuilder(ChartJsBuilder):
         # Fill NAN or NULL dates in the original datetime column with missing
         # dates in ISO8601 format
         df[self.settings["x"]].fillna(
-            pd.to_datetime(
-                df["_temp_date_"]).dt.strftime(self.DEFAULT_DATETIME_FORMAT),
+            pd.to_datetime(df["_temp_date_"]).dt.strftime(self.DEFAULT_DATETIME_FORMAT),
             inplace=True,
         )
 
@@ -333,7 +333,6 @@ class ChartJSLineBuilder(ChartJsBuilder):
             ).dt.strftime("%b %d %H:%M")
 
         return df
-
 
     def _set_line_chart_options(self, options: dict[str, Any]) -> None:
         """Set chart's options on the base of certain config fields values.
@@ -360,12 +359,12 @@ class ChartJSLineBuilder(ChartJsBuilder):
         self._set_chart_global_options(options)
         options = self._create_zoom_and_title_options(options)
 
-
     def to_json(self) -> str:
         try:
             dates = pd.to_datetime(self.df[self.settings["x"]], unit="ns")
             self.settings["years"] = list(
-                dates.dt.strftime(self.YEAR_DATETIME_FORMAT).unique())
+                dates.dt.strftime(self.YEAR_DATETIME_FORMAT).unique()
+            )
         except (ParserError, ValueError):
             self.settings["years"] = []
 
@@ -395,8 +394,7 @@ class ChartJSLineBuilder(ChartJsBuilder):
                 "spanGaps": not self.settings.get("break_chart"),
             }
 
-            if len(self.settings["y"]) > 1 and \
-                self.settings.get("y_axis_label_right"):
+            if len(self.settings["y"]) > 1 and self.settings.get("y_axis_label_right"):
                 if idx == 0:
                     dataset["yAxisID"] = "y"
                 if idx == 1:
@@ -412,7 +410,7 @@ class ChartJSLineBuilder(ChartJsBuilder):
         return json.dumps(data)
 
 
-class ChartJSLineForm(BaseChartForm):
+class ChartJSLineForm(ChartJSBaseForm):
     name = "Line"
     builder = ChartJSLineBuilder
 
@@ -480,7 +478,7 @@ class ChartJSPieBuilder(ChartJsBuilder):
         return json.dumps(data)
 
 
-class ChartJSPieForm(BaseChartForm):
+class ChartJSPieForm(ChartJSBaseForm):
     name = "Pie"
     builder = ChartJSPieBuilder
 
@@ -558,7 +556,6 @@ class ChartJSScatterBuilder(ChartJsBuilder):
 
         return json.dumps(self._configure_date_axis(data))
 
-
     def _configure_date_axis(self, data: dict[str, Any]) -> dict[str, Any]:
         """
         Configure date settings for the x-axis if it uses 'date_time'.
@@ -585,7 +582,7 @@ class ChartJSScatterBuilder(ChartJsBuilder):
         return data
 
 
-class ChartJSScatterForm(BaseChartForm):
+class ChartJSScatterForm(ChartJSBaseForm):
     name = "Scatter"
     builder = ChartJSScatterBuilder
 
@@ -661,7 +658,6 @@ class ChartJSBubbleBuilder(ChartJSScatterBuilder):
 
         return json.dumps(self._configure_date_axis(data))
 
-
     def _calculate_bubble_radius(self, data_series: pd.Series, size_max: int) -> int:
         """Calculate bubble radius based on the size column"""
         size_column: str = self.settings["size"]
@@ -730,7 +726,7 @@ class ChartJSRadarBuilder(ChartJsBuilder):
         return json.dumps(data)
 
 
-class ChartJSRadarForm(BaseChartForm):
+class ChartJSRadarForm(ChartJSBaseForm):
     name = "Radar"
     builder = ChartJSRadarBuilder
 
