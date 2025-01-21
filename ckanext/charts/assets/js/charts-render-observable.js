@@ -1,13 +1,18 @@
-ckan.module("charts-render-observable", function ($, _) {
+ckan.module("charts-render-observable", function($, _) {
     "use strict";
 
     return {
         options: {
-            config: null
+            config: null,
         },
 
-        initialize: function () {
+        initialize: function() {
             $.proxyAll(this, /_/);
+
+            this.chartControl = this.el.next(".chart-control");
+            this.chartId = this.el[0].id;
+
+            window.charts_obvservable = window.charts_obvservable || {};
 
             if (!this.options.config) {
                 console.error("No configuration provided");
@@ -37,6 +42,50 @@ ckan.module("charts-render-observable", function ($, _) {
             }
 
             this.el[0].replaceChildren(plot);
+
+            window.charts_obvservable[this.chartId] = plot;
+
+            this.chartControl.find("#makeSnapshot").on(
+                "click", (e) => this._makeSnapshot(e, this.chartId)
+            );
+        },
+
+        _makeSnapshot: function(event, chartId) {
+            event.preventDefault();
+
+            var chart = window.charts_obvservable[chartId];
+
+            if (!chart) {
+                console.error("Chart not found");
+                return;
+            }
+
+            //get svg element.
+            var svg = chart.querySelector("svg");
+
+            //get svg source.
+            var serializer = new XMLSerializer();
+            var source = serializer.serializeToString(svg);
+
+            //add name spaces.
+            if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
+                source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+            }
+
+            if(!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
+                source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+            }
+
+            //add xml declaration
+            source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+
+            //convert svg source to URI data scheme.
+            var dataUrl = "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(source);
+            var link = document.createElement('a')
+            link.download = 'view-snapshot-' + Date.now() + '.svg';
+            link.href = dataUrl
+            link.click()
+
         }
     };
 });
@@ -46,7 +95,7 @@ ckan.module("charts-render-observable", function ($, _) {
 // https://observablehq.com/@d3/pie-chart
 
 function PieChart(data, {
-    names,  // given d in data, returns the (ordinal) label
+    names, // given d in data, returns the (ordinal) label
     values, // given d in data, returns the (quantitative) value
     title, // given d in data, returns the title text
     width = 640, // outer width, in pixels
@@ -133,7 +182,12 @@ function PieChart(data, {
         .attr("font-weight", (_, i) => i ? null : "bold")
         .text(d => d);
 
-    const resultSvg = Object.assign(svg.node(), { scales: { color } });
+    const resultSvg = Object.assign(svg.node(), {
+        scales: {
+            color
+        }
+    });
+
     resultSvg.setAttribute("opacity", opacity);
 
     return resultSvg;

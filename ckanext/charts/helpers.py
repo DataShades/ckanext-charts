@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from uuid import uuid4
 
 import ckan.plugins.toolkit as tk
 
@@ -87,3 +88,7 @@ def charts_allow_anon_building_charts() -> bool:
         bool: True if anonymous users are allowed to build charts, False otherwise.
     """
     return config.allow_anon_building_charts()
+
+
+def charts_generate_unique_id() -> str:
+    return str(uuid4())
