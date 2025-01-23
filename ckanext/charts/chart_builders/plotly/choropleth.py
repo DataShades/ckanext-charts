@@ -18,6 +18,7 @@ pd.options.mode.chained_assignment = None
 
 class PlotlyChoroplethBuilder(PlotlyBuilder):
     colors = ["#DBEDF8", "#B7DBF2", "#93CAEB", "#6FB8E5", "#009ADE", "#004E70"]
+    custom_color_scale = "aazure"
 
     def to_json(self) -> Any:
         return self.build_choropleth_chart()
@@ -26,7 +27,8 @@ class PlotlyChoroplethBuilder(PlotlyBuilder):
         """Renders a choropleth map using Plotly.
 
         The `locations` field must be the ISO 3166-1 alpha-3 country codes.
-        The `color` field must be a numeric/string value that corresponds to the color scale.
+        The `color` field must be a numeric/string value that corresponds to
+        the color scale.
 
         For string values, we can use the `legend` instead of `coloraxis`.
 
@@ -35,7 +37,8 @@ class PlotlyChoroplethBuilder(PlotlyBuilder):
 
         infer_iso_a3 = self.settings["infer_iso_a3"]
 
-        # Create a new column with the ISO alpha-3 country code
+        # Create a new column with the ISO alpha-3 country code and try
+        # to infer it from the country name if the flag is enabled.
         if infer_iso_a3:
             try:
                 self.df["__iso_a3"] = self.df[self.settings["x"]].apply(
@@ -43,12 +46,12 @@ class PlotlyChoroplethBuilder(PlotlyBuilder):
                         pycountry.countries.get(name=x).alpha_3  # type: ignore
                         if pycountry.countries.get(name=x)
                         else None
-                    )
+                    ),
                 )
             except LookupError:
                 raise exception.ChartBuildError(
                     "Error while trying to infer the ISO alpha-3 country code.",
-                )
+                ) from None
 
         fig = px.choropleth(
             self.df,
@@ -62,6 +65,11 @@ class PlotlyChoroplethBuilder(PlotlyBuilder):
             ),
         )
 
+        # change the hover tooltip template
+        fig.update_traces(
+            hovertemplate="<b>Region Code: %{location}<br>Value: %{z}<extra></extra>",
+        )
+
         fig.update_layout(
             dragmode=False,  # Disable dragging
             uirevision="constant",  # Disable zooming
@@ -72,25 +80,33 @@ class PlotlyChoroplethBuilder(PlotlyBuilder):
                 "orientation": "h",  # Horizontal orientation
             },
             coloraxis=self._get_coloraxis_settings(),
+            hoverlabel={  # change hover label bg and font-size
+                "bgcolor": "white",
+                "font_size": 16,
+            },
         )
 
         fig.update_geos(
             showcoastlines=True,  # Display coastlines
-            coastlinecolor="#B3B3B3",  # Set the color of the coastline
             coastlinewidth=0.1,  # Set the thickness of the coastline
             showland=True,  # Display land masses
-            showcountries=False,  # Hide country borders
+            showcountries=True,  # Show country borders
+            countrycolor="white",  # Border color between countries
             showrivers=False,  # Hide rivers
             showlakes=True,  # Display lakes
-            lakecolor="#B3B3B3",  # Set lake color
-            landcolor="#B7DBF2",  # Set land mass color
             projection={"type": self.settings["projection"]},  # map projection type
             showframe=False,  # Remove the border around the projection
-            # show the whole world map
             resolution=50,  # Set the resolution of the map
             lataxis={"range": [-60, 80]},  # Exclude Antarctica
             lonaxis={"range": [-180, 210]},  # Move the map a bit right
         )
+
+        if self.settings["color_scale"] == self.custom_color_scale:
+            fig.update_geos(
+                coastlinecolor="#B3B3B3",  # Set the color of the coastline
+                lakecolor="#B3B3B3",  # Set lake color
+                landcolor="#B7DBF2",  # Set land mass color
+            )
 
         self._update_location_mode(fig)
 
@@ -102,6 +118,10 @@ class PlotlyChoroplethBuilder(PlotlyBuilder):
         Returns:
             list of tuples with the color scale
         """
+        # blue is our custom color scale
+        if self.settings["color_scale"] != self.custom_color_scale:
+            return self.settings["color_scale"]
+
         colors_scale = []
 
         for i in range(len(self.colors)):
@@ -117,42 +137,49 @@ class PlotlyChoroplethBuilder(PlotlyBuilder):
         if not self._is_numeric():
             return {}
 
-        # will work only if the column is numeric
-        # for string we can skip it, as it will use `legend` instead of `coloraxis`
-        # for date we should investigate if choropleth supports it
         vals = np.linspace(
             self.df[self.settings["y"]].min(),
             self.df[self.settings["y"]].max(),
             len(self.colors) + 1,
         )
+
         ticktext = [intword(num) for num in vals]
 
-        return {
+        settings = {
             "colorbar": {
-                "yanchor": "top",
                 "x": 0.5,  # Center horizontally
                 "y": -0.2,  # Move it down
                 "orientation": "h",  # Horizontal orientation
                 "title": "",  # remove the scale label
-                "ticks": "inside",  # Place the ticks on the colorbar
-                "tickwidth": 1,  # Adjust tick width for visibility
-                "tickfont": {"color": "#3C3B3B"},  # Set tick color
+                "xpad": 50,  # Adjust X axis padding
+                "yanchor": "bottom",  # Anchor the colorbar to the bottom
                 "tickvals": vals,  # Set the tick values
                 "ticktext": ticktext,  # Set the tick text
                 "ticklabelposition": "outside",  # Place the tick labels pos
-                "ticklen": 30,  # Adjust tick height
-                "xpad": 50,  # Adjust X axis padding
-                "yanchor": "bottom",  # Anchor the colorbar to the bottom
-            }
+            },
         }
+
+        if self.settings["show_scale_ticks"]:
+            # will work only if the column is numeric
+            # for string we can skip it, as it will use `legend` instead of `coloraxis`
+            # for date we should investigate if choropleth supports it
+
+
+            settings["colorbar"].update(
+                {
+                    "ticks": "inside",  # Place the ticks on the colorbar
+                    "tickwidth": 1,  # Adjust tick width for visibility
+                    "tickfont": {"color": "#3C3B3B"},  # Set tick color
+                    "ticklen": 30,  # Adjust tick height
+                },
+            )
+
+        return settings
 
     def _is_numeric(self) -> bool:
         column_type = self.df[self.settings["y"]].convert_dtypes().dtype.type
 
-        if column_type in (np.int64, np.float64):
-            return True
-
-        return False
+        return column_type in (np.int64, np.float64)
 
     def _update_location_mode(self, fig: go.Figure) -> None:
         """Update the location mode for the choropleth map.
@@ -287,6 +314,103 @@ class PlotlyChoroplethForm(BasePlotlyForm):
         "winkel3",
     ]
 
+    color_scales = [
+        "aggrnyl",
+        "agsunset",
+        "blackbody",
+        "bluered",
+        "blues",
+        "blugrn",
+        "bluyl",
+        "brwnyl",
+        "bugn",
+        "bupu",
+        "burg",
+        "burgyl",
+        "cividis",
+        "darkmint",
+        "electric",
+        "emrld",
+        "gnbu",
+        "greens",
+        "greys",
+        "hot",
+        "inferno",
+        "jet",
+        "magenta",
+        "magma",
+        "mint",
+        "orrd",
+        "oranges",
+        "oryel",
+        "peach",
+        "pinkyl",
+        "plasma",
+        "plotly3",
+        "pubu",
+        "pubugn",
+        "purd",
+        "purp",
+        "purples",
+        "purpor",
+        "rainbow",
+        "rdbu",
+        "rdpu",
+        "redor",
+        "reds",
+        "sunset",
+        "sunsetdark",
+        "teal",
+        "tealgrn",
+        "turbo",
+        "viridis",
+        "ylgn",
+        "ylgnbu",
+        "ylorbr",
+        "ylorrd",
+        "algae",
+        "amp",
+        "deep",
+        "dense",
+        "gray",
+        "haline",
+        "ice",
+        "matter",
+        "solar",
+        "speed",
+        "tempo",
+        "thermal",
+        "turbid",
+        "armyrose",
+        "brbg",
+        "earth",
+        "fall",
+        "geyser",
+        "prgn",
+        "piyg",
+        "picnic",
+        "portland",
+        "puor",
+        "rdgy",
+        "rdylbu",
+        "rdylgn",
+        "spectral",
+        "tealrose",
+        "temps",
+        "tropic",
+        "balance",
+        "curl",
+        "delta",
+        "oxy",
+        "edge",
+        "hsv",
+        "icefire",
+        "phase",
+        "twilight",
+        "mrybm",
+        "mygbm",
+    ]
+
     def get_form_fields(self):
         """Get the form fields for the Plotly scatter chart."""
         columns = [{"value": col, "label": col} for col in self.df.columns]
@@ -310,6 +434,8 @@ class PlotlyChoroplethForm(BasePlotlyForm):
             self.infer_iso_a3_field(),
             self.projection_field(projections),
             self.location_mode_field(),
+            self.color_scale_field(),
+            self.show_scale_ticks_field(),
             self.filter_field(columns),
             self.limit_field(default=1000),
         ]
@@ -339,7 +465,8 @@ class PlotlyChoroplethForm(BasePlotlyForm):
             "help_text": "Try to infer the ISO_A3 code from the country name.",
             "form_snippet": "chart_checkbox.html",
             "validators": [
-                self.get_validator("default")(False),
+                self.get_validator("chart_checkbox"),
+                self.get_validator("default")(True),
                 self.get_validator("boolean_validator"),
             ],
             "type": "bool",
@@ -368,4 +495,45 @@ class PlotlyChoroplethForm(BasePlotlyForm):
             ],
             "type": "text",
             "default": "world",
+        }
+
+    def color_scale_field(self) -> dict[str, Any]:
+        choices = [
+            {
+                "value": self.builder.custom_color_scale,
+                "label": self.builder.custom_color_scale.capitalize(),
+            },
+        ] + [
+            {"value": color, "label": color.capitalize()} for color in self.color_scales
+        ]
+
+        return {
+            "field_name": "color_scale",
+            "label": "Color Scale",
+            "group": "Styles",
+            "help_text": "Set the color scale for the choropleth map.",
+            "form_snippet": "chart_select.html",
+            "choices": choices,
+            "validators": [
+                self.get_validator("default")(self.builder.custom_color_scale),
+                self.get_validator("unicode_safe"),
+            ],
+            "type": "text",
+            "default": "blue",
+        }
+
+    def show_scale_ticks_field(self) -> dict[str, Any]:
+        return {
+            "field_name": "show_scale_ticks",
+            "label": "Show Scale Ticks",
+            "group": "Styles",
+            "help_text": "Show the scale ticks on the colorbar.",
+            "form_snippet": "chart_checkbox.html",
+            "validators": [
+                self.get_validator("chart_checkbox"),
+                self.get_validator("default")(True),
+                self.get_validator("boolean_validator"),
+            ],
+            "type": "bool",
+            "default": True,
         }

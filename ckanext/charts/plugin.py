@@ -101,7 +101,7 @@ class ChartsViewPlugin(p.SingletonPlugin):
                 settings_schema(),
                 context,
             )
-        except Exception as e:
+        except Exception as e: # noqa: BLE001 # I know...
             data["error_msg"] = e
             return data
 

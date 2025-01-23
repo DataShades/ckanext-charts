@@ -1,13 +1,14 @@
 {% set val = data[field.field_name] %}
-{% set skip_null = field.field_name=="skip_null_values" %}
 
 <div class="form-group">
 	<label for="field-{{ field.field_name }}" class="no-dots">
+        {# the hidden field requires to properly uncheck the field that is True by default #}
+        <input type="hidden" name="{{ field.field_name }}" value="false">
 		<input id="field-{{ field.field_name }}"
 			type="checkbox"
 			name="{{ field.field_name }}"
 			value="true"
-			{{"checked " if (skip_null and not val) or (val is string and 'true' in val) or val }} />
+			{{"checked " if (val is string and 'true' in val) or val }} />
 		{{ field.label }}
 	</label>
 

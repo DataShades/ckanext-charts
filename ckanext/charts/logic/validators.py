@@ -177,3 +177,23 @@ def charts_list_length_validator(max_length: int) -> Callable[..., Any]:
             raise tk.Invalid(tk._("Length must be less than {0}").format(max_length))
 
     return callable
+
+
+def chart_checkbox(value: str | list[str]) -> str:
+    """A validator for checkbox.
+
+    In a checkbox form snippet we have two inputs, one hidden and one checkbox.
+    The hidden input always sends a value of "off" and the checkbox sends "on"
+
+    We need it to properly set a default `True` value for the field.
+
+    Args:
+        value (str | list[str]): The checkbox(s) value(s)
+
+    Returns:
+        bool: The value as a boolean
+    """
+    if isinstance(value, list):
+        return value[-1]
+
+    return value

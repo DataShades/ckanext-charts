@@ -4,8 +4,8 @@ import json
 
 import pytest
 
-import ckanext.charts.exception as exception
-import ckanext.charts.utils as utils
+from ckanext.charts import exception
+from ckanext.charts import utils
 
 
 @pytest.mark.ckan_config("ckan.plugins", "datastore charts_view")

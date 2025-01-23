@@ -363,7 +363,7 @@ class ChartJSLineBuilder(ChartJsBuilder):
         try:
             dates = pd.to_datetime(self.df[self.settings["x"]], unit="ns")
             self.settings["years"] = list(
-                dates.dt.strftime(self.YEAR_DATETIME_FORMAT).unique()
+                dates.dt.strftime(self.YEAR_DATETIME_FORMAT).unique(),
             )
         except (ParserError, ValueError):
             self.settings["years"] = []

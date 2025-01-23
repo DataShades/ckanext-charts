@@ -75,7 +75,7 @@ def build_chart_for_data(settings: dict[str, Any], data: pd.DataFrame) -> str | 
     """
 
     builder = get_chart_form_builder(settings["engine"], settings["type"])(
-        dataframe=data
+        dataframe=data,
     )
 
     settings, _ = tk.navl_validate(settings, builder.get_validation_schema(), {})
@@ -135,11 +135,8 @@ def can_view(data_dict: dict[str, Any]) -> bool:
     Returns:
         bool: True if the resource can be viewed as a chart, False otherwise
     """
-    if data_dict["resource"].get("datastore_active"):
-        return True
-
     # TODO: Add support for XML, XLS, XLSX, and other formats tabular data?
     # if data_dict["resource"]["format"].lower() == "xml":
     #     return True
 
-    return False
+    return data_dict["resource"].get("datastore_active")

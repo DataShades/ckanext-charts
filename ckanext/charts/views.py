@@ -14,7 +14,14 @@ ERROR_TEMPLATE = "charts/snippets/error_chart.html"
 
 
 @charts.route("/api/utils/charts/<resource_id>/update-chart")
-def update_chart(resource_id: str) -> str:
+def update_chart(resource_id: str) -> str: # noqa: PLR0911
+    """Update chart.
+
+    This will be called from the resource view to update the chart.
+
+    Args:
+        resource_id (str): The resource id
+    """
     data = parse_params(tk.request.args)
 
     try:
@@ -46,7 +53,7 @@ def update_chart(resource_id: str) -> str:
             {"error_msg": tk._(f"Error building chart: {e}")},
         )
     # TODO: we probably want to know which exceptions exactly could happen instead
-    except Exception as e:
+    except Exception as e: # noqa
         return tk.render(
             ERROR_TEMPLATE,
             {"error_msg": tk._(f"Error building chart: {e}")},

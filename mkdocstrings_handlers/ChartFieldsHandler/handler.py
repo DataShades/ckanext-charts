@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import os
-from typing import Mapping, MutableMapping, Any
+from typing import Any
+from collections.abc import Mapping, MutableMapping
 from unittest.mock import patch, MagicMock
 
 from mkdocstrings.handlers.base import BaseHandler, CollectorItem
@@ -14,14 +15,14 @@ from ckanext.charts.utils import get_chart_form_builder
 config_path = os.environ["CKAN_INI"]
 
 if not os.path.exists(config_path):
-    raise RuntimeError("CKAN config file not found: {}".format(config_path))
+    raise RuntimeError(f"CKAN config file not found: {config_path}")
 
 
 class ChartFieldsHandler(BaseHandler):
     """Custom handler for documenting different chart types fields according to the
     form fields schema."""
     def collect(
-        self, identifier: str, config: MutableMapping[str, Any]
+        self, identifier: str, config: MutableMapping[str, Any],
     ) -> CollectorItem:
         if not os.environ.get("CHARTS_FIELDS"):
             return {}
@@ -40,7 +41,7 @@ class ChartFieldsHandler(BaseHandler):
         mock.fetch_data.return_value = {}
 
         form_builder = get_chart_form_builder(config["engine"], config["chart_type"])(
-            "xxx"
+            "xxx",
         )
 
         return {
@@ -52,9 +53,7 @@ class ChartFieldsHandler(BaseHandler):
             return ""
 
         return self.env.get_template("fields.html").render(
-            **{
-                "fields": data["fields"],
-            },
+            fields=data["fields"],
         )
 
 

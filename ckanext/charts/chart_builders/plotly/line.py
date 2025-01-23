@@ -221,7 +221,7 @@ class PlotlyLineForm(BasePlotlyForm):
             self.split_data_field(),
             self.skip_null_values_field(),
             self.break_chart_field(),
-            self.limit_field(maximum=1000000),
+            self.limit_field(default=1000, maximum=1000000),
             self.chart_title_field(),
             self.x_axis_label_field(),
             self.y_axis_label_field(),

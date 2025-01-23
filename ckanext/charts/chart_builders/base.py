@@ -195,7 +195,7 @@ class BaseChartForm(ABC):
     name = ""
 
     def __init__(
-        self, resource_id: str | None = None, dataframe: pd.DataFrame | None = None
+        self, resource_id: str | None = None, dataframe: pd.DataFrame | None = None,
     ) -> None:
         if dataframe is not None:
             self.df = dataframe
@@ -279,7 +279,7 @@ class BaseChartForm(ABC):
                 if "validators" in field
             }
         except KeyError:
-            raise ChartBuildError("Form field missing 'field_name' key")
+            raise ChartBuildError("Form field missing 'field_name' key") from None
 
         return validation_schema
 
@@ -546,6 +546,7 @@ class BaseChartForm(ABC):
             "form_snippet": "chart_checkbox.html",
             "group": "Data",
             "validators": [
+                self.get_validator("chart_checkbox"),
                 self.get_validator("default")(False),
                 self.get_validator("boolean_validator"),
             ],
@@ -564,6 +565,8 @@ class BaseChartForm(ABC):
             "form_snippet": "chart_checkbox.html",
             "group": "Data",
             "validators": [
+                self.get_validator("chart_checkbox"),
+                self.get_validator("default")(False),
                 self.get_validator("boolean_validator"),
             ],
             "help_text": """Entries of the data with missing values will not be
@@ -578,6 +581,8 @@ class BaseChartForm(ABC):
             "form_snippet": "chart_checkbox.html",
             "group": "Data",
             "validators": [
+                self.get_validator("chart_checkbox"),
+                self.get_validator("default")(False),
                 self.get_validator("boolean_validator"),
             ],
             "help_text": "Break the graph at missing values",
@@ -591,6 +596,7 @@ class BaseChartForm(ABC):
             "form_snippet": "chart_checkbox.html",
             "group": "Data",
             "validators": [
+                self.get_validator("chart_checkbox"),
                 self.get_validator("default")(False),
                 self.get_validator("boolean_validator"),
             ],
@@ -606,6 +612,7 @@ class BaseChartForm(ABC):
             "form_snippet": "chart_checkbox.html",
             "group": "Data",
             "validators": [
+                self.get_validator("chart_checkbox"),
                 self.get_validator("default")(False),
                 self.get_validator("boolean_validator"),
             ],
@@ -621,6 +628,7 @@ class BaseChartForm(ABC):
             "form_snippet": "chart_checkbox.html",
             "group": "Data",
             "validators": [
+                self.get_validator("chart_checkbox"),
                 self.get_validator("default")(False),
                 self.get_validator("boolean_validator"),
             ],
@@ -636,6 +644,7 @@ class BaseChartForm(ABC):
             "form_snippet": "chart_checkbox.html",
             "group": "Data",
             "validators": [
+                self.get_validator("chart_checkbox"),
                 self.get_validator("default")(False),
                 self.get_validator("boolean_validator"),
             ],
@@ -651,6 +660,7 @@ class BaseChartForm(ABC):
             "form_snippet": "chart_checkbox.html",
             "group": "Data",
             "validators": [
+                self.get_validator("chart_checkbox"),
                 self.get_validator("default")(False),
                 self.get_validator("boolean_validator"),
             ],
@@ -666,6 +676,7 @@ class BaseChartForm(ABC):
             "form_snippet": "chart_checkbox.html",
             "group": "Data",
             "validators": [
+                self.get_validator("chart_checkbox"),
                 self.get_validator("default")(False),
                 self.get_validator("boolean_validator"),
             ],
@@ -720,7 +731,7 @@ class BaseChartForm(ABC):
             "default": 1,
         }
 
-    def limit_field(self, default: int = 100, maximum: int = 10000) -> dict[str, Any]:
+    def limit_field(self, default: int = 1000, maximum: int = 10000) -> dict[str, Any]:
         """The limit field represent an amount of rows to show in the chart."""
         return {
             "field_name": "limit",

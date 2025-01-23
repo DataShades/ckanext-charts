@@ -6,8 +6,8 @@ import requests
 
 from ckan.tests.factories import Resource
 
-import ckanext.charts.fetchers as fetchers
-import ckanext.charts.tests.helpers as helpers
+from ckanext.charts import fetchers
+from ckanext.charts.tests import helpers
 from ckanext.charts.exception import DataFetchError
 
 

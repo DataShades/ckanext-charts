@@ -32,7 +32,6 @@ class DataFetcherStrategy(ABC):
         Returns:
             pd.DataFrame: The fetched data
         """
-        pass
 
     @abstractmethod
     def make_cache_key(self) -> str:
@@ -43,7 +42,6 @@ class DataFetcherStrategy(ABC):
         Returns:
             str: The cache key
         """
-        pass
 
     def invalidate_cache(self):
         """Invalidate the cache for the data fetcher."""

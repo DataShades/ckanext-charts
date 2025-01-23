@@ -36,7 +36,6 @@ class CacheStrategy(ABC):
         Returns:
             The data if exists, otherwise None.
         """
-        pass
 
     @abstractmethod
     def set_data(self, key: str, data: pd.DataFrame):
@@ -46,7 +45,6 @@ class CacheStrategy(ABC):
             key: The cache key to store the data.
             data: The data to be stored.
         """
-        pass
 
     @abstractmethod
     def invalidate(self, key: str) -> None:
@@ -55,7 +53,6 @@ class CacheStrategy(ABC):
         Args:
             key: The cache key to invalidate.
         """
-        pass
 
 
 class RedisCache(CacheStrategy):
@@ -151,7 +148,6 @@ class FileCache(CacheStrategy):
         Returns:
             The data if exists, otherwise None.
         """
-        pass
 
     def set_data(self, key: str, data: pd.DataFrame) -> None:
         """Store data to cache.
@@ -172,7 +168,6 @@ class FileCache(CacheStrategy):
             file_path: The path to the file.
             data: The data to be stored.
         """
-        pass
 
     def invalidate(self, key: str) -> None:
         """Remove data from cache.

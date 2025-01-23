@@ -4,7 +4,6 @@ import json
 import pandas as pd
 from typing import Any
 
-from ckanext.charts import exception
 from ckanext.charts.chart_builders.base import BaseChartBuilder, BaseChartForm
 
 

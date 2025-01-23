@@ -8,11 +8,11 @@ from freezegun import freeze_time
 
 from ckan.tests.helpers import call_action
 
-import ckanext.charts.cache as cache
-import ckanext.charts.config as config
-import ckanext.charts.const as const
-import ckanext.charts.fetchers as fetchers
-import ckanext.charts.tests.helpers as helpers
+from ckanext.charts import cache
+from ckanext.charts import config
+from ckanext.charts import const
+from ckanext.charts import fetchers
+from ckanext.charts.tests import helpers
 
 
 @pytest.mark.ckan_config("ckan.plugins", "charts_view datastore")
