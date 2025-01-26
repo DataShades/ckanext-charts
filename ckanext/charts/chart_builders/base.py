@@ -759,6 +759,8 @@ class BaseChartForm(ABC):
                     self.get_validator("charts_if_empty_same_as")("y"),
                     self.get_validator("unicode_safe"),
                 ],
+                "help_text": "Select a column for the values",
+                "type": "str",
             },
         )
 
@@ -774,6 +776,8 @@ class BaseChartForm(ABC):
                     self.get_validator("charts_if_empty_same_as")("x"),
                     self.get_validator("unicode_safe"),
                 ],
+                "help_text": "Select a column for the names",
+                "type": "str",
             },
         )
 

@@ -35,6 +35,16 @@ observable:
     preload:
       - base/main
 
+echarts:
+  filter: rjsmin
+  output: ckanext-charts/%(version)s-echarts.js
+  contents:
+    - js/vendor/echarts.min.js
+    - js/charts-render-echarts.js
+  extra:
+    preload:
+      - base/main
+
 charts-js:
   filter: rjsmin
   output: ckanext-charts/%(version)s-charts.js

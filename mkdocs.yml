@@ -112,6 +112,12 @@ nav:
       - engines/observable/line.md
       - engines/observable/scatter.md
 
+    - Echarts:
+      - engines/echarts/index.md
+      - engines/echarts/bar.md
+      - engines/echarts/line.md
+      - engines/echarts/pie.md
+
     - engines/custom.md
 
   - Caching:

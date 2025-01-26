@@ -1,0 +1,13 @@
+{% asset "charts/echarts" %}
+
+{% if chart %}
+    <div
+        id="chart-container"
+        data-module="charts-render-echarts"
+        data-module-config="{{ chart }}"
+        style="width: 100%;height:600px;"></div>
+{% else %}
+    <p class="text-muted">
+        {{ _("Cannot build chart with current settings") }}
+    </p>
+{% endif %}

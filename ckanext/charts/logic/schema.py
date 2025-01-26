@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-from typing import Any
-
 from ckan.logic.schema import validator_args
-
-Schema = dict[str, Any]
+from ckan.types import Schema
 
 
 @validator_args

@@ -5,6 +5,7 @@ from .chartjs import ChartJSBarBuilder
 from .observable import ObservableBuilder
 from .plotly import PlotlyBuilder
 from .plotly.bar import PlotlyBarForm
+from .echarts import EChartsBuilder
 
 DEFAULT_CHART_FORM = PlotlyBarForm
 
@@ -14,4 +15,5 @@ def get_chart_engines() -> dict[str, type[BaseChartBuilder]]:
         "plotly": PlotlyBuilder,
         "observable": ObservableBuilder,
         "chartjs": ChartJSBarBuilder,
+        "echarts": EChartsBuilder
     }
