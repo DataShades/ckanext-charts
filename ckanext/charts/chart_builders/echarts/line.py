@@ -18,6 +18,19 @@ class EChartsLineBuilder(EChartsBuilder):
             },
             "yAxis": {"type": "value"},
             "series": [],
+            "tooltip": {"trigger": "item"},
+            "toolbox": {
+                "show": True,
+                "orient": "horizontal",
+                "left": "left",
+                "bottom": "bottom",
+                "feature": {
+                    "dataView": {"readOnly": False},
+                    "restore": {},
+                    "saveAsImage": {},
+                    "dataZoom": {},
+                },
+            },
         }
 
         for column in self.settings["y"]:

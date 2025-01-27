@@ -21,6 +21,19 @@ class EChartsBarBuilder(EChartsBuilder):
                     "data": self.df[self.settings["y"]].tolist(),
                 }
             ],
+            "tooltip": {"trigger": "item"},
+            "toolbox": {
+                "show": True,
+                "orient": "horizontal",
+                "left": "left",
+                "bottom": "bottom",
+                "feature": {
+                    "dataView": {"readOnly": False},
+                    "restore": {},
+                    "saveAsImage": {},
+                    "dataZoom": {},
+                },
+            },
         }
         return json.dumps(options)
 

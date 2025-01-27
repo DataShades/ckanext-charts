@@ -12,6 +12,17 @@ from ckanext.charts.chart_builders.echarts.base import (
 class EChartsPieBuilder(EChartsBuilder):
     def to_json(self) -> str:
         options = {
+            "tooltip": {"trigger": "item"},
+            "toolbox": {
+                "show": True,
+                "orient": "horizontal",
+                "left": "left",
+                "bottom": "bottom",
+                "feature": {
+                    "dataView": {"readOnly": False},
+                    "saveAsImage": {},
+                },
+            },
             "series": [
                 {
                     "type": "pie",
@@ -106,9 +117,9 @@ class EChartsPieForm(EchartsFormBuilder):
             "form_snippet": "chart_text.html",
             "input_type": "number",
             "validators": [
-                self.get_validator("default")(100),
+                self.get_validator("default")(200),
                 self.get_validator("int_validator"),
             ],
             "type": "int",
-            "default": 100,
+            "default": 200,
         }
