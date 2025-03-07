@@ -325,7 +325,7 @@ def drop_redis_cache() -> None:
 
     log.info("Dropping all ckanext-charts keys from Redis cache")
 
-    for key in conn.scan_iter(const.REDIS_PREFIX):
+    for key in conn.scan_iter(const.REDIS_PREFIX, count=1000):
         conn.delete(key)
 
 
@@ -363,7 +363,7 @@ def update_redis_expiration(time: int) -> None:
 
     redis_conn = RedisCache().client
 
-    for key in redis_conn.scan_iter(const.REDIS_PREFIX):
+    for key in redis_conn.scan_iter(const.REDIS_PREFIX, count=1000):
         try:
             redis_conn.expire(name=key, time=time, lt=True)
         except (TypeError, ResponseError):
@@ -376,7 +376,7 @@ def count_redis_cache_size() -> int:
 
     total_size = 0
 
-    for key in redis_conn.scan_iter(const.REDIS_PREFIX):
+    for key in redis_conn.scan_iter(const.REDIS_PREFIX, count=1000):
         size = redis_conn.memory_usage(key)
 
         if not size or not isinstance(size, int):
