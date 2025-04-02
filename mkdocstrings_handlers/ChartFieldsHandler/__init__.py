@@ -1,3 +1,6 @@
-from .handler import get_handler
+from pathlib import Path
 
-__all__ = ["get_handler"]
+from .handler import get_handler, get_templates_path
+
+
+__all__ = ["get_handler", "get_templates_path"]

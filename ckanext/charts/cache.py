@@ -10,7 +10,6 @@ from io import BytesIO
 from typing import IO
 
 import pandas as pd
-from redis.exceptions import ResponseError
 
 import ckan.plugins.toolkit as tk
 from ckan.lib.redis import connect_to_redis
@@ -90,10 +89,7 @@ class RedisCache(CacheStrategy):
         cache_ttl = config.get_redis_cache_ttl()
 
         try:
-            if cache_ttl:
-                self.client.setex(key, cache_ttl, data.to_csv(index=False))
-            else:
-                self.client.set(key, value=data.to_csv(index=False))
+            self.client.setex(key, cache_ttl, data.to_csv(index=False))
         except Exception:
             log.exception("Failed to save data to Redis")
 
@@ -211,8 +207,6 @@ class FileCache(CacheStrategy):
     def is_file_cache_expired(file_path: str) -> bool:
         """Check if file cache is expired.
 
-        If TTL is 0 then cache never expires.
-
         Args:
             file_path: The path to the file.
 
@@ -220,9 +214,6 @@ class FileCache(CacheStrategy):
             True if file cache is expired, otherwise False.
         """
         file_ttl = config.get_file_cache_ttl()
-
-        if not file_ttl:
-            return False
 
         return time.time() - os.path.getmtime(file_path) > file_ttl
 
@@ -354,20 +345,6 @@ def get_file_cache_path() -> str:
     os.makedirs(cache_path, exist_ok=True)
 
     return cache_path
-
-
-def update_redis_expiration(time: int) -> None:
-    """Update TTL for existing Redis keys"""
-    if not time:
-        return
-
-    redis_conn = RedisCache().client
-
-    for key in redis_conn.scan_iter(const.REDIS_PREFIX, count=1000):
-        try:
-            redis_conn.expire(name=key, time=time, lt=True)
-        except (TypeError, ResponseError):
-            redis_conn.expire(name=key, time=time)
 
 
 def count_redis_cache_size() -> int:

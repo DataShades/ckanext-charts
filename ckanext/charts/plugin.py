@@ -32,9 +32,6 @@ class ChartsViewPlugin(p.SingletonPlugin):
     # IConfigurable
 
     def configure(self, config: CKANConfig) -> None:
-        # Update redis keys TTL
-        cache.update_redis_expiration(config[conf.CONF_REDIS_CACHE_TTL])
-
         # Remove expired file cache
         cache.remove_expired_file_cache()
 

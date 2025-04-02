@@ -28,7 +28,7 @@ Each redis key has a `ckanext-charts:*` prefix and store the data as a CSV strin
 
 ## Cache TTL
 
-The cache TTL can be set in the CKAN configuration file. The default value is 3600 seconds (1 hour). The cache TTL can be set to `0` to disable the cache.
+The cache TTL can be set in the CKAN configuration file. The default value is 3600 seconds (1 hour).
 
 The `redis` and `file-type` cache has separate TTL settings:
 

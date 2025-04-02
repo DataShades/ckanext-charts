@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import Any
 from collections.abc import Mapping, MutableMapping
 from unittest.mock import patch, MagicMock
 
-from mkdocstrings.handlers.base import BaseHandler, CollectorItem
-
+from mkdocstrings import BaseHandler, CollectorItem
 from ckan.config.middleware import make_app
 from ckan.cli import CKANConfigLoader
 
@@ -59,3 +59,7 @@ class ChartFieldsHandler(BaseHandler):
 
 def get_handler(**kwargs: Any) -> ChartFieldsHandler:
     return ChartFieldsHandler(handler="ChartFieldsHandler", theme=kwargs["theme"])
+
+
+def get_templates_path() -> Path:
+    return Path(__file__).parent / "templates"

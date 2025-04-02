@@ -38,16 +38,20 @@ dependencies = [
 ]
 license = {text = "AGPL"}
 requires-python = ">=3.8"
-version = "1.7.0"
+version = "1.8.0"
 
 [project.optional-dependencies]
 pyarrow = ["pyarrow>=16.0.0,<17.0.0"]
 test = ["pytest-ckan", "ckanext-toolbelt", "requests-mock"]
 dev = ["pytest-ckan", "ckanext-toolbelt", "requests-mock"]
+docs = ["mkdocs", "mkdocs-material", "mkdocstrings", "mkdocstrings-python", "pymdown-extensions"]
 
 [project.entry-points."ckan.plugins"]
 charts_view = "ckanext.charts.plugin:ChartsViewPlugin"
 charts_builder_view = "ckanext.charts.plugin:ChartsBuilderViewPlugin"
+
+[project.entry-points."mkdocstrings.python.templates"]
+ChartFieldsHandler = "mkdocstrings_handlers.ChartFieldsHandler:get_templates_path"
 
 [project.entry-points."babel.extractors"]
 ckan = "ckan.lib.extract:extract_ckan"

@@ -18,12 +18,12 @@ fields:
 
   - field_name: ckanext.charts.redis_cache_ttl
     label: Redis Cache TTL
-    help_text: Time to live for the Redis cache in seconds. Set 0 to disable cache.
+    help_text: Time to live for the Redis cache in seconds.
     input_type: number
 
   - field_name: ckanext.charts.file_cache_ttl
     label: File Cache TTL
-    help_text: Time to live for the File cache in seconds. Set 0 to disable cache.
+    help_text: Time to live for the File cache in seconds.
     input_type: number
 
   - field_name: ckanext.charts.enable_cache

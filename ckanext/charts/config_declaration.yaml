@@ -14,14 +14,14 @@ groups:
         default: 3600
         editable: true
         type: int
-        validators: ignore_empty int_validator
+        validators: ignore_missing int_validator is_positive_integer
 
       - key: ckanext.charts.file_cache_ttl
         description: File cache TTL
         default: 3600
         editable: true
         type: int
-        validators: ignore_empty int_validator
+        validators: ignore_missing int_validator is_positive_integer
 
       - key: ckanext.charts.enable_cache
         description: Enable cache
