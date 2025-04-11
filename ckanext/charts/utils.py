@@ -98,7 +98,7 @@ def build_chart_for_resource(settings: dict[str, Any], resource_id: str) -> str 
     settings.pop("__extras", None)
 
     try:
-        df = DatastoreDataFetcher(resource_id).fetch_data()
+        df = DatastoreDataFetcher(resource_id, settings).fetch_data()
     except tk.ValidationError:
         return None
 

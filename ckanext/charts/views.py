@@ -144,7 +144,7 @@ def _get_form_builder(data: dict[str, str]):
 
     builder = utils.get_chart_form_builder(data["engine"], data["type"])
 
-    return builder(data["resource_id"])
+    return builder(data["resource_id"], settings=data)
 
 
 @charts.route("/api/utils/charts/get-values")
@@ -154,7 +154,7 @@ def get_chart_column_values():
     resource_id = tk.get_or_bust(data, "resource_id")
     column = tk.get_or_bust(data, "column")
 
-    fetcher = fetchers.DatastoreDataFetcher(resource_id)
+    fetcher = fetchers.DatastoreDataFetcher(resource_id, settings=data)
 
     result = []
 
