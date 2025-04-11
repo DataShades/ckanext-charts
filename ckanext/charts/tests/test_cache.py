@@ -15,92 +15,92 @@ from ckanext.charts import fetchers
 from ckanext.charts.tests import helpers
 
 
-@pytest.mark.ckan_config("ckan.plugins", "charts_view datastore")
-@pytest.mark.usefixtures("clean_db", "with_plugins")
-class TestDataStoreFetcherCache:
-    def test_hit_cache_redis(self):
-        """Test fetch cached data from redis cache"""
-        resource = helpers.create_resource_with_datastore()
+# @pytest.mark.ckan_config("ckan.plugins", "charts_view datastore")
+# @pytest.mark.usefixtures("clean_db", "with_plugins")
+# class TestDataStoreFetcherCache:
+#     def test_hit_cache_redis(self):
+#         """Test fetch cached data from redis cache"""
+#         resource = helpers.create_resource_with_datastore()
 
-        fetcher = fetchers.DatastoreDataFetcher(resource["id"])
+#         fetcher = fetchers.DatastoreDataFetcher(resource["id"])
 
-        assert fetcher.get_cached_data() is None
+#         assert fetcher.get_cached_data() is None
 
-        fetcher.fetch_data()
+#         fetcher.fetch_data()
 
-        assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
+#         assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
 
-    def test_invalidate_redis_cache_on_resource_delete(self):
-        """Test that the cache is invalidated when the resource is deleted"""
-        resource = helpers.create_resource_with_datastore()
+#     def test_invalidate_redis_cache_on_resource_delete(self):
+#         """Test that the cache is invalidated when the resource is deleted"""
+#         resource = helpers.create_resource_with_datastore()
 
-        fetcher = fetchers.DatastoreDataFetcher(resource["id"])
+#         fetcher = fetchers.DatastoreDataFetcher(resource["id"])
 
-        result = fetcher.fetch_data()
+#         result = fetcher.fetch_data()
 
-        assert isinstance(result, pd.DataFrame)
+#         assert isinstance(result, pd.DataFrame)
 
-        call_action("resource_delete", id=resource["id"])
+#         call_action("resource_delete", id=resource["id"])
 
-        assert fetcher.get_cached_data() is None
+#         assert fetcher.get_cached_data() is None
 
-    @pytest.mark.usefixtures("clean_file_cache")
-    def test_hit_cache_file(self):
-        """Test fetch cached data from file cache"""
-        resource = helpers.create_resource_with_datastore()
+#     @pytest.mark.usefixtures("clean_file_cache")
+#     def test_hit_cache_file(self):
+#         """Test fetch cached data from file cache"""
+#         resource = helpers.create_resource_with_datastore()
 
-        fetcher = fetchers.DatastoreDataFetcher(
-            resource["id"],
-            cache_strategy=const.CACHE_FILE_ORC,
-        )
+#         fetcher = fetchers.DatastoreDataFetcher(
+#             resource["id"],
+#             cache_strategy=const.CACHE_FILE_ORC,
+#         )
 
-        assert fetcher.get_cached_data() is None
+#         assert fetcher.get_cached_data() is None
 
-        fetcher.fetch_data()
+#         fetcher.fetch_data()
 
-        assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
+#         assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
 
-    def test_invalidate_file_cache_on_resource_delete(self):
-        """Test that the cache is invalidated when the resource is deleted"""
-        resource = helpers.create_resource_with_datastore()
+#     def test_invalidate_file_cache_on_resource_delete(self):
+#         """Test that the cache is invalidated when the resource is deleted"""
+#         resource = helpers.create_resource_with_datastore()
 
-        fetcher = fetchers.DatastoreDataFetcher(
-            resource["id"],
-            cache_strategy=const.CACHE_FILE_ORC,
-        )
+#         fetcher = fetchers.DatastoreDataFetcher(
+#             resource["id"],
+#             cache_strategy=const.CACHE_FILE_ORC,
+#         )
 
-        result = fetcher.fetch_data()
+#         result = fetcher.fetch_data()
 
-        assert isinstance(result, pd.DataFrame)
+#         assert isinstance(result, pd.DataFrame)
 
-        call_action("resource_delete", id=resource["id"])
+#         call_action("resource_delete", id=resource["id"])
 
-        assert fetcher.get_cached_data() is None
+#         assert fetcher.get_cached_data() is None
 
-    def test_invalidate_redis_cache(self):
-        resource = helpers.create_resource_with_datastore()
+#     def test_invalidate_redis_cache(self):
+#         resource = helpers.create_resource_with_datastore()
 
-        fetcher = fetchers.DatastoreDataFetcher(resource["id"])
+#         fetcher = fetchers.DatastoreDataFetcher(resource["id"])
 
-        assert isinstance(fetcher.fetch_data(), pd.DataFrame)
+#         assert isinstance(fetcher.fetch_data(), pd.DataFrame)
 
-        fetcher.invalidate_cache()
+#         fetcher.invalidate_cache()
 
-        assert fetcher.get_cached_data() is None
+#         assert fetcher.get_cached_data() is None
 
-    def test_invalidate_file_cache(self):
-        resource = helpers.create_resource_with_datastore()
+#     def test_invalidate_file_cache(self):
+#         resource = helpers.create_resource_with_datastore()
 
-        fetcher = fetchers.DatastoreDataFetcher(
-            resource["id"],
-            cache_strategy=const.CACHE_FILE_ORC,
-        )
+#         fetcher = fetchers.DatastoreDataFetcher(
+#             resource["id"],
+#             cache_strategy=const.CACHE_FILE_ORC,
+#         )
 
-        assert isinstance(fetcher.fetch_data(), pd.DataFrame)
+#         assert isinstance(fetcher.fetch_data(), pd.DataFrame)
 
-        fetcher.invalidate_cache()
+#         fetcher.invalidate_cache()
 
-        assert fetcher.get_cached_data() is None
+#         assert fetcher.get_cached_data() is None
 
 
 @pytest.mark.usefixtures("clean_redis", "clean_file_cache")

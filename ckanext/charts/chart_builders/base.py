@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sqlalchemy as sa
 from abc import ABC, abstractmethod
 from typing import Any, cast
 
@@ -8,6 +9,8 @@ import pandas as pd
 
 import ckan.plugins.toolkit as tk
 from ckan import types
+
+from ckanext.datastore.backend.postgres import get_read_engine
 
 from ckanext.charts import const, fetchers
 from ckanext.charts.exception import ChartTypeNotImplementedError, ChartBuildError
@@ -58,10 +61,8 @@ class BaseChartBuilder(ABC):
             filter_decoder = FilterDecoder(filter_input)
             filter_params = filter_decoder.decode_filter_params()
 
-            filtered_df = self.df.copy()
-
             for column, values in filter_params.items():
-                column_type = filtered_df[column].convert_dtypes().dtype.type
+                column_type = self.df[column].convert_dtypes().dtype.type
 
                 # TODO: requires more work here...
                 # I'm not sure about other types, that column can have
@@ -72,17 +73,8 @@ class BaseChartBuilder(ABC):
                 else:
                     converted_values = values
 
-                filtered_df = filtered_df[filtered_df[column].isin(converted_values)]
-
-            self.df = filtered_df
-
-        if self.settings.get("sort_x", False):
-            self.df.sort_values(by=self.settings["x"], inplace=True)
-
-        if self.settings.get("sort_y", False):
-            self.df.sort_values(by=self.settings["y"], inplace=True)
-
-        self.df = self.df.head(self.get_limit())
+                # Apply filter in-place
+                self.df = self.df[self.df[column].isin(converted_values)]
 
         self.settings.pop("query", None)
 
@@ -195,8 +187,13 @@ class BaseChartForm(ABC):
     name = ""
 
     def __init__(
-        self, resource_id: str | None = None, dataframe: pd.DataFrame | None = None,
+        self,
+        resource_id: str | None = None,
+        dataframe: pd.DataFrame | None = None,
+        settings: dict[str, Any] | None = None,
     ) -> None:
+        self.resource_id = resource_id
+
         if dataframe is not None:
             self.df = dataframe
         else:
@@ -204,7 +201,10 @@ class BaseChartForm(ABC):
                 raise ChartBuildError("Resource ID is required")
 
             try:
-                self.df = fetchers.DatastoreDataFetcher(resource_id).fetch_data()
+                self.df = fetchers.DatastoreDataFetcher(
+                    resource_id,
+                    settings=settings,
+                ).fetch_data()
             except tk.ValidationError:
                 return
 
@@ -903,3 +903,16 @@ class BaseChartForm(ABC):
             "help_text": "Select a color",
             "default": "#ffffff",
         }
+
+    def get_all_column_names(self) -> list[str]:
+        """Get all usable column names (excluding system columns)."""
+        if self.resource_id:
+            inspector = sa.inspect(get_read_engine())
+            columns = inspector.get_columns(self.resource_id)
+            return [
+                col["name"]
+                for col in columns
+                if col["name"] not in {"_id", "_full_text"}
+            ]
+
+        return self.df.columns

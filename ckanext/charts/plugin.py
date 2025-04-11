@@ -11,8 +11,7 @@ from ckan import logic, types
 from ckan.common import CKANConfig
 from ckan.config.declaration import Declaration, Key
 
-import ckanext.charts.config as conf
-from ckanext.charts import cache, const, exception, fetchers, utils
+from ckanext.charts import cache, const, exception, utils
 from ckanext.charts.chart_builders import DEFAULT_CHART_FORM
 from ckanext.charts.logic.schema import settings_schema
 
@@ -179,36 +178,36 @@ class ChartsViewPlugin(p.SingletonPlugin):
 
         p.implements(pusher_interface, inherit=True)
 
-        def after_upload(
-            self,
-            context: types.Context,
-            resource_dict: dict[str, Any],
-            dataset_dict: dict[str, Any],
-        ) -> None:
-            """Invalidate cache after upload to DataStore"""
-            cache.invalidate_by_key(
-                fetchers.DatastoreDataFetcher(resource_dict["id"]).make_cache_key(),
-            )
+        # def after_upload(
+        #     self,
+        #     context: types.Context,
+        #     resource_dict: dict[str, Any],
+        #     dataset_dict: dict[str, Any],
+        # ) -> None:
+        #     """Invalidate cache after upload to DataStore"""
+        #     cache.invalidate_by_key(
+        #         fetchers.DatastoreDataFetcher(resource_dict["id"]).make_cache_key(),
+        #     )
 
     # IResourceController
 
-    def before_resource_delete(
-        self,
-        context: types.Context,
-        resource: dict[str, Any],
-        resources: list[dict[str, Any]],
-    ) -> None:
-        cache.invalidate_by_key(
-            fetchers.DatastoreDataFetcher(resource["id"]).make_cache_key(),
-        )
+    # def before_resource_delete(
+    #     self,
+    #     context: types.Context,
+    #     resource: dict[str, Any],
+    #     resources: list[dict[str, Any]],
+    # ) -> None:
+    #     cache.invalidate_by_key(
+    #         fetchers.DatastoreDataFetcher(resource["id"]).make_cache_key(),
+    #     )
 
-    def after_resource_update(
-        self,
-        context: types.Context,
-        resource: dict[str, Any]) -> None:
-        cache.invalidate_by_key(
-            fetchers.DatastoreDataFetcher(resource["id"]).make_cache_key(),
-        )
+    # def after_resource_update(
+    #     self,
+    #     context: types.Context,
+    #     resource: dict[str, Any]) -> None:
+    #     cache.invalidate_by_key(
+    #         fetchers.DatastoreDataFetcher(resource["id"]).make_cache_key(),
+    #     )
 
 
 class ChartsBuilderViewPlugin(p.SingletonPlugin):

@@ -206,7 +206,7 @@ class ChartJSBarForm(ChartJSBaseForm):
     builder = ChartJSBarBuilder
 
     def get_form_fields(self):
-        columns = [{"value": col, "label": col} for col in self.df.columns]
+        columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
         chart_types = [
             {"value": form.name, "label": form.name}
             for form in self.builder.get_supported_forms()
@@ -415,7 +415,7 @@ class ChartJSLineForm(ChartJSBaseForm):
     builder = ChartJSLineBuilder
 
     def get_form_fields(self):
-        columns = [{"value": col, "label": col} for col in self.df.columns]
+        columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
         chart_types = [
             {"value": form.name, "label": form.name}
             for form in self.builder.get_supported_forms()
@@ -483,7 +483,7 @@ class ChartJSPieForm(ChartJSBaseForm):
     builder = ChartJSPieBuilder
 
     def get_form_fields(self):
-        columns = [{"value": col, "label": col} for col in self.df.columns]
+        columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
 
         chart_types = [
             {"value": form.name, "label": form.name}
@@ -587,7 +587,7 @@ class ChartJSScatterForm(ChartJSBaseForm):
     builder = ChartJSScatterBuilder
 
     def get_form_fields(self):
-        columns = [{"value": col, "label": col} for col in self.df.columns]
+        columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
         chart_types = [
             {"value": form.name, "label": form.name}
             for form in self.builder.get_supported_forms()
@@ -686,7 +686,7 @@ class ChartJSBubbleForm(ChartJSScatterForm):
 
     def get_form_fields(self):
         """Almost same as scatter form, but with an additional field for bubble size"""
-        columns = [{"value": col, "label": col} for col in self.df.columns]
+        columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
         fields = super().get_form_fields()
 
         fields.append(self.size_field(columns))
@@ -731,7 +731,7 @@ class ChartJSRadarForm(ChartJSBaseForm):
     builder = ChartJSRadarBuilder
 
     def get_form_fields(self):
-        columns = [{"value": col, "label": col} for col in self.df.columns]
+        columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
         chart_types = [
             {"value": form.name, "label": form.name}
             for form in self.builder.get_supported_forms()

@@ -164,7 +164,6 @@ class PlotlyChoroplethBuilder(PlotlyBuilder):
             # for string we can skip it, as it will use `legend` instead of `coloraxis`
             # for date we should investigate if choropleth supports it
 
-
             settings["colorbar"].update(
                 {
                     "ticks": "inside",  # Place the ticks on the colorbar
@@ -413,7 +412,7 @@ class PlotlyChoroplethForm(BasePlotlyForm):
 
     def get_form_fields(self):
         """Get the form fields for the Plotly scatter chart."""
-        columns = [{"value": col, "label": col} for col in self.df.columns]
+        columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
         chart_types = [
             {"value": form.name, "label": form.name}
             for form in self.builder.get_supported_forms()
