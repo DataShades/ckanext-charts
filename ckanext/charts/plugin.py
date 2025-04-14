@@ -11,7 +11,6 @@ from ckan import logic, types
 from ckan.common import CKANConfig
 from ckan.config.declaration import Declaration, Key
 
-import ckanext.charts.config as conf
 from ckanext.charts import cache, const, exception, fetchers, utils
 from ckanext.charts.chart_builders import DEFAULT_CHART_FORM
 from ckanext.charts.logic.schema import settings_schema
@@ -98,7 +97,7 @@ class ChartsViewPlugin(p.SingletonPlugin):
                 settings_schema(),
                 context,
             )
-        except Exception as e: # noqa: BLE001 # I know...
+        except Exception as e:  # noqa: BLE001 # I know...
             data["error_msg"] = e
             return data
 
@@ -205,7 +204,8 @@ class ChartsViewPlugin(p.SingletonPlugin):
     def after_resource_update(
         self,
         context: types.Context,
-        resource: dict[str, Any]) -> None:
+        resource: dict[str, Any],
+    ) -> None:
         cache.invalidate_by_key(
             fetchers.DatastoreDataFetcher(resource["id"]).make_cache_key(),
         )

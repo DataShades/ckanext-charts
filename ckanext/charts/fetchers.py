@@ -147,6 +147,7 @@ class URLDataFetcher(DataFetcherStrategy):
         - `XLS`
         - `XML`
     """
+
     SUPPORTED_FORMATS = ["csv", "xlsx", "xls", "xml"]
 
     def __init__(
@@ -258,6 +259,7 @@ class FileSystemDataFetcher(DataFetcherStrategy):
         - `XLS`
         - `XML`
     """
+
     SUPPORTED_FORMATS = ["csv", "xlsx", "xls", "xml"]
 
     def __init__(
@@ -337,6 +339,7 @@ class HardcodedDataFetcher(DataFetcherStrategy):
     This fetcher is used to make a dataframe from hardcoded data, so you can
     build a chart from it.
     """
+
     def __init__(self, data: dict[str, list[Any]]):
         """Initialize the HardcodedDataFetcher.
 

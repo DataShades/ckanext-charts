@@ -164,7 +164,6 @@ class PlotlyChoroplethBuilder(PlotlyBuilder):
             # for string we can skip it, as it will use `legend` instead of `coloraxis`
             # for date we should investigate if choropleth supports it
 
-
             settings["colorbar"].update(
                 {
                     "ticks": "inside",  # Place the ticks on the colorbar

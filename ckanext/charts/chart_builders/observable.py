@@ -26,8 +26,7 @@ class ObservableBuilder(BaseChartBuilder):
             ObservableScatterForm,
         ]
 
-    def _set_chart_global_settings(
-        self, data: dict[str, Any]) -> dict[str, Any]:
+    def _set_chart_global_settings(self, data: dict[str, Any]) -> dict[str, Any]:
         """Set chart's global settings and plot configs.
 
         Args:
@@ -57,15 +56,13 @@ class ObservableBuilder(BaseChartBuilder):
             {
                 "x": {
                     "label": (
-                        self.settings.get("x_axis_label") or
-                        self.settings.get("x")
+                        self.settings.get("x_axis_label") or self.settings.get("x")
                     ),
                     "reverse": self.settings.get("invert_x", False),
                 },
                 "y": {
                     "label": (
-                        self.settings.get("y_axis_label") or
-                        self.settings.get("y")
+                        self.settings.get("y_axis_label") or self.settings.get("y")
                     ),
                     "reverse": self.settings.get("invert_y", False),
                 },
@@ -102,7 +99,6 @@ class ObservableBarBuilder(ObservableBuilder):
         data["plot"]["y"]["grid"] = True
 
         return data
-
 
     def to_json(self) -> str:
         return json.dumps(self._prepare_data())
@@ -177,7 +173,6 @@ class ObservableHorizontalBarBuilder(ObservableBuilder):
 
         return data
 
-
     def to_json(self) -> str:
         return json.dumps(self._prepare_data())
 
@@ -189,8 +184,7 @@ class ObservableHorizontalBarForm(ObservableBarForm):
 
 class ObservableLineBuilder(ObservableBuilder):
     def _break_chart_by_missing_data(self) -> None:
-        """Find gaps in date column and fill them with missing dates.
-        """
+        """Find gaps in date column and fill them with missing dates."""
         # Create a new column with date values e.g. `2025-01-01`
         self.df["_temp_date_"] = pd.to_datetime(
             self.df[self.settings["x"]],
@@ -294,12 +288,12 @@ class ObservableLineBuilder(ObservableBuilder):
                 data["plot"].pop("color")
         else:
             data["settings"].update(
-            {
-                "y": "value",
-                "stroke": "_category_",
-                "marker": True,
-            },
-        )
+                {
+                    "y": "value",
+                    "stroke": "_category_",
+                    "marker": True,
+                },
+            )
 
         return data
 

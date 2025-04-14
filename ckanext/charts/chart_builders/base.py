@@ -195,7 +195,9 @@ class BaseChartForm(ABC):
     name = ""
 
     def __init__(
-        self, resource_id: str | None = None, dataframe: pd.DataFrame | None = None,
+        self,
+        resource_id: str | None = None,
+        dataframe: pd.DataFrame | None = None,
     ) -> None:
         if dataframe is not None:
             self.df = dataframe

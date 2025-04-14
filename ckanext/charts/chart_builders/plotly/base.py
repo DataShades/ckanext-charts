@@ -37,8 +37,7 @@ class PlotlyBuilder(BaseChartBuilder):
             PlotlyChoroplethForm,
         ]
 
-    def _set_chart_global_settings(
-        self, fig: Figure) -> None:
+    def _set_chart_global_settings(self, fig: Figure) -> None:
         """Set chart's global settings and plot configs.
 
         Args:
