@@ -1,13 +1,14 @@
 from __future__ import annotations
 
+import pickle
+import json
 import hashlib
 import logging
 import os
 import tempfile
 import time
 from abc import ABC, abstractmethod
-from io import BytesIO
-from typing import IO
+from typing import IO, Any
 
 import pandas as pd
 
@@ -60,36 +61,43 @@ class RedisCache(CacheStrategy):
     def __init__(self):
         self.client = connect_to_redis()
 
-    def get_data(self, key: str) -> pd.DataFrame | None:
+    def get_data(self, key: str) -> dict[str, Any] | None:
         """Return data from cache if exists.
 
         Args:
             key: The cache key to retrieve the data.
 
         Returns:
-            The data if exists, otherwise None.
+            A dict with 'data' (pd.DataFrame) and 'settings' (dict), or None if not found.
         """
         raw_data = self.client.get(key)
 
         if not raw_data:
             return None
 
-        return pd.read_csv(BytesIO(raw_data))  # type: ignore
+        return pickle.loads(raw_data)
 
-    def set_data(self, key: str, data: pd.DataFrame):
+    def set_data(
+        self,
+        key: str,
+        data: pd.DataFrame,
+        settings: dict[str, Any] | None = None,
+    ):
         """Serialize data and save to Redis.
 
         Args:
             key: The cache key to store the data.
             data: The data to be stored.
+            settings: Optional metadata related to the data.
 
         Raises:
             Exception: If failed to save data to Redis.
         """
         cache_ttl = config.get_redis_cache_ttl()
+        payload = pickle.dumps({"data": data, "settings": settings})
 
         try:
-            self.client.setex(key, cache_ttl, data.to_csv(index=False))
+            self.client.setex(key, cache_ttl, payload)
         except Exception:
             log.exception("Failed to save data to Redis")
 
@@ -113,14 +121,14 @@ class FileCache(CacheStrategy):
     def __init__(self):
         self.directory = get_file_cache_path()
 
-    def get_data(self, key: str) -> pd.DataFrame | None:
+    def get_data(self, key: str) -> dict[str, Any] | None:
         """Return data from cache if exists.
 
         Args:
             key: The cache key to retrieve the data.
 
         Returns:
-            The data if exists, otherwise None.
+            A dict with 'data' (pd.DataFrame) and 'settings' (dict), or None if not found.
         """
 
         file_path = self.make_file_path_from_key(key)
@@ -130,7 +138,7 @@ class FileCache(CacheStrategy):
                 return None
 
             with open(file_path, "rb") as f:
-                return self.read_data(f)
+                return self.read_data(f, file_path)
 
         return None
 
@@ -145,24 +153,36 @@ class FileCache(CacheStrategy):
             The data if exists, otherwise None.
         """
 
-    def set_data(self, key: str, data: pd.DataFrame) -> None:
-        """Store data to cache.
+    def set_data(
+        self,
+        key: str,
+        data: pd.DataFrame,
+        settings: dict[str, Any] | None = None,
+    ) -> None:
+        """Store data and metadata to cache.
 
         Args:
             key: The cache key to store the data.
             data: The data to be stored.
+            settings: Optional metadata related to the data.
         """
         file_path = self.make_file_path_from_key(key)
 
-        self.write_data(file_path, data)
+        self.write_data(file_path, data, settings)
 
     @abstractmethod
-    def write_data(self, file_path: str, data: pd.DataFrame) -> None:
+    def write_data(
+        self,
+        file_path: str,
+        data: pd.DataFrame,
+        settings: dict[str, Any] | None = None,
+    ) -> None:
         """Defines how to write data to a file.
 
         Args:
             file_path: The path to the file.
             data: The data to be stored.
+            settings: Optional metadata related to the data.
         """
 
     def invalidate(self, key: str) -> None:
@@ -217,13 +237,50 @@ class FileCache(CacheStrategy):
 
         return time.time() - os.path.getmtime(file_path) > file_ttl
 
+    def get_meta_path(self, file_path: str) -> str:
+        """Return the metadata file path for a given file.
+
+        Args:
+            file_path: The original file path.
+
+        Returns:
+            The corresponding .meta file path.
+        """
+        return file_path + ".meta"
+
+    def write_metadata(self, file_path: str, settings: dict[str, Any] | None):
+        """Write metadata to a .meta file if settings are provided.
+
+        Args:
+            file_path: The original file path.
+            settings: The metadata to store.
+        """
+        if settings:
+            with open(self.get_meta_path(file_path), "w", encoding="utf-8") as f:
+                json.dump(settings, f)
+
+    def read_metadata(self, file_path: str) -> dict[str, Any] | None:
+        """Read metadata from a .meta file if it exists.
+
+        Args:
+            file_path: The original file path.
+
+        Returns:
+            The metadata if it exists, otherwise None.
+        """
+        meta_path = self.get_meta_path(file_path)
+        if os.path.exists(meta_path):
+            with open(meta_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        return None
+
 
 class FileCacheORC(FileCache):
     """Cache data as ORC file"""
 
     FILE_FORMAT = "orc"
 
-    def read_data(self, file: IO) -> pd.DataFrame | None:
+    def read_data(self, file: IO, file_path: str) -> dict[str, Any] | None:
         """Read cached data from an ORC file.
 
         Args:
@@ -234,19 +291,28 @@ class FileCacheORC(FileCache):
         """
         from pyarrow import orc
 
-        return orc.ORCFile(file).read().to_pandas()
+        df = orc.ORCFile(file).read().to_pandas()
+        settings = self.read_metadata(file_path)
+        return {"data": df, "settings": settings}
 
-    def write_data(self, file_path: str, data: pd.DataFrame) -> None:
+    def write_data(
+        self,
+        file_path: str,
+        data: pd.DataFrame,
+        settings: dict[str, Any] | None = None,
+    ) -> None:
         """Write data to an ORC file.
 
         Args:
             file_path: The path to the file.
             data: The data to be stored.
+            settings: Optional metadata related to the data.
         """
         for col in data.select_dtypes(include=["object"]).columns:
             data[col] = data[col].astype(str)
 
         data.to_orc(file_path)
+        self.write_metadata(file_path, settings)
 
 
 class FileCacheCSV(FileCache):
@@ -254,25 +320,35 @@ class FileCacheCSV(FileCache):
 
     FILE_FORMAT = "csv"
 
-    def read_data(self, file: IO) -> pd.DataFrame | None:
-        """Read cached data from a CSV file.
+    def read_data(self, file: IO, file_path: str) -> dict[str, Any]:
+        """Read cached data and metadata from a CSV file.
 
         Args:
-            file: The file object to read the data.
+            file: The file object.
+            file_path: The original file path.
 
         Returns:
-            The data if exists, otherwise None.
+            Dict with 'data' (DataFrame) and 'settings' (optional metadata).
         """
-        return pd.read_csv(file)
+        df = pd.read_csv(file)
+        settings = self.read_metadata(file_path)
+        return {"data": df, "settings": settings}
 
-    def write_data(self, file_path: str, data: pd.DataFrame) -> None:
-        """Write data to a CSV file.
+    def write_data(
+        self,
+        file_path: str,
+        data: pd.DataFrame,
+        settings: dict[str, Any] | None = None,
+    ) -> None:
+        """Write data to a CSV file and optionally write settings metadata.
 
         Args:
             file_path: The path to the file.
             data: The data to be stored.
+            settings: Optional metadata related to the data.
         """
         data.to_csv(file_path, index=False)
+        self.write_metadata(file_path, settings)
 
 
 def get_cache_manager(cache_strategy: str | None) -> CacheStrategy:

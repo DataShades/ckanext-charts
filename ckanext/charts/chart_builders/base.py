@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import sqlalchemy as sa
 from abc import ABC, abstractmethod
 from typing import Any, cast
 
@@ -10,9 +9,7 @@ import pandas as pd
 import ckan.plugins.toolkit as tk
 from ckan import types
 
-from ckanext.datastore.backend.postgres import get_read_engine
-
-from ckanext.charts import const, fetchers
+from ckanext.charts import const, fetchers, utils
 from ckanext.charts.exception import ChartTypeNotImplementedError, ChartBuildError
 
 
@@ -907,12 +904,6 @@ class BaseChartForm(ABC):
     def get_all_column_names(self) -> list[str]:
         """Get all usable column names (excluding system columns)."""
         if self.resource_id:
-            inspector = sa.inspect(get_read_engine())
-            columns = inspector.get_columns(self.resource_id)
-            return [
-                col["name"]
-                for col in columns
-                if col["name"] not in {"_id", "_full_text"}
-            ]
+            return utils.get_column_names(self.resource_id)
 
         return self.df.columns

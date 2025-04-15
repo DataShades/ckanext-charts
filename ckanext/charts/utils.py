@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sqlalchemy as sa
 import math
 from typing import Any
 
@@ -7,6 +8,7 @@ import pandas as pd
 
 import ckan.plugins.toolkit as tk
 
+from ckanext.datastore.backend.postgres import get_read_engine
 from ckanext.charts.chart_builders import get_chart_engines
 from ckanext.charts.exception import ChartBuildError
 from ckanext.charts.fetchers import DatastoreDataFetcher
@@ -21,9 +23,7 @@ def get_column_options(resource_id: str) -> list[dict[str, str]]:
     Returns:
         List of column options
     """
-    df = DatastoreDataFetcher(resource_id).fetch_data()
-
-    return [{"text": col, "value": col} for col in df.columns]
+    return [{"text": col, "value": col} for col in get_column_names(resource_id)]
 
 
 def printable_file_size(size_bytes: int) -> str:
@@ -140,3 +140,13 @@ def can_view(data_dict: dict[str, Any]) -> bool:
     #     return True
 
     return data_dict["resource"].get("datastore_active")
+
+
+# TODO:
+# - Cache the column names for a day.
+# - Ensure that when the resource changes, the cache is cleared, so the actual columns
+# are fetched.
+def get_column_names(resource_id: str) -> list[str]:
+    inspector = sa.inspect(get_read_engine())
+    columns = inspector.get_columns(resource_id)
+    return [col["name"] for col in columns if col["name"] not in {"_id", "_full_text"}]

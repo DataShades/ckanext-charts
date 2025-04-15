@@ -28,7 +28,7 @@ class TestDataStoreFetcherCache:
 
         fetcher.fetch_data()
 
-        assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
+        assert isinstance(fetcher.get_cached_data()["data"], pd.DataFrame)
 
     def test_invalidate_redis_cache_on_resource_delete(self):
         """Test that the cache is invalidated when the resource is deleted"""
@@ -58,7 +58,7 @@ class TestDataStoreFetcherCache:
 
         fetcher.fetch_data()
 
-        assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
+        assert isinstance(fetcher.get_cached_data()["data"], pd.DataFrame)
 
     def test_invalidate_file_cache_on_resource_delete(self):
         """Test that the cache is invalidated when the resource is deleted"""
@@ -116,7 +116,7 @@ class TestUrlFetcherCache:
 
         fetcher.fetch_data()
 
-        assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
+        assert isinstance(fetcher.get_cached_data()["data"], pd.DataFrame)
 
     @pytest.mark.usefixtures("clean_file_cache")
     def test_hit_cache_file(self, requests_mock):
@@ -128,7 +128,7 @@ class TestUrlFetcherCache:
 
         fetcher.fetch_data()
 
-        assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
+        assert isinstance(fetcher.get_cached_data()["data"], pd.DataFrame)
 
     def test_invalidate_redis_cache(self, requests_mock):
         requests_mock.get(self.URL, content=helpers.get_file_content("csv"))
@@ -162,7 +162,7 @@ class TestFileSystemFetcherCache:
 
         fetcher.fetch_data()
 
-        assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
+        assert isinstance(fetcher.get_cached_data()["data"], pd.DataFrame)
 
     def test_hit_cache_file(self):
         fetcher = fetchers.FileSystemDataFetcher(
@@ -174,7 +174,7 @@ class TestFileSystemFetcherCache:
 
         fetcher.fetch_data()
 
-        assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
+        assert isinstance(fetcher.get_cached_data()["data"], pd.DataFrame)
 
     def test_invalidate_redis_cache(self):
         fetcher = fetchers.FileSystemDataFetcher(helpers.get_file_path("sample.csv"))
@@ -211,7 +211,7 @@ class TestCalculateFileORCExpiration:
 
         fetcher.fetch_data()
 
-        assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
+        assert isinstance(fetcher.get_cached_data()["data"], pd.DataFrame)
 
         file_path = cache.FileCacheORC().make_file_path_from_key(
             fetcher.make_cache_key(),
@@ -230,7 +230,7 @@ class TestCalculateFileORCExpiration:
 
         fetcher.fetch_data()
 
-        assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
+        assert isinstance(fetcher.get_cached_data()["data"], pd.DataFrame)
 
         file_path = cache.FileCacheORC().make_file_path_from_key(
             fetcher.make_cache_key(),

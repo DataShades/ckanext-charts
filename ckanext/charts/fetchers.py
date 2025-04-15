@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import logging
-import hashlib
-import json
 from abc import ABC, abstractmethod
 from io import BytesIO
 from typing import Any
@@ -66,6 +64,19 @@ class DatastoreDataFetcher(DataFetcherStrategy):
     This fetcher is used to fetch data from the DataStore using the resource ID.
     """
 
+    KEYS_TO_COMPARE = [
+        "x",
+        "y",
+        "color",
+        "animation_frame",
+        "size",
+        "names",
+        "values",
+        "filter",
+        "sort_x",
+        "sort_y",
+    ]
+
     def __init__(
         self,
         resource_id: str,
@@ -95,6 +106,18 @@ class DatastoreDataFetcher(DataFetcherStrategy):
         Returns:
             pd.DataFrame: Data from the DataStore
         """
+        if config.is_cache_enabled():
+            cached = self.get_cached_data()
+
+            if (
+                cached
+                and cached.get("data") is not None
+                and not self._settings_changed(cached.get("settings", {}))
+            ):
+                return cached["data"]
+
+        limit = self.settings.get("limit", self.limit) if self.settings else self.limit
+
         try:
             needed_columns = self.get_needed_columns()
             filter_conditions = self.parse_filters()
@@ -106,23 +129,14 @@ class DatastoreDataFetcher(DataFetcherStrategy):
                 if filter_conditions:
                     query = query.where(sa.and_(*filter_conditions))
 
-                limit = (
-                    self.settings.get("limit", self.limit)
-                    if self.settings
-                    else self.limit
-                )
                 query = query.limit(limit)
 
             else:
-                # Fallback: Fetch a single row to identify available columns
-                # (excluding system columns).
-                # This query is lightweight, with a limit of 1 to avoid unnecessary
-                # expense before using actual data fields or filters.
                 columns_expr = self._get_all_table_columns()
                 query = (
                     sa.select(*columns_expr)
                     .select_from(sa.table(self.resource_id))
-                    .limit(1)
+                    .limit(limit)
                 )
 
             sort_clauses = self.build_sort_clauses()
@@ -139,7 +153,56 @@ class DatastoreDataFetcher(DataFetcherStrategy):
                 f"Error fetching data from DataStore: {e}",
             ) from e
 
+        if config.is_cache_enabled():
+            self.cache.set_data(
+                self.make_cache_key(),
+                df,
+                self.settings,
+            )
+
         return df
+
+    def _settings_changed(self, cached_settings: dict[str, Any]) -> bool:
+        """Checks if relevant settings have changed compared to the cached version.
+
+        Compares specific keys and returns True if any differ. Also returns True
+        if the current limit is higher than the cached limit.
+        """
+        if not self.settings:
+            return False
+
+        if not cached_settings:
+            return True
+
+        def normalize_value(key, value):
+            if key in {"sort_x", "sort_y"}:
+                if isinstance(value, list):
+                    value = value[-1] if value else None
+
+                if value in {"false", "False"}:
+                    return False
+                if value in {"true", "True"}:
+                    return True
+
+                return tk.asbool(value) if value is not None else None
+
+            return value or None
+
+        for key in self.KEYS_TO_COMPARE:
+
+            # Get the values and normalize them
+            val_current = normalize_value(key, self.settings.get(key))
+            val_cached = normalize_value(key, cached_settings.get(key))
+
+            # Compare normalized values
+            if val_current != val_cached:
+                return True
+
+        # Check if the limit has increased
+        current_limit = tk.asint(self.settings.get("limit", 1000))
+        cached_limit = tk.asint(cached_settings.get("limit", 1000))
+
+        return current_limit > cached_limit
 
     def _format_column(self, col_name: str):
         """Format the 'date_time' column for SQL queries; return other columns as-is.
@@ -203,6 +266,10 @@ class DatastoreDataFetcher(DataFetcherStrategy):
                     if ":" in condition:
                         column, _ = condition.split(":", 1)
                         needed_columns.add(column.strip())
+            else:
+                for key, value in self.settings.items():
+                    if key.startswith("chart-column-") and value:
+                        needed_columns.add(value)
         return needed_columns
 
     def parse_filters(self) -> list:
@@ -216,10 +283,28 @@ class DatastoreDataFetcher(DataFetcherStrategy):
             filters = self.settings.get("filter")
 
             if filters:
+                # Dictionary to group multiple values for the same column
+                column_values_map = {}
+
                 for condition in filters.split("|"):
                     if ":" in condition:
                         column, value = condition.split(":", 1)
-                        expressions.append(sa.column(column) == value)
+
+                        # Group values for the same column
+                        if column not in column_values_map:
+                            column_values_map[column] = []
+
+                        column_values_map[column].append(value)
+
+                # Generate SQLAlchemy expressions
+                for column, values in column_values_map.items():
+                    if len(values) == 1:
+                        # Single value: column == value
+                        expressions.append(sa.column(column) == values[0])
+                    else:
+                        # Multiple values: column IN (value1, value2, ...)
+                        expressions.append(sa.column(column).in_(values))
+
         return expressions
 
     def build_sort_clauses(self) -> list:
@@ -234,9 +319,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
         ):
             sort_clauses.append(sa.column(self.settings.get("x")))
 
-        if not isinstance(self.settings.get("sort_y"), list) and tk.asbool(
-            self.settings.get("sort_y"),
-        ):
+        if isinstance(self.settings.get("sort_y"), list):
             y_fields = self.settings.get("y")
             if isinstance(y_fields, list):
                 sort_clauses.extend(
@@ -255,29 +338,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
         Returns:
             str: The cache key
         """
-        prefix = f"ckanext-charts:datastore:{self.resource_id}"
-
-        if not self.settings:
-            return prefix
-
-        # Extract only fields that affect the query
-        query_relevant = {
-            "x": self.settings.get("x"),
-            "y": self.settings.get("y"),
-            "color": self.settings.get("color"),
-            "animation_frame": self.settings.get("animation_frame"),
-            "filter": self.settings.get("filter"),
-            "limit": self.settings.get("limit"),
-            "sort_x": self.settings.get("sort_x"),
-            "sort_y": self.settings.get("sort_y"),
-            "resource_id": self.resource_id,
-        }
-
-        settings_part = hashlib.md5(
-            json.dumps(query_relevant, sort_keys=True).encode(),
-        ).hexdigest()
-
-        return f"{prefix}:settings:{settings_part}"
+        return f"ckanext-charts:datastore:{self.resource_id}"
 
 
 class URLDataFetcher(DataFetcherStrategy):
@@ -323,10 +384,10 @@ class URLDataFetcher(DataFetcherStrategy):
             pd.DataFrame: Data fetched from the URL
         """
         if config.is_cache_enabled():
-            cached_df = self.get_cached_data()
+            cached = self.get_cached_data()
 
-            if cached_df is not None:
-                return cached_df
+            if cached is not None:
+                return cached["data"]
 
         data = self.make_request()
 
@@ -433,10 +494,10 @@ class FileSystemDataFetcher(DataFetcherStrategy):
         """
 
         if config.is_cache_enabled():
-            cached_df = self.get_cached_data()
+            cached = self.get_cached_data()
 
-            if cached_df is not None:
-                return cached_df
+            if cached is not None:
+                return cached["data"]
 
         if self.file_format not in self.SUPPORTED_FORMATS:
             raise exception.DataFetchError(

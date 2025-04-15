@@ -23,7 +23,7 @@ class TestDatastoreDataFetcher:
         result = fetchers.DatastoreDataFetcher(resource["id"]).fetch_data()
 
         assert isinstance(result, pd.DataFrame)
-        assert len(result) == 1
+        assert len(result) == 2
         assert list(result.columns) == ["name", "age"]
 
     def test_not_in_datastore(self):
