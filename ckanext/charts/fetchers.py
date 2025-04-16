@@ -121,40 +121,36 @@ class DatastoreDataFetcher(DataFetcherStrategy):
 
         limit = self.settings.get("limit", self.limit) if self.settings else self.limit
 
+        needed_columns = self.get_needed_columns()
+        columns_expr = self._prepare_column_expressions(needed_columns)
+
+        if columns_expr:
+            query = sa.select(*columns_expr).select_from(sa.table(self.resource_id))
+
+            filter_conditions = self.parse_filters()
+            if filter_conditions:
+                query = query.where(sa.and_(*filter_conditions))
+
+        else:
+            columns_expr = self._get_all_table_columns()
+            query = sa.select(*columns_expr).select_from(sa.table(self.resource_id))
+
+        sort_clauses = self.build_sort_clauses()
+        if sort_clauses:
+            query = query.order_by(*sort_clauses)
+
+        query = query.limit(limit)
+
         try:
-            needed_columns = self.get_needed_columns()
-            columns_expr = self._prepare_column_expressions(needed_columns)
-
-            if columns_expr:
-                query = sa.select(*columns_expr).select_from(sa.table(self.resource_id))
-
-                filter_conditions = self.parse_filters()
-                if filter_conditions:
-                    query = query.where(sa.and_(*filter_conditions))
-
-                query = query.limit(limit)
-
-            else:
-                columns_expr = self._get_all_table_columns()
-                query = (
-                    sa.select(*columns_expr)
-                    .select_from(sa.table(self.resource_id))
-                    .limit(limit)
-                )
-
-            sort_clauses = self.build_sort_clauses()
-            if sort_clauses:
-                query = query.order_by(*sort_clauses)
-
             df = pd.read_sql_query(query, get_read_engine())
-            # Apply numeric conversion to all columns - it will safely ignore
-            # non-numeric values
-            df = df.apply(pd.to_numeric, errors="ignore")
-
         except (ProgrammingError, UndefinedTable, NoSuchTableError) as e:
             raise exception.DataFetchError(
                 f"Error fetching data from DataStore: {e}",
             ) from e
+
+        # Apply numeric conversion to all columns - it will safely ignore
+        # non-numeric values
+        df = df.apply(pd.to_numeric, errors="ignore")
 
         if config.is_cache_enabled():
             self.cache.set_data(
