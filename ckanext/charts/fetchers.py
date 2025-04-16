@@ -124,24 +124,24 @@ class DatastoreDataFetcher(DataFetcherStrategy):
         needed_columns = self.get_needed_columns()
         columns_expr = self._prepare_column_expressions(needed_columns)
 
-        if columns_expr:
-            query = sa.select(*columns_expr).select_from(sa.table(self.resource_id))
+        try:
+            if columns_expr:
+                query = sa.select(*columns_expr).select_from(sa.table(self.resource_id))
+
+            else:
+                columns_expr = self._get_all_table_columns()
+                query = sa.select(*columns_expr).select_from(sa.table(self.resource_id))
 
             filter_conditions = self.parse_filters()
             if filter_conditions:
                 query = query.where(sa.and_(*filter_conditions))
 
-        else:
-            columns_expr = self._get_all_table_columns()
-            query = sa.select(*columns_expr).select_from(sa.table(self.resource_id))
+            sort_clauses = self.build_sort_clauses()
+            if sort_clauses:
+                query = query.order_by(*sort_clauses)
 
-        sort_clauses = self.build_sort_clauses()
-        if sort_clauses:
-            query = query.order_by(*sort_clauses)
+            query = query.limit(limit)
 
-        query = query.limit(limit)
-
-        try:
             df = pd.read_sql_query(query, get_read_engine())
         except (ProgrammingError, UndefinedTable, NoSuchTableError) as e:
             raise exception.DataFetchError(
