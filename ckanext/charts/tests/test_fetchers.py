@@ -18,13 +18,13 @@ class TestDatastoreDataFetcher:
 
     def test_fetch_data_success(self):
         """Test fetching data from the DataStore"""
-        resource = helpers.create_resource_with_datastore()
+        resource = helpers.create_resource_with_datastore(row_count=2)
 
         result = fetchers.DatastoreDataFetcher(resource["id"]).fetch_data()
 
         assert isinstance(result, pd.DataFrame)
         assert len(result) == 2
-        assert list(result.columns) == ["name", "age"]
+        assert set(result.columns) == {"name", "age", "city", "score"}
 
     def test_not_in_datastore(self):
         """Test fetching data when resource is not in the DataStore"""
@@ -32,6 +32,40 @@ class TestDatastoreDataFetcher:
 
         with pytest.raises(DataFetchError):
             fetchers.DatastoreDataFetcher(resource["id"]).fetch_data()
+
+    @pytest.mark.ckan_config("ckanext.charts.enable_cache", False)
+    def test_fetch_data_with_settings_no_cache(self):
+        """Test fetching data from DataStore with settings, without using cache."""
+        resource = helpers.create_resource_with_datastore(row_count=100)
+
+        settings = {
+            "x": "age",
+            "filter": "age:25",
+            "limit": 5,
+        }
+
+        fetcher = fetchers.DatastoreDataFetcher(resource["id"], settings)
+
+        result = fetcher.fetch_data()
+
+        assert isinstance(result, pd.DataFrame)
+        assert result["age"].iloc[0] == 25
+        assert len(result) == 1
+
+    @pytest.mark.ckan_config("ckanext.charts.enable_cache", False)
+    def test_fetch_limited_data_when_no_settings_and_no_cache(self):
+        """Test default fetch behavior without settings and with caching disabled."""
+        resource = helpers.create_resource_with_datastore(row_count=5000)
+
+        fetcher = fetchers.DatastoreDataFetcher(resource["id"])
+
+        result = fetcher.fetch_data()
+
+        assert isinstance(result, pd.DataFrame)
+        # Default limit of 1000 applies when no settings are given
+        assert len(result) == 1000
+        # Ensure no columns are excluded when no projection settings are applied
+        assert set(result.columns) == {"name", "age", "city", "score"}
 
 
 @pytest.mark.usefixtures("clean_redis")

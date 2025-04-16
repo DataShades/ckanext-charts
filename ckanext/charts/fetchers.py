@@ -10,13 +10,13 @@ import pandas as pd
 import requests
 import sqlalchemy as sa
 from psycopg2.errors import UndefinedTable
-from sqlalchemy.exc import ProgrammingError
+from sqlalchemy.exc import ProgrammingError, NoSuchTableError
 
 import ckan.plugins.toolkit as tk
 
 from ckanext.datastore.backend.postgres import get_read_engine
 
-from ckanext.charts import cache, config, exception
+from ckanext.charts import cache, config, exception, types
 
 log = logging.getLogger(__name__)
 
@@ -49,7 +49,7 @@ class DataFetcherStrategy(ABC):
         """Invalidate the cache for the data fetcher."""
         self.cache.invalidate(self.make_cache_key())
 
-    def get_cached_data(self) -> pd.DataFrame | None:
+    def get_cached_data(self) -> types.CachedChartData | None:
         """Fetch data from the cache.
 
         Returns:
@@ -64,7 +64,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
     This fetcher is used to fetch data from the DataStore using the resource ID.
     """
 
-    KEYS_TO_COMPARE = [
+    COLUMN_REFERENCE_FIELDS = [
         "x",
         "y",
         "color",
@@ -72,6 +72,9 @@ class DatastoreDataFetcher(DataFetcherStrategy):
         "size",
         "names",
         "values",
+    ]
+
+    KEYS_TO_COMPARE = COLUMN_REFERENCE_FIELDS + [
         "filter",
         "sort_x",
         "sort_y",
@@ -81,7 +84,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
         self,
         resource_id: str,
         settings: dict[str, Any] | None = None,
-        limit: int = 50000,
+        limit: int = 1000,
         cache_strategy: str | None = None,
     ):
         """Initialize the DatastoreDataFetcher.
@@ -111,21 +114,21 @@ class DatastoreDataFetcher(DataFetcherStrategy):
 
             if (
                 cached
-                and cached.get("data") is not None
+                and cached.get("df") is not None
                 and not self._settings_changed(cached.get("settings", {}))
             ):
-                return cached["data"]
+                return cached["df"]
 
         limit = self.settings.get("limit", self.limit) if self.settings else self.limit
 
         try:
             needed_columns = self.get_needed_columns()
-            filter_conditions = self.parse_filters()
-
             columns_expr = self._prepare_column_expressions(needed_columns)
 
             if columns_expr:
                 query = sa.select(*columns_expr).select_from(sa.table(self.resource_id))
+
+                filter_conditions = self.parse_filters()
                 if filter_conditions:
                     query = query.where(sa.and_(*filter_conditions))
 
@@ -148,7 +151,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
             # non-numeric values
             df = df.apply(pd.to_numeric, errors="ignore")
 
-        except (ProgrammingError, UndefinedTable, sa.exc.NoSuchTableError) as e:
+        except (ProgrammingError, UndefinedTable, NoSuchTableError) as e:
             raise exception.DataFetchError(
                 f"Error fetching data from DataStore: {e}",
             ) from e
@@ -162,7 +165,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
 
         return df
 
-    def _settings_changed(self, cached_settings: dict[str, Any]) -> bool:
+    def _settings_changed(self, cached_settings: dict[str, Any] | None) -> bool:
         """Checks if relevant settings have changed compared to the cached version.
 
         Compares specific keys and returns True if any differ. Also returns True
@@ -178,11 +181,6 @@ class DatastoreDataFetcher(DataFetcherStrategy):
             if key in {"sort_x", "sort_y"}:
                 if isinstance(value, list):
                     value = value[-1] if value else None
-
-                if value in {"false", "False"}:
-                    return False
-                if value in {"true", "True"}:
-                    return True
 
                 return tk.asbool(value) if value is not None else None
 
@@ -235,7 +233,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
             if col["name"] not in {"_id", "_full_text"}
         ]
 
-    def get_needed_columns(self) -> set:
+    def get_needed_columns(self) -> set[str]:
         """Extract a set of all column names required for chart generation.
 
         This includes:
@@ -243,69 +241,72 @@ class DatastoreDataFetcher(DataFetcherStrategy):
         - Filter columns used in the 'filter' expression (e.g., 'column:value|...')
         """
         needed_columns = set()
-        if self.settings:
-            for field in [
-                "x",
-                "y",
-                "color",
-                "animation_frame",
-                "size",
-                "names",
-                "values",
-            ]:
-                value = self.settings.get(field)
-                if isinstance(value, list):
-                    needed_columns.update(value)
-                elif value:
-                    needed_columns.add(value)
+        if not self.settings:
+            return needed_columns
 
-            # Include filter columns
-            filters = self.settings.get("filter")
-            if filters:
-                for condition in filters.split("|"):
-                    if ":" in condition:
-                        column, _ = condition.split(":", 1)
-                        needed_columns.add(column.strip())
-            else:
-                for key, value in self.settings.items():
-                    if key.startswith("chart-column-") and value:
-                        needed_columns.add(value)
+        for field in self.COLUMN_REFERENCE_FIELDS:
+            value = self.settings.get(field)
+            if isinstance(value, list):
+                needed_columns.update(value)
+            elif value:
+                needed_columns.add(value)
+
+        # Include filter columns
+        # if only a column name is selected we need to fetch
+        # the column for the DataFrame, because we need values for this columns
+        if filters := self.settings.get("filter"):
+            for condition in filters.split("|"):
+                if ":" not in condition:
+                    continue
+                column, _ = condition.split(":", 1)
+                needed_columns.add(column.strip())
+        else:
+            for key, value in self.settings.items():
+                if not key.startswith("chart-column-") or not value:
+                    continue
+                needed_columns.add(value)
         return needed_columns
 
-    def parse_filters(self) -> list:
-        """Parse filter string from settings into SQLAlchemy expressions.
+    def parse_filters(self) -> list[sa.sql.ClauseElement]:
+        """Parse filter string from settings into SQLAlchemy query.
 
         Returns:
-            list: List of SQLAlchemy filter expressions (e.g., column == value).
+            List of SQLAlchemy filter query (e.g., column == value).
         """
-        expressions = []
-        if self.settings:
-            filters = self.settings.get("filter")
+        query = []
+        if not self.settings:
+            return query
 
-            if filters:
-                # Dictionary to group multiple values for the same column
-                column_values_map = {}
+        filters = self.settings.get("filter")
 
-                for condition in filters.split("|"):
-                    if ":" in condition:
-                        column, value = condition.split(":", 1)
+        if not filters:
+            return query
 
-                        # Group values for the same column
-                        if column not in column_values_map:
-                            column_values_map[column] = []
+        # Dictionary to group multiple values for the same column
+        column_values_map = {}
 
-                        column_values_map[column].append(value)
+        for condition in filters.split("|"):
+            if ":" not in condition:
+                continue
 
-                # Generate SQLAlchemy expressions
-                for column, values in column_values_map.items():
-                    if len(values) == 1:
-                        # Single value: column == value
-                        expressions.append(sa.column(column) == values[0])
-                    else:
-                        # Multiple values: column IN (value1, value2, ...)
-                        expressions.append(sa.column(column).in_(values))
+            column, value = condition.split(":", 1)
 
-        return expressions
+            # Group values for the same column
+            if column not in column_values_map:
+                column_values_map[column] = []
+
+            column_values_map[column].append(value)
+
+        # Generate SQLAlchemy expressions
+        for column, values in column_values_map.items():
+            if len(values) == 1:
+                # Single value: column == value
+                query.append(sa.column(column) == values[0])
+            else:
+                # Multiple values: column IN (value1, value2, ...)
+                query.append(sa.column(column).in_(values))
+
+        return query
 
     def build_sort_clauses(self) -> list:
         """Build sort clauses for SQL query based on settings."""
@@ -317,7 +318,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
         if not isinstance(self.settings.get("sort_x"), list) and tk.asbool(
             self.settings.get("sort_x"),
         ):
-            sort_clauses.append(sa.column(self.settings.get("x")))
+            sort_clauses.append(sa.column(self.settings["x"]))
 
         if isinstance(self.settings.get("sort_y"), list):
             y_fields = self.settings.get("y")
@@ -387,7 +388,7 @@ class URLDataFetcher(DataFetcherStrategy):
             cached = self.get_cached_data()
 
             if cached is not None:
-                return cached["data"]
+                return cached["df"]
 
         data = self.make_request()
 
@@ -497,7 +498,7 @@ class FileSystemDataFetcher(DataFetcherStrategy):
             cached = self.get_cached_data()
 
             if cached is not None:
-                return cached["data"]
+                return cached["df"]
 
         if self.file_format not in self.SUPPORTED_FORMATS:
             raise exception.DataFetchError(
