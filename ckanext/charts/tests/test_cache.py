@@ -8,7 +8,7 @@ from freezegun import freeze_time
 
 from ckan.tests.helpers import call_action
 
-from ckanext.charts import cache, config, const, fetchers
+from ckanext.charts import cache, config, const, fetchers, types
 from ckanext.charts.tests import helpers
 
 
@@ -29,8 +29,9 @@ class TestDataStoreFetcherCache:
         cached = fetcher.get_cached_data()
 
         assert cached is not None
-        assert isinstance(cached["df"], pd.DataFrame)
-        assert cached["settings"] == settings
+        assert isinstance(cached, types.ChartData)
+        assert isinstance(cached.df, pd.DataFrame)
+        assert cached.settings == settings
 
     def test_invalidate_redis_cache_on_resource_delete(self):
         """Test that the cache is invalidated when the resource is deleted"""
@@ -64,8 +65,9 @@ class TestDataStoreFetcherCache:
         cached = fetcher.get_cached_data()
 
         assert cached is not None
-        assert isinstance(cached["df"], pd.DataFrame)
-        assert cached["settings"] == settings
+        assert isinstance(cached, types.ChartData)
+        assert isinstance(cached.df, pd.DataFrame)
+        assert cached.settings == settings
 
     def test_invalidate_file_cache_on_resource_delete(self):
         """Test that the cache is invalidated when the resource is deleted"""
@@ -134,10 +136,11 @@ class TestDataStoreFetcherCache:
         cached = fetcher.get_cached_data()
 
         assert cached is not None
-        assert isinstance(cached["df"], pd.DataFrame)
-        assert cached["df"].shape[0] == 10
-        assert list(cached["df"].columns) == ["age"]
-        assert cached["settings"] == settings
+        assert isinstance(cached, types.ChartData)
+        assert isinstance(cached.df, pd.DataFrame)
+        assert cached.df.shape[0] == 10
+        assert list(cached.df.columns) == ["age"]
+        assert cached.settings == settings
 
         settings = {"x": "city", "y": "score", "limit": 50}
 
@@ -151,9 +154,10 @@ class TestDataStoreFetcherCache:
         cached = fetcher.get_cached_data()
 
         assert cached is not None
-        assert cached["df"].shape[0] == 50
-        assert set(cached["df"].columns) == {"city", "score"}
-        assert cached["settings"] == settings
+        assert isinstance(cached, types.ChartData)
+        assert cached.df.shape[0] == 50
+        assert set(cached.df.columns) == {"city", "score"}
+        assert cached.settings == settings
 
     @pytest.mark.parametrize(
         "cache_strategy",
@@ -183,9 +187,10 @@ class TestDataStoreFetcherCache:
         cached = fetcher.get_cached_data()
 
         assert cached is not None
-        assert isinstance(cached["df"], pd.DataFrame)
-        assert cached["df"].shape[0] == 1
-        assert cached["settings"] == settings
+        assert isinstance(cached, types.ChartData)
+        assert isinstance(cached.df, pd.DataFrame)
+        assert cached.df.shape[0] == 1
+        assert cached.settings == settings
 
     @pytest.mark.parametrize(
         "cache_strategy",
@@ -217,11 +222,12 @@ class TestDataStoreFetcherCache:
         cached = fetcher.get_cached_data()
 
         assert cached is not None
-        assert isinstance(cached["df"], pd.DataFrame)
+        assert isinstance(cached, types.ChartData)
+        assert isinstance(cached.df, pd.DataFrame)
 
-        assert cached["df"].shape[0] == 55
+        assert cached.df.shape[0] == 55
         # Check if the data is sorted by the "age" column
-        age_values = cached["df"]["age"].tolist()
+        age_values = cached.df["age"].tolist()
         assert age_values == sorted(age_values)
 
     def test_cached_data_default_limit(self):
@@ -240,11 +246,12 @@ class TestDataStoreFetcherCache:
         cached = fetcher.get_cached_data()
 
         assert cached is not None
-        assert isinstance(cached["df"], pd.DataFrame)
+        assert isinstance(cached, types.ChartData)
+        assert isinstance(cached.df, pd.DataFrame)
 
         # Should return 1000 rows by default
-        assert cached["df"].shape[0] == 1000
-        assert cached["settings"] == settings
+        assert cached.df.shape[0] == 1000
+        assert cached.settings == settings
 
 
 @pytest.mark.usefixtures("clean_redis", "clean_file_cache")
@@ -262,7 +269,8 @@ class TestUrlFetcherCache:
         cached = fetcher.get_cached_data()
 
         assert cached is not None
-        assert isinstance(cached["df"], pd.DataFrame)
+        assert isinstance(cached, types.ChartData)
+        assert isinstance(cached.df, pd.DataFrame)
 
     @pytest.mark.usefixtures("clean_file_cache")
     def test_hit_cache_file(self, requests_mock):
@@ -276,7 +284,8 @@ class TestUrlFetcherCache:
         cached = fetcher.get_cached_data()
 
         assert cached is not None
-        assert isinstance(cached["df"], pd.DataFrame)
+        assert isinstance(cached, types.ChartData)
+        assert isinstance(cached.df, pd.DataFrame)
 
     def test_invalidate_redis_cache(self, requests_mock):
         requests_mock.get(self.URL, content=helpers.get_file_content("csv"))
@@ -312,7 +321,8 @@ class TestFileSystemFetcherCache:
         cached = fetcher.get_cached_data()
 
         assert cached is not None
-        assert isinstance(cached["df"], pd.DataFrame)
+        assert isinstance(cached, types.ChartData)
+        assert isinstance(cached.df, pd.DataFrame)
 
     def test_hit_cache_file(self):
         fetcher = fetchers.FileSystemDataFetcher(
@@ -326,7 +336,8 @@ class TestFileSystemFetcherCache:
         cached = fetcher.get_cached_data()
 
         assert cached is not None
-        assert isinstance(cached["df"], pd.DataFrame)
+        assert isinstance(cached, types.ChartData)
+        assert isinstance(cached.df, pd.DataFrame)
 
     def test_invalidate_redis_cache(self):
         fetcher = fetchers.FileSystemDataFetcher(helpers.get_file_path("sample.csv"))
@@ -365,7 +376,8 @@ class TestCalculateFileORCExpiration:
         cached = fetcher.get_cached_data()
 
         assert cached is not None
-        assert isinstance(cached["df"], pd.DataFrame)
+        assert isinstance(cached, types.ChartData)
+        assert isinstance(cached.df, pd.DataFrame)
 
         file_path = cache.FileCacheORC().make_file_path_from_key(
             fetcher.make_cache_key(),
@@ -386,7 +398,8 @@ class TestCalculateFileORCExpiration:
         cached = fetcher.get_cached_data()
 
         assert cached is not None
-        assert isinstance(cached["df"], pd.DataFrame)
+        assert isinstance(cached, types.ChartData)
+        assert isinstance(cached.df, pd.DataFrame)
 
         file_path = cache.FileCacheORC().make_file_path_from_key(
             fetcher.make_cache_key(),

@@ -49,11 +49,11 @@ class DataFetcherStrategy(ABC):
         """Invalidate the cache for the data fetcher."""
         self.cache.invalidate(self.make_cache_key())
 
-    def get_cached_data(self) -> types.CachedChartData | None:
+    def get_cached_data(self) -> types.SerializableType:
         """Fetch data from the cache.
 
         Returns:
-            pd.DataFrame | None: The cached data or None if not found
+           ChartData or None if not found.
         """
         return self.cache.get_data(self.make_cache_key())
 
@@ -113,11 +113,13 @@ class DatastoreDataFetcher(DataFetcherStrategy):
             cached = self.get_cached_data()
 
             if (
-                cached
-                and cached.get("df") is not None
-                and not self._settings_changed(cached.get("settings", {}))
+                isinstance(cached, types.ChartData)
+                and not cached.df.empty
+                and not self._settings_changed(
+                    cached.settings,
+                )
             ):
-                return cached["df"]
+                return cached.df
 
         limit = self.settings.get("limit", self.limit) if self.settings else self.limit
 
@@ -198,7 +200,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
 
         return current_limit > cached_limit
 
-    def _format_column(self, col_name: str):
+    def _format_column(self, col_name: str) -> sa.sql.expression.ColumnElement:
         """Format the 'date_time' column for SQL queries; return other columns as-is.
 
         - 'date_time' is cast to TIMESTAMP and formatted as ISO 8601 string.
@@ -211,14 +213,17 @@ class DatastoreDataFetcher(DataFetcherStrategy):
             ).label("date_time")
         return sa.column(col_name)
 
-    def _prepare_column_expressions(self, column_names):
+    def _prepare_column_expressions(
+        self,
+        column_names: set[str],
+    ) -> list[sa.sql.expression.ColumnElement]:
         """Convert column names to SQLAlchemy column expressions."""
         if not column_names:
             return []
 
         return [self._format_column(col) for col in column_names]
 
-    def _get_all_table_columns(self):
+    def _get_all_table_columns(self) -> list[sa.sql.expression.ColumnElement]:
         """Get all columns from the table, excluding system columns."""
         inspector = sa.inspect(get_read_engine())
         columns = inspector.get_columns(self.resource_id)
@@ -382,8 +387,8 @@ class URLDataFetcher(DataFetcherStrategy):
         if config.is_cache_enabled():
             cached = self.get_cached_data()
 
-            if cached is not None:
-                return cached["df"]
+            if isinstance(cached, types.ChartData) and not cached.df.empty:
+                return cached.df
 
         data = self.make_request()
 
@@ -492,8 +497,8 @@ class FileSystemDataFetcher(DataFetcherStrategy):
         if config.is_cache_enabled():
             cached = self.get_cached_data()
 
-            if cached is not None:
-                return cached["df"]
+            if isinstance(cached, types.ChartData) and not cached.df.empty:
+                return cached.df
 
         if self.file_format not in self.SUPPORTED_FORMATS:
             raise exception.DataFetchError(

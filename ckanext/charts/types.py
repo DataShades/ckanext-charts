@@ -1,11 +1,30 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Union
 
 import pandas as pd
-from typing_extensions import TypedDict
+from dataclasses import dataclass, field
 
 
-class CachedChartData(TypedDict):
-    df: pd.DataFrame
-    settings: dict[str, Any] | None
+@dataclass
+class ChartData:
+    """Data structure for cached chart data."""
+
+    df: pd.DataFrame = field(default_factory=pd.DataFrame)
+    settings: dict[str, Any] = field(default_factory=dict)
+    columns: list[str] = field(default_factory=list)
+
+
+SerializableType = Union[
+    None,
+    bool,
+    int,
+    float,
+    str,
+    bytes,
+    list[Any],
+    dict[Any, Any],
+    tuple[Any, ...],
+    set[Any],
+    ChartData,
+]

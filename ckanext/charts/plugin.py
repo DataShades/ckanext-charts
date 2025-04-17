@@ -187,6 +187,9 @@ class ChartsViewPlugin(p.SingletonPlugin):
             cache.invalidate_by_key(
                 fetchers.DatastoreDataFetcher(resource_dict["id"]).make_cache_key(),
             )
+            cache.invalidate_by_key(
+                f"ckanext.charts:datastore:columns:{resource_dict['id']}",
+            )
 
     # IResourceController
 
@@ -199,6 +202,9 @@ class ChartsViewPlugin(p.SingletonPlugin):
         cache.invalidate_by_key(
             fetchers.DatastoreDataFetcher(resource["id"]).make_cache_key(),
         )
+        cache.invalidate_by_key(
+            f"ckanext.charts:datastore:columns:{resource['id']}",
+        )
 
     def after_resource_update(
         self,
@@ -207,6 +213,9 @@ class ChartsViewPlugin(p.SingletonPlugin):
     ) -> None:
         cache.invalidate_by_key(
             fetchers.DatastoreDataFetcher(resource["id"]).make_cache_key(),
+        )
+        cache.invalidate_by_key(
+            f"ckanext.charts:datastore:columns:{resource['id']}",
         )
 
 

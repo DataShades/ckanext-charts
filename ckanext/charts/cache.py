@@ -27,14 +27,14 @@ class CacheStrategy(ABC):
     """
 
     @abstractmethod
-    def get_data(self, key: str) -> types.CachedChartData | None:
+    def get_data(self, key: str) -> types.SerializableType:
         """Return data and settings from cache if exists.
 
         Args:
             key: The cache  key to retrieve the data.
 
         Returns:
-            CachedChartData with 'df' and 'settings', or None if not found.
+            ChartData or None if not found.
         """
 
     @abstractmethod
@@ -61,20 +61,32 @@ class CacheStrategy(ABC):
         """
 
 
-class RedisCache(CacheStrategy):
+class ColumnAwareCache(ABC):
+    @abstractmethod
+    def set_data(
+        self,
+        key: str,
+        data: pd.DataFrame,
+        settings: dict[str, Any] | None = None,
+        columns: list[str] | None = None,
+    ):
+        """Store data in cache, optionally with settings and column names."""
+
+
+class RedisCache(CacheStrategy, ColumnAwareCache):
     """Cache data to Redis as a CSV string"""
 
     def __init__(self):
         self.client = connect_to_redis()
 
-    def get_data(self, key: str) -> types.CachedChartData | None:
-        """Return data and settings from cache if exists.
+    def get_data(self, key: str) -> types.SerializableType:
+        """Return data, settings and columns from cache if exists.
 
         Args:
             key: The cache key to retrieve the data.
 
         Returns:
-            CachedChartData with 'df' and 'settings', or None if not found.
+            ChartData or None if not found.
         """
         raw_data = self.client.get(key)  # type: ignore
 
@@ -91,19 +103,29 @@ class RedisCache(CacheStrategy):
         key: str,
         data: pd.DataFrame,
         settings: dict[str, Any] | None = None,
+        columns: list[str] | None = None,
     ) -> None:
-        """Serialize data and settings and save to Redis.
+        """Serialize and store DataFrame, settings, and column names in Redis.
 
         Args:
             key: The cache key to store the data.
             data: The data to be stored.
             settings: Optional metadata related to the data.
+            columns: Optional list of column names to store.
 
         Raises:
             Exception: If failed to save data to Redis.
         """
+        if settings is None:
+            settings = {}
+
+        if columns is None:
+            columns = []
+
         cache_ttl = config.get_redis_cache_ttl()
-        payload = pickle.dumps({"df": data, "settings": settings})
+        payload = pickle.dumps(
+            types.ChartData(df=data, settings=settings, columns=columns),
+        )
 
         try:
             self.client.setex(key, cache_ttl, payload)
@@ -130,14 +152,14 @@ class FileCache(CacheStrategy):
     def __init__(self):
         self.directory = get_file_cache_path()
 
-    def get_data(self, key: str) -> types.CachedChartData | None:
+    def get_data(self, key: str) -> types.SerializableType:
         """Return data and settings from cache if exists.
 
         Args:
             key: The cache key to retrieve the data.
 
         Returns:
-            CachedChartData with 'df' and 'settings', or None if not found.
+            ChartData or None if not found.
         """
 
         file_path = self.make_file_path_from_key(key)
@@ -156,14 +178,14 @@ class FileCache(CacheStrategy):
         self,
         file: IO[bytes],
         file_path: str,
-    ) -> types.CachedChartData | None:
+    ) -> types.SerializableType:
         """Read cached data and settings from a file object.
 
         Args:
             file: The file object to read the data.
 
         Returns:
-            CachedChartData with 'df' and 'settings', or None if not found.
+            ChartData or None if not found.
         """
 
     def set_data(
@@ -274,7 +296,7 @@ class FileCache(CacheStrategy):
         with open(self.get_meta_path(file_path), "w", encoding="utf-8") as f:
             json.dump(settings, f)
 
-    def read_metadata(self, file_path: str) -> dict[str, Any] | None:
+    def read_metadata(self, file_path: str) -> dict[str, Any]:
         """Read metadata from a .meta file if it exists.
 
         Args:
@@ -285,7 +307,7 @@ class FileCache(CacheStrategy):
         """
         meta_path = self.get_meta_path(file_path)
         if not os.path.exists(meta_path):
-            return None
+            return {}
 
         with open(meta_path, encoding="utf-8") as f:
             return json.load(f)
@@ -297,21 +319,23 @@ class FileCacheORC(FileCache):
     FILE_FORMAT = "orc"
 
     def read_data(
-        self, file: IO[bytes], file_path: str
-    ) -> types.CachedChartData | None:
+        self,
+        file: IO[bytes],
+        file_path: str,
+    ) -> types.SerializableType:
         """Read cached data from an ORC file and settings from .meta file.
 
         Args:
             file: The file object to read the data.
 
         Returns:
-            CachedChartData with 'df' and 'settings', or None if not found.
+            ChartData or None if not found.
         """
         from pyarrow import orc
 
         df = cast(pd.DataFrame, orc.ORCFile(file).read().to_pandas())
         settings = self.read_metadata(file_path)
-        return cast(types.CachedChartData, {"df": df, "settings": settings})
+        return types.ChartData(df=df, settings=settings)
 
     def write_data(
         self,
@@ -338,7 +362,11 @@ class FileCacheCSV(FileCache):
 
     FILE_FORMAT = "csv"
 
-    def read_data(self, file: IO[bytes], file_path: str) -> types.CachedChartData | None:
+    def read_data(
+        self,
+        file: IO[bytes],
+        file_path: str,
+    ) -> types.SerializableType:
         """Read cached data from a CSV file and settings from .meta file.
 
         Args:
@@ -346,11 +374,11 @@ class FileCacheCSV(FileCache):
             file_path: The original file path.
 
         Returns:
-            CachedChartData with 'df' and 'settings', or None if not found.
+            ChartData or None if not found.
         """
         df = pd.read_csv(file)
         settings = self.read_metadata(file_path)
-        return cast(types.CachedChartData, {"df": df, "settings": settings})
+        return types.ChartData(df=df, settings=settings)
 
     def write_data(
         self,

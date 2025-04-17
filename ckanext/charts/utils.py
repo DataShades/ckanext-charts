@@ -13,6 +13,7 @@ from ckanext.datastore.backend.postgres import get_read_engine
 from ckanext.charts.chart_builders import get_chart_engines
 from ckanext.charts.exception import ChartBuildError
 from ckanext.charts.fetchers import DatastoreDataFetcher
+from ckanext.charts import config, cache, types
 
 
 def get_column_options(resource_id: str) -> list[dict[str, str]]:
@@ -24,7 +25,9 @@ def get_column_options(resource_id: str) -> list[dict[str, str]]:
     Returns:
         List of column options
     """
-    return [{"text": col, "value": col} for col in get_column_names(resource_id)]
+    return [
+        {"text": col, "value": col} for col in get_datastore_column_names(resource_id)
+    ]
 
 
 def printable_file_size(size_bytes: int) -> str:
@@ -143,11 +146,29 @@ def can_view(data_dict: dict[str, Any]) -> bool:
     return data_dict["resource"].get("datastore_active")
 
 
-# TODO:
-# - Cache the column names for a day.
-# - Ensure that when the resource changes, the cache is cleared, so the actual columns
-# are fetched.
-def get_column_names(resource_id: str) -> list[str]:
+def get_datastore_column_names(resource_id: str) -> list[str]:
+    """Retrieve column names from the datastore for the given resource ID.
+
+    Returns:
+        list[str] : Column names from cache if available; otherwise, fetched
+        from the datastore.
+    """
+    redis_cache = cache.RedisCache()
+    cache_key = f"ckanext.charts:datastore:columns:{resource_id}"
+
+    if config.is_cache_enabled():
+        cached_data = redis_cache.get_data(cache_key)
+        if isinstance(cached_data, types.ChartData) and cached_data.columns:
+            return cached_data.columns
+
     inspector = sa.inspect(get_read_engine())
-    columns = inspector.get_columns(resource_id)
-    return [col["name"] for col in columns if col["name"] not in {"_id", "_full_text"}]
+    columns_info = inspector.get_columns(resource_id)
+
+    # Filter out internal columns
+    visible_columns = [
+        col["name"] for col in columns_info if col["name"] not in {"_id", "_full_text"}
+    ]
+
+    redis_cache.set_data(cache_key, data=pd.DataFrame(), columns=visible_columns)
+
+    return visible_columns

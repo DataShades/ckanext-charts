@@ -64,7 +64,7 @@ def charts_get_resource_columns(resource_id: str) -> str:
     Returns:
         str: JSON string of columns options
     """
-    resource_columns = utils.get_column_names(resource_id)
+    resource_columns = utils.get_datastore_column_names(resource_id)
     return json.dumps([{"id": col, "title": col} for col in resource_columns])
 
 

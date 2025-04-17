@@ -73,6 +73,11 @@ class BaseChartBuilder(ABC):
                 # Apply filter in-place
                 self.df = self.df[self.df[column].isin(converted_values)]
 
+        # Return only the requested rows if limit is less than cached data size
+        limit = self.get_limit()
+        if limit < self.df.shape[0]:
+            self.df = self.df.head(limit)
+
         self.settings.pop("query", None)
 
         self.settings = self.drop_view_fields(self.drop_empty_values(self.settings))
@@ -245,7 +250,7 @@ class BaseChartForm(ABC):
         fields: list[dict[str, Any]],
     ) -> list[dict[str, Any]]:
         """Expand the schema fields presets."""
-        from ckanext.scheming.plugins import _expand_schemas # type: ignore
+        from ckanext.scheming.plugins import _expand_schemas  # type: ignore
 
         expanded_schemas = _expand_schemas({"schema": {"fields": fields}})
 
@@ -904,6 +909,6 @@ class BaseChartForm(ABC):
     def get_all_column_names(self) -> list[str]:
         """Get all usable column names (excluding system columns)."""
         if self.resource_id:
-            return utils.get_column_names(self.resource_id)
+            return utils.get_datastore_column_names(self.resource_id)
 
-        return self.df.columns
+        return self.df.columns.to_list()
