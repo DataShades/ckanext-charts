@@ -33,15 +33,15 @@ class EChartsPieBuilder(EChartsBuilder):
                     "data": self.df.apply(
                         lambda row: {
                             "value": self.convert_to_native_types(
-                                row[self.settings["values"]]
+                                row[self.settings["values"]],
                             ),
                             "name": self.convert_to_native_types(
-                                row[self.settings["names"]]
+                                row[self.settings["names"]],
                             ),
                         },
                         axis=1,
                     ).tolist(),
-                }
+                },
             ],
         }
 
@@ -56,7 +56,7 @@ class EChartsPieForm(EchartsFormBuilder):
     builder = EChartsPieBuilder
 
     def get_form_fields(self):
-        columns = [{"value": col, "label": col} for col in self.df.columns]
+        columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
         chart_types = [
             {"value": form.name, "label": form.name}
             for form in self.builder.get_supported_forms()

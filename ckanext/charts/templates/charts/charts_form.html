@@ -1,6 +1,6 @@
 {% snippet "charts/snippets/chart_create_form.html",
     resource_id=resource_id,
     settings=settings,
-    form_builder=form_builder(resource_id),
+    form_builder=form_builder(resource_id, settings=settings),
     errors=errors
 %}

@@ -8,7 +8,7 @@ from pandas.core.frame import DataFrame
 from pandas.errors import ParserError
 from plotly.subplots import make_subplots
 
-from .base import PlotlyBuilder, BasePlotlyForm
+from .base import BasePlotlyForm, PlotlyBuilder
 
 # silence SettingWithCopyWarning
 pd.options.mode.chained_assignment = None
@@ -50,22 +50,24 @@ class PlotlyLineBuilder(PlotlyBuilder):
         df = self.df[[self.settings["x"], column_name]]
         df.drop_duplicates(subset=[self.settings["x"]], inplace=True)
 
-        if (self.settings.get("split_data") and
-            self._is_column_datetime(self.settings["x"])):
+        if self.settings.get("split_data") and self._is_column_datetime(
+            self.settings["x"],
+        ):
             # Split dataframe by years
             df = df[
-                df[self.settings["x"]].
-                dt.strftime(self.YEAR_DATETIME_FORMAT) == str(column_name)
+                df[self.settings["x"]].dt.strftime(self.YEAR_DATETIME_FORMAT)
+                == str(column_name)
             ]
             # Convert original datetime column to the format `01-01 00:00`
             # to be able to split the graph by year on the same layout
-            df[self.settings["x"]] = (
-                df[self.settings["x"]].dt.strftime(self.DATETIME_TICKS_FORMAT)
+            df[self.settings["x"]] = df[self.settings["x"]].dt.strftime(
+                self.DATETIME_TICKS_FORMAT,
             )
 
         if self.settings.get("skip_null_values"):
-            if (self._is_column_datetime(self.settings["x"]) and
-                self.settings.get("break_chart")):
+            if self._is_column_datetime(self.settings["x"]) and self.settings.get(
+                "break_chart",
+            ):
                 # Handle with missing dates
                 df = self._break_chart_by_missing_data(df)
         else:
@@ -125,15 +127,21 @@ class PlotlyLineBuilder(PlotlyBuilder):
         # format, get these values and create a new settings `years` with unique
         # year values based on this column
         try:
-            self.settings["years"] = pd.to_datetime(
-                self.df[self.settings["x"]],
-                format=self.DEFAULT_DATETIME_FORMAT,
-            ).dt.strftime(self.YEAR_DATETIME_FORMAT).unique().tolist()
+            self.settings["years"] = (
+                pd.to_datetime(
+                    self.df[self.settings["x"]],
+                    format=self.DEFAULT_DATETIME_FORMAT,
+                )
+                .dt.strftime(self.YEAR_DATETIME_FORMAT)
+                .unique()
+                .tolist()
+            )
         except (ParserError, ValueError):
             self.settings["years"] = []
 
-        if (self._is_column_datetime(self.settings["x"]) and
-            self.settings.get("split_data")):
+        if self._is_column_datetime(self.settings["x"]) and self.settings.get(
+            "split_data",
+        ):
             self._split_data_by_year()
 
         # Create instance of plotly graph
@@ -199,7 +207,7 @@ class PlotlyLineForm(BasePlotlyForm):
 
     def get_form_fields(self):
         """Get the form fields for the Plotly line chart."""
-        columns = [{"value": col, "label": col} for col in self.df.columns]
+        columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
         chart_types = [
             {"value": form.name, "label": form.name}
             for form in self.builder.get_supported_forms()

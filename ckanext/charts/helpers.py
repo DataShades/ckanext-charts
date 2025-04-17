@@ -8,7 +8,6 @@ import ckan.plugins.toolkit as tk
 from ckanext.charts import config, utils
 from ckanext.charts.cache import count_file_cache_size, count_redis_cache_size
 from ckanext.charts.chart_builders import get_chart_engines
-from ckanext.charts.fetchers import DatastoreDataFetcher
 
 
 def get_redis_cache_size() -> str:
@@ -65,11 +64,8 @@ def charts_get_resource_columns(resource_id: str) -> str:
     Returns:
         str: JSON string of columns options
     """
-    fetcher = DatastoreDataFetcher(resource_id)
-
-    return json.dumps(
-        [{"id": col, "title": col} for col in fetcher.fetch_data().columns],
-    )
+    resource_columns = utils.get_datastore_column_names(resource_id)
+    return json.dumps([{"id": col, "title": col} for col in resource_columns])
 
 
 def charts_user_is_authenticated() -> bool:
@@ -78,7 +74,7 @@ def charts_user_is_authenticated() -> bool:
     Returns:
         bool: True if the user is authenticated, False otherwise.
     """
-    return tk.current_user.is_authenticated
+    return bool(tk.current_user.is_authenticated)
 
 
 def charts_allow_anon_building_charts() -> bool:

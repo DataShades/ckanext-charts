@@ -15,7 +15,7 @@ class EChartsBuilder(BaseChartBuilder):
         return [
             EChartsBarForm,
             EChartsLineForm,
-            EChartsPieForm
+            EChartsPieForm,
         ]
 
 

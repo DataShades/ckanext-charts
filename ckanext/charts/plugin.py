@@ -11,7 +11,6 @@ from ckan import logic, types
 from ckan.common import CKANConfig
 from ckan.config.declaration import Declaration, Key
 
-import ckanext.charts.config as conf
 from ckanext.charts import cache, const, exception, fetchers, utils
 from ckanext.charts.chart_builders import DEFAULT_CHART_FORM
 from ckanext.charts.logic.schema import settings_schema
@@ -39,7 +38,6 @@ class ChartsViewPlugin(p.SingletonPlugin):
 
     def update_config(self, config_: CKANConfig):
         tk.add_template_directory(config_, "templates")
-        tk.add_public_directory(config_, "public")
         tk.add_resource("assets", "charts")
 
     # IConfigDeclaration
@@ -83,7 +81,7 @@ class ChartsViewPlugin(p.SingletonPlugin):
         :param package: dict of the full parent dataset
         """
 
-        data = {
+        data: dict[str, Any] = {
             "settings": {},
             "resource_id": data_dict["resource"]["id"],
             "form_builder": DEFAULT_CHART_FORM,
@@ -98,7 +96,7 @@ class ChartsViewPlugin(p.SingletonPlugin):
                 settings_schema(),
                 context,
             )
-        except Exception as e: # noqa: BLE001 # I know...
+        except Exception as e:  # noqa: BLE001 # I know...
             data["error_msg"] = e
             return data
 
@@ -149,7 +147,7 @@ class ChartsViewPlugin(p.SingletonPlugin):
         }
 
     @staticmethod
-    def collect_config_sections_subs(sender: None):
+    def collect_config_sections_subs(sender: None) -> Any:
         return {
             "name": "Charts",
             "configs": [
@@ -189,6 +187,9 @@ class ChartsViewPlugin(p.SingletonPlugin):
             cache.invalidate_by_key(
                 fetchers.DatastoreDataFetcher(resource_dict["id"]).make_cache_key(),
             )
+            cache.invalidate_by_key(
+                f"ckanext.charts:datastore:columns:{resource_dict['id']}",
+            )
 
     # IResourceController
 
@@ -201,13 +202,20 @@ class ChartsViewPlugin(p.SingletonPlugin):
         cache.invalidate_by_key(
             fetchers.DatastoreDataFetcher(resource["id"]).make_cache_key(),
         )
+        cache.invalidate_by_key(
+            f"ckanext.charts:datastore:columns:{resource['id']}",
+        )
 
     def after_resource_update(
         self,
         context: types.Context,
-        resource: dict[str, Any]) -> None:
+        resource: dict[str, Any],
+    ) -> None:
         cache.invalidate_by_key(
             fetchers.DatastoreDataFetcher(resource["id"]).make_cache_key(),
+        )
+        cache.invalidate_by_key(
+            f"ckanext.charts:datastore:columns:{resource['id']}",
         )
 
 

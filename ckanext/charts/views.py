@@ -14,7 +14,7 @@ ERROR_TEMPLATE = "charts/snippets/error_chart.html"
 
 
 @charts.route("/api/utils/charts/<resource_id>/update-chart")
-def update_chart(resource_id: str) -> str: # noqa: PLR0911
+def update_chart(resource_id: str) -> str:  # noqa: PLR0911
     """Update chart.
 
     This will be called from the resource view to update the chart.
@@ -25,17 +25,17 @@ def update_chart(resource_id: str) -> str: # noqa: PLR0911
     data = parse_params(tk.request.args)
 
     try:
-        builder = _get_form_builder(data) # type: ignore
+        builder = _get_form_builder(data)  # type: ignore
     except exception.ChartTypeNotImplementedError:
         return tk.render(ERROR_TEMPLATE)
 
     try:
         data, errors = tk.navl_validate(data, builder.get_validation_schema(), {})
     except exception.ChartBuildError as e:
-            return tk.render(
-                ERROR_TEMPLATE,
-                {"error_msg": tk._(f"Error building chart: {e}")},
-            )
+        return tk.render(
+            ERROR_TEMPLATE,
+            {"error_msg": tk._(f"Error building chart: {e}")},
+        )
 
     if errors:
         return tk.render_snippet(ERROR_TEMPLATE, {"error_msg": errors})
@@ -53,7 +53,7 @@ def update_chart(resource_id: str) -> str: # noqa: PLR0911
             {"error_msg": tk._(f"Error building chart: {e}")},
         )
     # TODO: we probably want to know which exceptions exactly could happen instead
-    except Exception as e: # noqa
+    except Exception as e:  # noqa
         return tk.render(
             ERROR_TEMPLATE,
             {"error_msg": tk._(f"Error building chart: {e}")},
@@ -79,10 +79,10 @@ def update_form():
     try:
         data, errors = tk.navl_validate(data, builder.get_validation_schema(), {})
     except exception.ChartBuildError as e:
-            return tk.render(
-                ERROR_TEMPLATE,
-                {"error_msg": tk._(f"Error building chart: {e}")},
-            )
+        return tk.render(
+            ERROR_TEMPLATE,
+            {"error_msg": tk._(f"Error building chart: {e}")},
+        )
 
     extra_vars = {
         "builder": builder,
@@ -144,7 +144,7 @@ def _get_form_builder(data: dict[str, str]):
 
     builder = utils.get_chart_form_builder(data["engine"], data["type"])
 
-    return builder(data["resource_id"])
+    return builder(data["resource_id"], settings=data)
 
 
 @charts.route("/api/utils/charts/get-values")
@@ -154,7 +154,7 @@ def get_chart_column_values():
     resource_id = tk.get_or_bust(data, "resource_id")
     column = tk.get_or_bust(data, "column")
 
-    fetcher = fetchers.DatastoreDataFetcher(resource_id)
+    fetcher = fetchers.DatastoreDataFetcher(resource_id, settings=data)
 
     result = []
 

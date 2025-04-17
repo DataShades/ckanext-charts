@@ -1,3 +1,3 @@
 from __future__ import annotations
 
-from .base import PlotlyBuilder # noqa
+from .base import PlotlyBuilder  # noqa
