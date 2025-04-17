@@ -8,7 +8,7 @@ from pandas.core.frame import DataFrame
 from pandas.errors import ParserError
 from plotly.subplots import make_subplots
 
-from .base import PlotlyBuilder, BasePlotlyForm
+from .base import BasePlotlyForm, PlotlyBuilder
 
 # silence SettingWithCopyWarning
 pd.options.mode.chained_assignment = None

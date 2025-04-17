@@ -10,7 +10,7 @@ import ckan.plugins.toolkit as tk
 from ckan import types
 
 from ckanext.charts import const, fetchers, utils
-from ckanext.charts.exception import ChartTypeNotImplementedError, ChartBuildError
+from ckanext.charts.exception import ChartBuildError, ChartTypeNotImplementedError
 
 
 class FilterDecoder:
@@ -216,7 +216,7 @@ class BaseChartForm(ABC):
         dataset schema fields."""
 
     def get_form_tabs(self, exclude_tabs: list[str] | None = None) -> list[str]:
-        result = []
+        result: list[str] = []
 
         for field in self.get_form_fields():
             if "group" not in field:
@@ -245,7 +245,7 @@ class BaseChartForm(ABC):
         fields: list[dict[str, Any]],
     ) -> list[dict[str, Any]]:
         """Expand the schema fields presets."""
-        from ckanext.scheming.plugins import _expand_schemas
+        from ckanext.scheming.plugins import _expand_schemas # type: ignore
 
         expanded_schemas = _expand_schemas({"schema": {"fields": fields}})
 

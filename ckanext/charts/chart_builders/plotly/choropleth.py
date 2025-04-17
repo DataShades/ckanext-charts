@@ -2,15 +2,16 @@ from __future__ import annotations
 
 from typing import Any
 
-import pycountry
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import pycountry
 from humanize import intword
 
 from ckanext.charts import exception
-from .base import PlotlyBuilder, BasePlotlyForm
+
+from .base import BasePlotlyForm, PlotlyBuilder
 
 # silence SettingWithCopyWarning
 pd.options.mode.chained_assignment = None

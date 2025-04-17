@@ -5,7 +5,6 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-
 from pandas.core.frame import DataFrame
 from pandas.errors import ParserError
 
@@ -67,7 +66,7 @@ class ChartJsBuilder(BaseChartBuilder):
         )
         return options
 
-    def _set_chart_global_options(self, options: dict[str, Any]) -> dict[str, Any]:
+    def _set_chart_global_options(self, options: dict[str, Any]) -> None:
         """Set chart's global options on the base of certain config fields values.
 
         Args:
@@ -174,7 +173,7 @@ class ChartJSBarBuilder(ChartJsBuilder):
                 "labels": self.df[self.settings["x"]].to_list(),
             }
 
-            for label in data["data"]["labels"]:
+            for label in data["data"]["labels"]:  # type: ignore
                 try:
                     aggregate_value = int(
                         self.df[self.df[self.settings["x"]] == label][field].sum(),
@@ -451,7 +450,7 @@ class ChartJSPieBuilder(ChartJsBuilder):
 
     def to_json(self) -> str:
         # Prepare global chart settings
-        data = {
+        data: dict[str, Any] = {
             "type": self.chart_type,
             "data": {"labels": self.get_unique_values(self.df[self.settings["names"]])},
             "options": self.settings,

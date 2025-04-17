@@ -38,7 +38,6 @@ class ChartsViewPlugin(p.SingletonPlugin):
 
     def update_config(self, config_: CKANConfig):
         tk.add_template_directory(config_, "templates")
-        tk.add_public_directory(config_, "public")
         tk.add_resource("assets", "charts")
 
     # IConfigDeclaration
@@ -82,7 +81,7 @@ class ChartsViewPlugin(p.SingletonPlugin):
         :param package: dict of the full parent dataset
         """
 
-        data = {
+        data: dict[str, Any] = {
             "settings": {},
             "resource_id": data_dict["resource"]["id"],
             "form_builder": DEFAULT_CHART_FORM,
@@ -148,7 +147,7 @@ class ChartsViewPlugin(p.SingletonPlugin):
         }
 
     @staticmethod
-    def collect_config_sections_subs(sender: None):
+    def collect_config_sections_subs(sender: None) -> Any:
         return {
             "name": "Charts",
             "configs": [

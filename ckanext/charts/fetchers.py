@@ -10,7 +10,7 @@ import pandas as pd
 import requests
 import sqlalchemy as sa
 from psycopg2.errors import UndefinedTable
-from sqlalchemy.exc import ProgrammingError, NoSuchTableError
+from sqlalchemy.exc import NoSuchTableError, ProgrammingError
 
 import ckan.plugins.toolkit as tk
 
@@ -236,7 +236,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
         - Fields explicitly defined in the chart settings (e.g., 'x', 'y', 'color', etc)
         - Filter columns used in the 'filter' expression (e.g., 'column:value|...')
         """
-        needed_columns = set()
+        needed_columns: set[str] = set()
         if not self.settings:
             return needed_columns
 
@@ -304,9 +304,9 @@ class DatastoreDataFetcher(DataFetcherStrategy):
 
         return query
 
-    def build_sort_clauses(self) -> list:
+    def build_sort_clauses(self) -> list[sa.sql.ClauseElement]:
         """Build sort clauses for SQL query based on settings."""
-        sort_clauses = []
+        sort_clauses: list[sa.sql.ClauseElement] = []
 
         if not self.settings:
             return sort_clauses
@@ -317,11 +317,10 @@ class DatastoreDataFetcher(DataFetcherStrategy):
             sort_clauses.append(sa.column(self.settings["x"]))
 
         if isinstance(self.settings.get("sort_y"), list):
-            y_fields = self.settings.get("y")
+            y_fields: list[str] | str | None = self.settings.get("y")
+
             if isinstance(y_fields, list):
-                sort_clauses.extend(
-                    sa.column(field) for field in y_fields if isinstance(field, str)
-                )
+                sort_clauses.extend(sa.column(field) for field in y_fields)
             elif isinstance(y_fields, str):
                 sort_clauses.append(sa.column(y_fields))
 

@@ -7,8 +7,8 @@ import requests
 from ckan.tests.factories import Resource
 
 from ckanext.charts import fetchers
-from ckanext.charts.tests import helpers
 from ckanext.charts.exception import DataFetchError
+from ckanext.charts.tests import helpers
 
 
 @pytest.mark.ckan_config("ckan.plugins", "datastore")

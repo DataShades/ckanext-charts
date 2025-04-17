@@ -4,7 +4,7 @@ from typing import Any
 
 import plotly.express as px
 
-from .base import PlotlyBuilder, BasePlotlyForm
+from .base import BasePlotlyForm, PlotlyBuilder
 
 
 class PlotlyBarBuilder(PlotlyBuilder):

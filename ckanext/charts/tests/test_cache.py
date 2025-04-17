@@ -8,10 +8,7 @@ from freezegun import freeze_time
 
 from ckan.tests.helpers import call_action
 
-from ckanext.charts import cache
-from ckanext.charts import config
-from ckanext.charts import const
-from ckanext.charts import fetchers
+from ckanext.charts import cache, config, const, fetchers
 from ckanext.charts.tests import helpers
 
 

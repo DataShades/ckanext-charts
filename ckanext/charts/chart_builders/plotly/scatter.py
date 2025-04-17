@@ -6,7 +6,8 @@ import pandas as pd
 import plotly.express as px
 
 from ckanext.charts import exception
-from .base import PlotlyBuilder, BasePlotlyForm
+
+from .base import BasePlotlyForm, PlotlyBuilder
 
 # silence SettingWithCopyWarning
 pd.options.mode.chained_assignment = None

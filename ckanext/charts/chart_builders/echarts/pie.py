@@ -33,15 +33,15 @@ class EChartsPieBuilder(EChartsBuilder):
                     "data": self.df.apply(
                         lambda row: {
                             "value": self.convert_to_native_types(
-                                row[self.settings["values"]]
+                                row[self.settings["values"]],
                             ),
                             "name": self.convert_to_native_types(
-                                row[self.settings["names"]]
+                                row[self.settings["names"]],
                             ),
                         },
                         axis=1,
                     ).tolist(),
-                }
+                },
             ],
         }
 

@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-import sqlalchemy as sa
 import math
 from typing import Any
 
 import pandas as pd
+import sqlalchemy as sa
 
 import ckan.plugins.toolkit as tk
 
 from ckanext.datastore.backend.postgres import get_read_engine
+
 from ckanext.charts.chart_builders import get_chart_engines
 from ckanext.charts.exception import ChartBuildError
 from ckanext.charts.fetchers import DatastoreDataFetcher

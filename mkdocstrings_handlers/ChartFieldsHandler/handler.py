@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Mapping, MutableMapping
 from pathlib import Path
 from typing import Any
-from collections.abc import Mapping, MutableMapping
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from mkdocstrings import BaseHandler, CollectorItem
-from ckan.config.middleware import make_app
+
 from ckan.cli import CKANConfigLoader
+from ckan.config.middleware import make_app
 
 from ckanext.charts.utils import get_chart_form_builder
 

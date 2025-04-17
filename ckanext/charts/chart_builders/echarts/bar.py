@@ -19,7 +19,7 @@ class EChartsBarBuilder(EChartsBuilder):
                 {
                     "type": "bar",
                     "data": self.df[self.settings["y"]].tolist(),
-                }
+                },
             ],
             "tooltip": {"trigger": "item"},
             "toolbox": {

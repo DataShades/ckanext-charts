@@ -7,7 +7,7 @@ import ckan.plugins.toolkit as tk
 
 from ckanext.charts import config, utils
 from ckanext.charts.cache import count_file_cache_size, count_redis_cache_size
-from ckanext.charts.chart_builders import get_chart_engines, DEFAULT_CHART_FORM
+from ckanext.charts.chart_builders import get_chart_engines
 
 
 def get_redis_cache_size() -> str:
@@ -74,7 +74,7 @@ def charts_user_is_authenticated() -> bool:
     Returns:
         bool: True if the user is authenticated, False otherwise.
     """
-    return tk.current_user.is_authenticated
+    return bool(tk.current_user.is_authenticated)
 
 
 def charts_allow_anon_building_charts() -> bool:

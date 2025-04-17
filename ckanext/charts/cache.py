@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import pickle
-import json
 import hashlib
+import json
 import logging
 import os
+import pickle
 import tempfile
 import time
 from abc import ABC, abstractmethod
@@ -76,7 +76,7 @@ class RedisCache(CacheStrategy):
         Returns:
             CachedChartData with 'df' and 'settings', or None if not found.
         """
-        raw_data = self.client.get(key)
+        raw_data = self.client.get(key)  # type: ignore
 
         if not raw_data:
             return None
@@ -91,7 +91,7 @@ class RedisCache(CacheStrategy):
         key: str,
         data: pd.DataFrame,
         settings: dict[str, Any] | None = None,
-    ):
+    ) -> None:
         """Serialize data and settings and save to Redis.
 
         Args:
@@ -154,7 +154,7 @@ class FileCache(CacheStrategy):
     @abstractmethod
     def read_data(
         self,
-        file: IO,
+        file: IO[bytes],
         file_path: str,
     ) -> types.CachedChartData | None:
         """Read cached data and settings from a file object.
@@ -296,7 +296,9 @@ class FileCacheORC(FileCache):
 
     FILE_FORMAT = "orc"
 
-    def read_data(self, file: IO, file_path: str) -> types.CachedChartData | None:
+    def read_data(
+        self, file: IO[bytes], file_path: str
+    ) -> types.CachedChartData | None:
         """Read cached data from an ORC file and settings from .meta file.
 
         Args:
@@ -307,7 +309,7 @@ class FileCacheORC(FileCache):
         """
         from pyarrow import orc
 
-        df = orc.ORCFile(file).read().to_pandas()
+        df = cast(pd.DataFrame, orc.ORCFile(file).read().to_pandas())
         settings = self.read_metadata(file_path)
         return cast(types.CachedChartData, {"df": df, "settings": settings})
 
@@ -336,7 +338,7 @@ class FileCacheCSV(FileCache):
 
     FILE_FORMAT = "csv"
 
-    def read_data(self, file: IO, file_path: str) -> types.CachedChartData | None:
+    def read_data(self, file: IO[bytes], file_path: str) -> types.CachedChartData | None:
         """Read cached data from a CSV file and settings from .meta file.
 
         Args:
@@ -408,7 +410,7 @@ def drop_redis_cache() -> None:
 
     log.info("Dropping all ckanext-charts keys from Redis cache")
 
-    for key in conn.scan_iter(const.REDIS_PREFIX, count=1000):
+    for key in conn.scan_iter(const.REDIS_PREFIX, count=1000):  # type: ignore
         conn.delete(key)
 
 
@@ -445,8 +447,8 @@ def count_redis_cache_size() -> int:
 
     total_size = 0
 
-    for key in redis_conn.scan_iter(const.REDIS_PREFIX, count=1000):
-        size = redis_conn.memory_usage(key)
+    for key in redis_conn.scan_iter(const.REDIS_PREFIX, count=1000):  # type: ignore
+        size: Any = redis_conn.memory_usage(key)
 
         if not size or not isinstance(size, int):
             continue

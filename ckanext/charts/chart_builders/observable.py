@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import json
-import pandas as pd
 from typing import Any
+
+import pandas as pd
 
 from ckanext.charts.chart_builders.base import BaseChartBuilder, BaseChartForm
 
