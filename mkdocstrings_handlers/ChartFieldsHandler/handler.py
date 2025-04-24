@@ -35,11 +35,19 @@ class ChartFieldsHandler(BaseHandler):
         ckan_config = CKANConfigLoader(config_path).get_config()
         make_app(ckan_config)
 
+        # Mock the SQLAlchemy inspector to simulate column fetching
+        mock_inspector = MagicMock()
+        mock_inspector.get_columns = MagicMock(return_value=[])
+
         # mock the fetcher, cause we don't have a resource to fetch data from
         mock = MagicMock()
         patcher = patch("ckanext.charts.fetchers.DatastoreDataFetcher", mock)
         patcher.start()
         mock.fetch_data.return_value = {}
+
+        # Patch the inspector
+        patcher_inspector = patch("sqlalchemy.inspect", return_value=mock_inspector)
+        patcher_inspector.start()
 
         form_builder = get_chart_form_builder(config["engine"], config["chart_type"])(
             "xxx",

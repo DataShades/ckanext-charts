@@ -1830,7 +1830,7 @@
 
     <div class="doc doc-contents ">
 
-        <p>Return data from cache if exists.</p>
+        <p>Return data, settings from cache if exists.</p>
 
 
 <table>
@@ -1872,12 +1872,12 @@
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="pandas.DataFrame">DataFrame</span> | None</code>
+                    <code><span title="ckanext.charts.types.ChartData">ChartData</span> | None</code>
                 </span>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>The data if exists, otherwise None.</p>
+                <p>ChartData or None if not found.</p>
               </div>
             </td>
           </tr>
@@ -1946,7 +1946,7 @@
 
     <div class="doc doc-contents ">
 
-        <p>Serialize data and save to Redis.</p>
+        <p>Serialize and store DataFrame, settings, and column names in Redis.</p>
 
 
 <table>
@@ -1979,12 +1979,12 @@
             </td>
             <td class="doc-param-details">
               <div class="doc-md-description">
-                <p>The data to be stored.</p>
+                <p>The ChartData to be stored.</p>
               </div>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pandas.DataFrame">DataFrame</span></code>
+                      <code><span title="ckanext.charts.types.ChartData">ChartData</span></code>
                   </span>
               </p>
             </td>
