@@ -2,190 +2,190 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://.github.io/ckanext-charts/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/configuration/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/helpers/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/install/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/troubleshooting/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/usage/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/utils/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/validators/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/caching/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/caching/base/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/caching/file/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/caching/redis/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/custom/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/observable/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/chartjs/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/chartjs/bar/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/chartjs/bubble/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/chartjs/doughnut/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/chartjs/hbar/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/chartjs/line/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/chartjs/pie/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/chartjs/radar/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/chartjs/scatter/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/echarts/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/echarts/bar/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/echarts/line/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/echarts/pie/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/observable/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/observable/bar/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/observable/hbar/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/observable/line/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/observable/pie/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/observable/scatter/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/plotly/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/plotly/bar/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/plotly/choropleth/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/plotly/hbar/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/plotly/line/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/plotly/pie/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/engines/plotly/scatter/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/fetchers/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/fetchers/base/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/fetchers/datastore/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/fetchers/file/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/fetchers/hardcode/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
     <url>
          <loc>https://.github.io/ckanext-charts/fetchers/url/</loc>
-         <lastmod>2025-01-26</lastmod>
+         <lastmod>2025-04-24</lastmod>
     </url>
 </urlset>
