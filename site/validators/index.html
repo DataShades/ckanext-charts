@@ -2756,7 +2756,7 @@ field if it is empty or missing.</p>
 
     <span class="n">settings</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">navl_validate</span><span class="p">(</span>
         <span class="n">settings</span><span class="p">,</span>
-        <span class="n">builder</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;resource_id&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">get_validation_schema</span><span class="p">(</span>
+        <span class="n">builder</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s2">&quot;resource_id&quot;</span><span class="p">],</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">get_validation_schema</span><span class="p">(</span>
             <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;_for_show&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
         <span class="p">),</span>
         <span class="p">{},</span>

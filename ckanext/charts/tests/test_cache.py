@@ -8,10 +8,7 @@ from freezegun import freeze_time
 
 from ckan.tests.helpers import call_action
 
-from ckanext.charts import cache
-from ckanext.charts import config
-from ckanext.charts import const
-from ckanext.charts import fetchers
+from ckanext.charts import cache, config, const, fetchers, types
 from ckanext.charts.tests import helpers
 
 
@@ -22,13 +19,19 @@ class TestDataStoreFetcherCache:
         """Test fetch cached data from redis cache"""
         resource = helpers.create_resource_with_datastore()
 
-        fetcher = fetchers.DatastoreDataFetcher(resource["id"])
+        settings = {"x": "age"}
+
+        fetcher = fetchers.DatastoreDataFetcher(resource["id"], settings=settings)
 
         assert fetcher.get_cached_data() is None
 
         fetcher.fetch_data()
+        cached = fetcher.get_cached_data()
 
-        assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
+        assert cached is not None
+        assert isinstance(cached, types.ChartData)
+        assert isinstance(cached.df, pd.DataFrame)
+        assert cached.settings == settings
 
     def test_invalidate_redis_cache_on_resource_delete(self):
         """Test that the cache is invalidated when the resource is deleted"""
@@ -48,17 +51,23 @@ class TestDataStoreFetcherCache:
     def test_hit_cache_file(self):
         """Test fetch cached data from file cache"""
         resource = helpers.create_resource_with_datastore()
+        settings = {"x": "age", "y": "name"}
 
         fetcher = fetchers.DatastoreDataFetcher(
             resource["id"],
+            settings=settings,
             cache_strategy=const.CACHE_FILE_ORC,
         )
 
         assert fetcher.get_cached_data() is None
 
         fetcher.fetch_data()
+        cached = fetcher.get_cached_data()
 
-        assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
+        assert cached is not None
+        assert isinstance(cached, types.ChartData)
+        assert isinstance(cached.df, pd.DataFrame)
+        assert cached.settings == settings
 
     def test_invalidate_file_cache_on_resource_delete(self):
         """Test that the cache is invalidated when the resource is deleted"""
@@ -102,6 +111,148 @@ class TestDataStoreFetcherCache:
 
         assert fetcher.get_cached_data() is None
 
+    @pytest.mark.parametrize(
+        "cache_strategy",
+        [
+            const.CACHE_REDIS,
+            const.CACHE_FILE_CSV,
+            const.CACHE_FILE_ORC,
+        ],
+    )
+    def test_cached_data_respects_row_limit_and_columns(self, cache_strategy):
+        resource = helpers.create_resource_with_datastore()
+
+        settings = {"x": "age", "limit": 10}
+
+        fetcher = fetchers.DatastoreDataFetcher(
+            resource["id"],
+            settings=settings,
+            cache_strategy=cache_strategy,
+        )
+
+        assert fetcher.get_cached_data() is None
+
+        fetcher.fetch_data()
+        cached = fetcher.get_cached_data()
+
+        assert cached is not None
+        assert isinstance(cached, types.ChartData)
+        assert isinstance(cached.df, pd.DataFrame)
+        assert cached.df.shape[0] == 10
+        assert list(cached.df.columns) == ["age"]
+        assert cached.settings == settings
+
+        settings = {"x": "city", "y": "score", "limit": 50}
+
+        fetcher = fetchers.DatastoreDataFetcher(
+            resource["id"],
+            settings=settings,
+            cache_strategy=cache_strategy,
+        )
+
+        fetcher.fetch_data()
+        cached = fetcher.get_cached_data()
+
+        assert cached is not None
+        assert isinstance(cached, types.ChartData)
+        assert cached.df.shape[0] == 50
+        assert set(cached.df.columns) == {"city", "score"}
+        assert cached.settings == settings
+
+    @pytest.mark.parametrize(
+        "cache_strategy",
+        [
+            const.CACHE_REDIS,
+            const.CACHE_FILE_CSV,
+            const.CACHE_FILE_ORC,
+        ],
+    )
+    def test_cached_data_with_filters(self, cache_strategy):
+        resource = helpers.create_resource_with_datastore()
+        settings = {
+            "x": "age",
+            "filter": "age:25",
+            "limit": 10,
+        }
+
+        fetcher = fetchers.DatastoreDataFetcher(
+            resource["id"],
+            settings=settings,
+            cache_strategy=cache_strategy,
+        )
+
+        assert fetcher.get_cached_data() is None
+
+        fetcher.fetch_data()
+        cached = fetcher.get_cached_data()
+
+        assert cached is not None
+        assert isinstance(cached, types.ChartData)
+        assert isinstance(cached.df, pd.DataFrame)
+        assert cached.df.shape[0] == 1
+        assert cached.settings == settings
+
+    @pytest.mark.parametrize(
+        "cache_strategy",
+        [
+            const.CACHE_REDIS,
+            const.CACHE_FILE_CSV,
+            const.CACHE_FILE_ORC,
+        ],
+    )
+    def test_cached_data_with_sort(self, cache_strategy):
+        resource = helpers.create_resource_with_datastore()
+
+        settings = {
+            "x": "age",
+            "y": "score",
+            "sort_x": True,
+            "limit": 55,
+        }
+
+        fetcher = fetchers.DatastoreDataFetcher(
+            resource["id"],
+            settings=settings,
+            cache_strategy=cache_strategy,
+        )
+
+        assert fetcher.get_cached_data() is None
+
+        fetcher.fetch_data()
+        cached = fetcher.get_cached_data()
+
+        assert cached is not None
+        assert isinstance(cached, types.ChartData)
+        assert isinstance(cached.df, pd.DataFrame)
+
+        assert cached.df.shape[0] == 55
+        # Check if the data is sorted by the "age" column
+        age_values = cached.df["age"].tolist()
+        assert age_values == sorted(age_values)
+
+    def test_cached_data_default_limit(self):
+        resource = helpers.create_resource_with_datastore(row_count=5000)
+
+        # No "limit" key
+        settings = {
+            "x": "age",
+        }
+
+        fetcher = fetchers.DatastoreDataFetcher(resource["id"], settings=settings)
+
+        assert fetcher.get_cached_data() is None
+
+        fetcher.fetch_data()
+        cached = fetcher.get_cached_data()
+
+        assert cached is not None
+        assert isinstance(cached, types.ChartData)
+        assert isinstance(cached.df, pd.DataFrame)
+
+        # Should return 1000 rows by default
+        assert cached.df.shape[0] == 1000
+        assert cached.settings == settings
+
 
 @pytest.mark.usefixtures("clean_redis", "clean_file_cache")
 class TestUrlFetcherCache:
@@ -115,8 +266,11 @@ class TestUrlFetcherCache:
         assert fetcher.get_cached_data() is None
 
         fetcher.fetch_data()
+        cached = fetcher.get_cached_data()
 
-        assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
+        assert cached is not None
+        assert isinstance(cached, types.ChartData)
+        assert isinstance(cached.df, pd.DataFrame)
 
     @pytest.mark.usefixtures("clean_file_cache")
     def test_hit_cache_file(self, requests_mock):
@@ -127,8 +281,11 @@ class TestUrlFetcherCache:
         assert fetcher.get_cached_data() is None
 
         fetcher.fetch_data()
+        cached = fetcher.get_cached_data()
 
-        assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
+        assert cached is not None
+        assert isinstance(cached, types.ChartData)
+        assert isinstance(cached.df, pd.DataFrame)
 
     def test_invalidate_redis_cache(self, requests_mock):
         requests_mock.get(self.URL, content=helpers.get_file_content("csv"))
@@ -161,8 +318,11 @@ class TestFileSystemFetcherCache:
         assert fetcher.get_cached_data() is None
 
         fetcher.fetch_data()
+        cached = fetcher.get_cached_data()
 
-        assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
+        assert cached is not None
+        assert isinstance(cached, types.ChartData)
+        assert isinstance(cached.df, pd.DataFrame)
 
     def test_hit_cache_file(self):
         fetcher = fetchers.FileSystemDataFetcher(
@@ -173,8 +333,11 @@ class TestFileSystemFetcherCache:
         assert fetcher.get_cached_data() is None
 
         fetcher.fetch_data()
+        cached = fetcher.get_cached_data()
 
-        assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
+        assert cached is not None
+        assert isinstance(cached, types.ChartData)
+        assert isinstance(cached.df, pd.DataFrame)
 
     def test_invalidate_redis_cache(self):
         fetcher = fetchers.FileSystemDataFetcher(helpers.get_file_path("sample.csv"))
@@ -210,8 +373,11 @@ class TestCalculateFileORCExpiration:
         assert fetcher.get_cached_data() is None
 
         fetcher.fetch_data()
+        cached = fetcher.get_cached_data()
 
-        assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
+        assert cached is not None
+        assert isinstance(cached, types.ChartData)
+        assert isinstance(cached.df, pd.DataFrame)
 
         file_path = cache.FileCacheORC().make_file_path_from_key(
             fetcher.make_cache_key(),
@@ -229,8 +395,11 @@ class TestCalculateFileORCExpiration:
         assert fetcher.get_cached_data() is None
 
         fetcher.fetch_data()
+        cached = fetcher.get_cached_data()
 
-        assert isinstance(fetcher.get_cached_data(), pd.DataFrame)
+        assert cached is not None
+        assert isinstance(cached, types.ChartData)
+        assert isinstance(cached.df, pd.DataFrame)
 
         file_path = cache.FileCacheORC().make_file_path_from_key(
             fetcher.make_cache_key(),

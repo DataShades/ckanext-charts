@@ -6,6 +6,8 @@ from typing import Any
 import pandas as pd
 
 import ckan.plugins.toolkit as tk
+from ckan import model
+
 
 from ckanext.charts.chart_builders import get_chart_engines
 from ckanext.charts.exception import ChartBuildError
@@ -21,9 +23,9 @@ def get_column_options(resource_id: str) -> list[dict[str, str]]:
     Returns:
         List of column options
     """
-    df = DatastoreDataFetcher(resource_id).fetch_data()
-
-    return [{"text": col, "value": col} for col in df.columns]
+    return [
+        {"text": col, "value": col} for col in get_datastore_column_names(resource_id)
+    ]
 
 
 def printable_file_size(size_bytes: int) -> str:
@@ -83,7 +85,11 @@ def build_chart_for_data(settings: dict[str, Any], data: pd.DataFrame) -> str | 
     return _build_chart(settings, data)
 
 
-def build_chart_for_resource(settings: dict[str, Any], resource_id: str) -> str | None:
+def build_chart_for_resource(
+    settings: dict[str, Any],
+    resource_id: str,
+    resource_view_id: str | None = None,
+) -> str | None:
     """Build chart for the given resource ID.
 
     Uses a DatastoreDataFetcher to fetch data from the resource.
@@ -98,7 +104,11 @@ def build_chart_for_resource(settings: dict[str, Any], resource_id: str) -> str 
     settings.pop("__extras", None)
 
     try:
-        df = DatastoreDataFetcher(resource_id).fetch_data()
+        df = DatastoreDataFetcher(
+            resource_id,
+            resource_view_id,
+            settings=settings,
+        ).fetch_data()
     except tk.ValidationError:
         return None
 
@@ -140,3 +150,26 @@ def can_view(data_dict: dict[str, Any]) -> bool:
     #     return True
 
     return data_dict["resource"].get("datastore_active")
+
+
+def get_datastore_column_names(resource_id: str) -> list[str]:
+    """Retrieve column names from the datastore for the given resource ID.
+
+    Returns:
+        Column names from cache if available; otherwise, fetched
+        from the datastore.
+    """
+    return DatastoreDataFetcher(resource_id).get_all_column_names()
+
+
+def get_chart_view_ids(resource_id: str) -> list[str]:
+    """Return a list of chart-related ResourceView IDs for a given resource_id."""
+    return [
+        view_id
+        for (view_id,) in model.Session.query(model.ResourceView.id)
+        .filter(
+            model.ResourceView.resource_id == resource_id,
+            model.ResourceView.view_type.in_({"charts_view", "charts_builder_view"}),
+        )
+        .all()
+    ]

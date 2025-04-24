@@ -19,7 +19,7 @@ class EChartsBarBuilder(EChartsBuilder):
                 {
                     "type": "bar",
                     "data": self.df[self.settings["y"]].tolist(),
-                }
+                },
             ],
             "tooltip": {"trigger": "item"},
             "toolbox": {
@@ -43,7 +43,7 @@ class EChartsBarForm(EchartsFormBuilder):
     builder = EChartsBarBuilder
 
     def get_form_fields(self):
-        columns = [{"value": col, "label": col} for col in self.df.columns]
+        columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
         chart_types = [
             {"value": form.name, "label": form.name}
             for form in self.builder.get_supported_forms()

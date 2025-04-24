@@ -9,8 +9,8 @@ import pandas as pd
 import ckan.plugins.toolkit as tk
 from ckan import types
 
-from ckanext.charts import const, fetchers
-from ckanext.charts.exception import ChartTypeNotImplementedError, ChartBuildError
+from ckanext.charts import const, fetchers, utils
+from ckanext.charts.exception import ChartBuildError, ChartTypeNotImplementedError
 
 
 class FilterDecoder:
@@ -58,10 +58,8 @@ class BaseChartBuilder(ABC):
             filter_decoder = FilterDecoder(filter_input)
             filter_params = filter_decoder.decode_filter_params()
 
-            filtered_df = self.df.copy()
-
             for column, values in filter_params.items():
-                column_type = filtered_df[column].convert_dtypes().dtype.type
+                column_type = self.df[column].convert_dtypes().dtype.type
 
                 # TODO: requires more work here...
                 # I'm not sure about other types, that column can have
@@ -72,17 +70,13 @@ class BaseChartBuilder(ABC):
                 else:
                     converted_values = values
 
-                filtered_df = filtered_df[filtered_df[column].isin(converted_values)]
+                # Apply filter in-place
+                self.df = self.df[self.df[column].isin(converted_values)]
 
-            self.df = filtered_df
-
-        if self.settings.get("sort_x", False):
-            self.df.sort_values(by=self.settings["x"], inplace=True)
-
-        if self.settings.get("sort_y", False):
-            self.df.sort_values(by=self.settings["y"], inplace=True)
-
-        self.df = self.df.head(self.get_limit())
+        # Return only the requested rows if limit is less than cached data size
+        limit = self.get_limit()
+        if limit < self.df.shape[0]:
+            self.df = self.df.head(limit)
 
         self.settings.pop("query", None)
 
@@ -195,8 +189,14 @@ class BaseChartForm(ABC):
     name = ""
 
     def __init__(
-        self, resource_id: str | None = None, dataframe: pd.DataFrame | None = None,
+        self,
+        resource_id: str | None = None,
+        resource_view_id: str | None = None,
+        dataframe: pd.DataFrame | None = None,
+        settings: dict[str, Any] | None = None,
     ) -> None:
+        self.resource_id = resource_id
+
         if dataframe is not None:
             self.df = dataframe
         else:
@@ -204,7 +204,11 @@ class BaseChartForm(ABC):
                 raise ChartBuildError("Resource ID is required")
 
             try:
-                self.df = fetchers.DatastoreDataFetcher(resource_id).fetch_data()
+                self.df = fetchers.DatastoreDataFetcher(
+                    resource_id,
+                    resource_view_id,
+                    settings=settings,
+                ).fetch_data()
             except tk.ValidationError:
                 return
 
@@ -219,7 +223,7 @@ class BaseChartForm(ABC):
         dataset schema fields."""
 
     def get_form_tabs(self, exclude_tabs: list[str] | None = None) -> list[str]:
-        result = []
+        result: list[str] = []
 
         for field in self.get_form_fields():
             if "group" not in field:
@@ -248,7 +252,7 @@ class BaseChartForm(ABC):
         fields: list[dict[str, Any]],
     ) -> list[dict[str, Any]]:
         """Expand the schema fields presets."""
-        from ckanext.scheming.plugins import _expand_schemas
+        from ckanext.scheming.plugins import _expand_schemas  # type: ignore
 
         expanded_schemas = _expand_schemas({"schema": {"fields": fields}})
 
@@ -903,3 +907,10 @@ class BaseChartForm(ABC):
             "help_text": "Select a color",
             "default": "#ffffff",
         }
+
+    def get_all_column_names(self) -> list[str]:
+        """Get all usable column names (excluding system columns)."""
+        if self.resource_id:
+            return utils.get_datastore_column_names(self.resource_id)
+
+        return self.df.columns.to_list()

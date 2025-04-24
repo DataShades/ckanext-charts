@@ -4,13 +4,13 @@ To implement a custom cache strategy, you need to create a new class that extend
 
 See a naive implementation of a memcached cache strategy below:
 ```python
-from io import BytesIO
+import pickle
 
 from pymemcache.client import base
-import pandas as pd
 
 import ckanext.charts.config as config
 from ckanext.charts.cache import CacheStrategy
+from ckanext.charts import types
 
 class MemcachedCache(CacheStrategy):
     """Cache data to Memcached"""
@@ -18,7 +18,7 @@ class MemcachedCache(CacheStrategy):
     def __init__(self):
         self.client = base.Client(('localhost', 11211))
 
-    def get_data(self, key: str) -> pd.DataFrame | None:
+    def get_data(self, key: str) -> types.ChartData | None:
         """Return data from cache if exists"""
         try:
             raw_data = self.client.get(key)
@@ -26,18 +26,18 @@ class MemcachedCache(CacheStrategy):
             if not raw_data:
                 return None
 
-            return pd.read_csv(BytesIO(raw_data))
+            return pickle.loads(raw_data)
         except Exception:
             log.exception(f"Failed to get data for key: {key}")
             return None
 
-    def set_data(self, key: str, data: pd.DataFrame):
+    def set_data(self, key: str, data: types.ChartData):
         """Serialize data and save to Memcached"""
         cache_ttl = config.get_memcached_cache_ttl()
+        payload = pickle.dumps(data)
 
         try:
-            serialized_data = data.to_csv(index=False).encode('utf-8')
-            self.client.set(key, serialized_data, expire=cache_ttl)
+            self.client.set(key, payload, expire=cache_ttl)
         except Exception:
             log.exception(f"Failed to save data to Memcached for key: {key}")
 

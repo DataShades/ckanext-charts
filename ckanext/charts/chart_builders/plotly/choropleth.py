@@ -2,15 +2,16 @@ from __future__ import annotations
 
 from typing import Any
 
-import pycountry
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import pycountry
 from humanize import intword
 
 from ckanext.charts import exception
-from .base import PlotlyBuilder, BasePlotlyForm
+
+from .base import BasePlotlyForm, PlotlyBuilder
 
 # silence SettingWithCopyWarning
 pd.options.mode.chained_assignment = None
@@ -163,7 +164,6 @@ class PlotlyChoroplethBuilder(PlotlyBuilder):
             # will work only if the column is numeric
             # for string we can skip it, as it will use `legend` instead of `coloraxis`
             # for date we should investigate if choropleth supports it
-
 
             settings["colorbar"].update(
                 {
@@ -413,7 +413,7 @@ class PlotlyChoroplethForm(BasePlotlyForm):
 
     def get_form_fields(self):
         """Get the form fields for the Plotly scatter chart."""
-        columns = [{"value": col, "label": col} for col in self.df.columns]
+        columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
         chart_types = [
             {"value": form.name, "label": form.name}
             for form in self.builder.get_supported_forms()

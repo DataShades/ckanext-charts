@@ -1,20 +1,21 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import logging
 import os
+import pickle
 import tempfile
 import time
 from abc import ABC, abstractmethod
-from io import BytesIO
-from typing import IO
+from typing import IO, Any, cast
 
 import pandas as pd
 
 import ckan.plugins.toolkit as tk
 from ckan.lib.redis import connect_to_redis
 
-from ckanext.charts import config, const, exception
+from ckanext.charts import config, const, exception, types, fetchers, utils
 
 log = logging.getLogger(__name__)
 
@@ -26,23 +27,27 @@ class CacheStrategy(ABC):
     """
 
     @abstractmethod
-    def get_data(self, key: str) -> pd.DataFrame | None:
-        """Return data from cache if exists.
+    def get_data(self, key: str) -> types.ChartData | None:
+        """Return data and settings from cache if exists.
 
         Args:
             key: The cache  key to retrieve the data.
 
         Returns:
-            The data if exists, otherwise None.
+            ChartData or None if not found.
         """
 
     @abstractmethod
-    def set_data(self, key: str, data: pd.DataFrame):
-        """Store data to cache.
+    def set_data(
+        self,
+        key: str,
+        data: types.ChartData,
+    ):
+        """Store data and settings to cache.
 
         Args:
             key: The cache key to store the data.
-            data: The data to be stored.
+            data: The ChartData to be stored.
         """
 
     @abstractmethod
@@ -60,36 +65,45 @@ class RedisCache(CacheStrategy):
     def __init__(self):
         self.client = connect_to_redis()
 
-    def get_data(self, key: str) -> pd.DataFrame | None:
-        """Return data from cache if exists.
+    def get_data(self, key: str) -> types.ChartData | None:
+        """Return data, settings from cache if exists.
 
         Args:
             key: The cache key to retrieve the data.
 
         Returns:
-            The data if exists, otherwise None.
+            ChartData or None if not found.
         """
-        raw_data = self.client.get(key)
+        raw_data = self.client.get(key)  # type: ignore
 
         if not raw_data:
             return None
 
-        return pd.read_csv(BytesIO(raw_data))  # type: ignore
+        if not isinstance(raw_data, (bytes, bytearray, memoryview)):
+            raise TypeError(f"Expected bytes-like object, got {type(raw_data)}")
 
-    def set_data(self, key: str, data: pd.DataFrame):
-        """Serialize data and save to Redis.
+        return pickle.loads(raw_data)
+
+    def set_data(
+        self,
+        key: str,
+        data: types.ChartData,
+    ) -> None:
+        """Serialize and store DataFrame, settings, and column names in Redis.
 
         Args:
             key: The cache key to store the data.
-            data: The data to be stored.
+            data: The ChartData to be stored.
 
         Raises:
             Exception: If failed to save data to Redis.
         """
+
         cache_ttl = config.get_redis_cache_ttl()
+        payload = pickle.dumps(data)
 
         try:
-            self.client.setex(key, cache_ttl, data.to_csv(index=False))
+            self.client.setex(key, cache_ttl, payload)
         except Exception:
             log.exception("Failed to save data to Redis")
 
@@ -103,7 +117,7 @@ class RedisCache(CacheStrategy):
 
 
 class FileCache(CacheStrategy):
-    """Cache data as file.
+    """Cache data and settings as separate files.
 
     We store the cached files in a separate folder in the CKAN storage.
     """
@@ -113,14 +127,14 @@ class FileCache(CacheStrategy):
     def __init__(self):
         self.directory = get_file_cache_path()
 
-    def get_data(self, key: str) -> pd.DataFrame | None:
-        """Return data from cache if exists.
+    def get_data(self, key: str) -> types.ChartData | None:
+        """Return data and settings from cache if exists.
 
         Args:
             key: The cache key to retrieve the data.
 
         Returns:
-            The data if exists, otherwise None.
+            ChartData or None if not found.
         """
 
         file_path = self.make_file_path_from_key(key)
@@ -130,39 +144,51 @@ class FileCache(CacheStrategy):
                 return None
 
             with open(file_path, "rb") as f:
-                return self.read_data(f)
+                return self.read_data(f, file_path)
 
         return None
 
     @abstractmethod
-    def read_data(self, file: IO) -> pd.DataFrame | None:
-        """Read cached data from a file object.
+    def read_data(
+        self,
+        file: IO[bytes],
+        file_path: str,
+    ) -> types.ChartData | None:
+        """Read cached data and settings from a file object.
 
         Args:
             file: The file object to read the data.
 
         Returns:
-            The data if exists, otherwise None.
+            ChartData or None if not found.
         """
 
-    def set_data(self, key: str, data: pd.DataFrame) -> None:
-        """Store data to cache.
+    def set_data(
+        self,
+        key: str,
+        data: types.ChartData,
+    ) -> None:
+        """Store data and settings to cache.
 
         Args:
             key: The cache key to store the data.
-            data: The data to be stored.
+            data: The ChartData to be stored.
         """
         file_path = self.make_file_path_from_key(key)
 
         self.write_data(file_path, data)
 
     @abstractmethod
-    def write_data(self, file_path: str, data: pd.DataFrame) -> None:
-        """Defines how to write data to a file.
+    def write_data(
+        self,
+        file_path: str,
+        data: types.ChartData,
+    ) -> None:
+        """Defines how to write data and settings to a file.
 
         Args:
             file_path: The path to the file.
-            data: The data to be stored.
+            data: The ChartData to be stored.
         """
 
     def invalidate(self, key: str) -> None:
@@ -172,9 +198,13 @@ class FileCache(CacheStrategy):
             key: The cache key to invalidate.
         """
         file_path = self.make_file_path_from_key(key)
+        meta_path = self.get_meta_path(file_path)
 
         if os.path.exists(file_path):
             os.remove(file_path)
+
+        if os.path.exists(meta_path):
+            os.remove(meta_path)
 
     def make_file_path_from_key(self, key: str) -> str:
         """Generate file path based on the key
@@ -217,36 +247,96 @@ class FileCache(CacheStrategy):
 
         return time.time() - os.path.getmtime(file_path) > file_ttl
 
+    def get_meta_path(self, file_path: str) -> str:
+        """Return the metadata file path for a given file.
+
+        Args:
+            file_path: The original file path.
+
+        Returns:
+            The corresponding .meta file path.
+        """
+        return file_path + ".meta"
+
+    def write_metadata(self, file_path: str, data: types.ChartData):
+        """Write metadata to a .meta file if settings and columns are provided.
+
+        Args:
+            file_path: The original file path.
+            data: The metadata to store.
+        """
+        metadata = {
+            "settings": data.settings,
+            "columns": data.columns,
+        }
+
+        with open(self.get_meta_path(file_path), "w", encoding="utf-8") as f:
+            json.dump(metadata, f)
+
+    def read_metadata(self, file_path: str) -> dict[str, Any]:
+        """Read metadata from a .meta file if it exists.
+
+        Args:
+            file_path: The original file path.
+
+        Returns:
+            The metadata if it exists, otherwise None.
+        """
+        meta_path = self.get_meta_path(file_path)
+        if not os.path.exists(meta_path):
+            return {"settings": {}, "columns": []}
+
+        with open(meta_path, encoding="utf-8") as f:
+            return json.load(f)
+
 
 class FileCacheORC(FileCache):
     """Cache data as ORC file"""
 
     FILE_FORMAT = "orc"
 
-    def read_data(self, file: IO) -> pd.DataFrame | None:
-        """Read cached data from an ORC file.
+    def read_data(
+        self,
+        file: IO[bytes],
+        file_path: str,
+    ) -> types.ChartData | None:
+        """Read cached data from an ORC file and settings from .meta file.
 
         Args:
             file: The file object to read the data.
 
         Returns:
-            The data if exists, otherwise None.
+            ChartData or None if not found.
         """
         from pyarrow import orc
 
-        return orc.ORCFile(file).read().to_pandas()
+        df = cast(pd.DataFrame, orc.ORCFile(file).read().to_pandas())
+        metadata = self.read_metadata(file_path)
+        return types.ChartData(
+            df=df,
+            settings=metadata["settings"],
+            columns=metadata["columns"],
+        )
 
-    def write_data(self, file_path: str, data: pd.DataFrame) -> None:
-        """Write data to an ORC file.
+    def write_data(
+        self,
+        file_path: str,
+        data: types.ChartData,
+    ) -> None:
+        """Write data to an ORC file and store settings in a separate .meta file.
 
         Args:
             file_path: The path to the file.
-            data: The data to be stored.
+            data: The ChartData to be stored.
         """
-        for col in data.select_dtypes(include=["object"]).columns:
-            data[col] = data[col].astype(str)
+        df = data.df
+        if not df.empty:
+            for col in df.select_dtypes(include=["object"]).columns:
+                df[col] = df[col].astype(str)
 
-        data.to_orc(file_path)
+            df.to_orc(file_path)
+
+        self.write_metadata(file_path, data)
 
 
 class FileCacheCSV(FileCache):
@@ -254,25 +344,43 @@ class FileCacheCSV(FileCache):
 
     FILE_FORMAT = "csv"
 
-    def read_data(self, file: IO) -> pd.DataFrame | None:
-        """Read cached data from a CSV file.
+    def read_data(
+        self,
+        file: IO[bytes],
+        file_path: str,
+    ) -> types.ChartData | None:
+        """Read cached data from a CSV file and settings from .meta file.
 
         Args:
-            file: The file object to read the data.
+            file: The file object.
+            file_path: The original file path.
 
         Returns:
-            The data if exists, otherwise None.
+            ChartData or None if not found.
         """
-        return pd.read_csv(file)
+        df = pd.read_csv(file)
+        metadata = self.read_metadata(file_path)
+        return types.ChartData(
+            df=df,
+            settings=metadata["settings"],
+            columns=metadata["columns"],
+        )
 
-    def write_data(self, file_path: str, data: pd.DataFrame) -> None:
-        """Write data to a CSV file.
+    def write_data(
+        self,
+        file_path: str,
+        data: types.ChartData,
+    ) -> None:
+        """Write data to a CSV file and optionally write settings metadata.
 
         Args:
             file_path: The path to the file.
-            data: The data to be stored.
+            data: The ChartData to be stored.
         """
-        data.to_csv(file_path, index=False)
+        if not data.df.empty:
+            data.df.to_csv(file_path, index=False)
+
+        self.write_metadata(file_path, data)
 
 
 def get_cache_manager(cache_strategy: str | None) -> CacheStrategy:
@@ -316,7 +424,7 @@ def drop_redis_cache() -> None:
 
     log.info("Dropping all ckanext-charts keys from Redis cache")
 
-    for key in conn.scan_iter(const.REDIS_PREFIX, count=1000):
+    for key in conn.scan_iter(const.REDIS_PREFIX, count=1000):  # type: ignore
         conn.delete(key)
 
 
@@ -353,8 +461,8 @@ def count_redis_cache_size() -> int:
 
     total_size = 0
 
-    for key in redis_conn.scan_iter(const.REDIS_PREFIX, count=1000):
-        size = redis_conn.memory_usage(key)
+    for key in redis_conn.scan_iter(const.REDIS_PREFIX, count=1000):  # type: ignore
+        size: Any = redis_conn.memory_usage(key)
 
         if not size or not isinstance(size, int):
             continue
@@ -381,3 +489,20 @@ def remove_expired_file_cache() -> None:
             os.unlink(file_path)
 
     log.info("Expired files have been removed from the file cache")
+
+
+def invalidate_resource_cache(resource_id: str):
+    """Invalidate all chart-related caches (data and metadata) for a given resource."""
+    fetcher = fetchers.DatastoreDataFetcher(resource_id)
+
+    # Invalidate columns
+    invalidate_by_key(fetcher.make_metadata_cache_key())
+
+    # Invalidate main cache key (used before view_id is known)
+    invalidate_by_key(fetcher.make_cache_key())
+
+    # Invalidate all view-specific cache keys
+    for view_id in utils.get_chart_view_ids(resource_id):
+        invalidate_by_key(
+            fetchers.DatastoreDataFetcher(resource_id, view_id).make_cache_key(),
+        )

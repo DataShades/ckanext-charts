@@ -1426,6 +1426,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#charts.cache.FileCache.get_meta_path" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_meta_path
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#charts.cache.FileCache.invalidate" class="md-nav__link">
     <span class="md-ellipsis">
       invalidate
@@ -1462,6 +1471,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#charts.cache.FileCache.read_metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      read_metadata
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#charts.cache.FileCache.set_data" class="md-nav__link">
     <span class="md-ellipsis">
       set_data
@@ -1474,6 +1492,15 @@
   <a href="#charts.cache.FileCache.write_data" class="md-nav__link">
     <span class="md-ellipsis">
       write_data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#charts.cache.FileCache.write_metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      write_metadata
     </span>
   </a>
   
@@ -1894,6 +1921,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#charts.cache.FileCache.get_meta_path" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_meta_path
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#charts.cache.FileCache.invalidate" class="md-nav__link">
     <span class="md-ellipsis">
       invalidate
@@ -1930,6 +1966,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#charts.cache.FileCache.read_metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      read_metadata
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#charts.cache.FileCache.set_data" class="md-nav__link">
     <span class="md-ellipsis">
       set_data
@@ -1942,6 +1987,15 @@
   <a href="#charts.cache.FileCache.write_data" class="md-nav__link">
     <span class="md-ellipsis">
       write_data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#charts.cache.FileCache.write_metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      write_metadata
     </span>
   </a>
   
@@ -2056,7 +2110,7 @@
               Bases: <code><span title="charts.cache.CacheStrategy">CacheStrategy</span></code></p>
 
 
-        <p>Cache data as file.</p>
+        <p>Cache data and settings as separate files.</p>
 <p>We store the cached files in a separate folder in the CKAN storage.</p>
 
 
@@ -2159,7 +2213,7 @@
 
     <div class="doc doc-contents ">
 
-        <p>Return data from cache if exists.</p>
+        <p>Return data and settings from cache if exists.</p>
 
 
 <table>
@@ -2201,12 +2255,82 @@
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="pandas.DataFrame">DataFrame</span> | None</code>
+                    <code><span title="ckanext.charts.types.ChartData">ChartData</span> | None</code>
                 </span>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>The data if exists, otherwise None.</p>
+                <p>ChartData or None if not found.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="charts.cache.FileCache.get_meta_path" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_meta_path</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the metadata file path for a given file.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>file_path</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The original file path.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code><span title="str">str</span></code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>The corresponding .meta file path.</p>
               </div>
             </td>
           </tr>
@@ -2412,7 +2536,7 @@
 
 
 <h3 id="charts.cache.FileCache.read_data" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">read_data</span><span class="p">(</span><span class="n">file</span><span class="p">)</span></code>
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">read_data</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">file_path</span><span class="p">)</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
@@ -2423,7 +2547,7 @@
 
     <div class="doc doc-contents ">
 
-        <p>Read cached data from a file object.</p>
+        <p>Read cached data and settings from a file object.</p>
 
 
 <table>
@@ -2445,7 +2569,7 @@
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.IO">IO</span></code>
+                      <code><span title="typing.IO">IO</span>[<span title="bytes">bytes</span>]</code>
                   </span>
               </p>
             </td>
@@ -2465,12 +2589,82 @@
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="pandas.DataFrame">DataFrame</span> | None</code>
+                    <code><span title="ckanext.charts.types.ChartData">ChartData</span> | None</code>
                 </span>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>The data if exists, otherwise None.</p>
+                <p>ChartData or None if not found.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="charts.cache.FileCache.read_metadata" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">read_metadata</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Read metadata from a .meta file if it exists.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>file_path</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The original file path.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>The metadata if it exists, otherwise None.</p>
               </div>
             </td>
           </tr>
@@ -2493,7 +2687,7 @@
 
     <div class="doc doc-contents ">
 
-        <p>Store data to cache.</p>
+        <p>Store data and settings to cache.</p>
 
 
 <table>
@@ -2526,12 +2720,12 @@
             </td>
             <td class="doc-param-details">
               <div class="doc-md-description">
-                <p>The data to be stored.</p>
+                <p>The ChartData to be stored.</p>
               </div>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pandas.DataFrame">DataFrame</span></code>
+                      <code><span title="ckanext.charts.types.ChartData">ChartData</span></code>
                   </span>
               </p>
             </td>
@@ -2559,7 +2753,7 @@
 
     <div class="doc doc-contents ">
 
-        <p>Defines how to write data to a file.</p>
+        <p>Defines how to write data and settings to a file.</p>
 
 
 <table>
@@ -2592,12 +2786,74 @@
             </td>
             <td class="doc-param-details">
               <div class="doc-md-description">
-                <p>The data to be stored.</p>
+                <p>The ChartData to be stored.</p>
               </div>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pandas.DataFrame">DataFrame</span></code>
+                      <code><span title="ckanext.charts.types.ChartData">ChartData</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="charts.cache.FileCache.write_metadata" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">write_metadata</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Write metadata to a .meta file if settings and columns are provided.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>file_path</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The original file path.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>data</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The metadata to store.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="ckanext.charts.types.ChartData">ChartData</span></code>
                   </span>
               </p>
             </td>
@@ -2659,14 +2915,14 @@
 
 
 <h3 id="charts.cache.FileCacheORC.read_data" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">read_data</span><span class="p">(</span><span class="n">file</span><span class="p">)</span></code>
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">read_data</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">file_path</span><span class="p">)</span></code>
 
 </h3>
 
 
     <div class="doc doc-contents ">
 
-        <p>Read cached data from an ORC file.</p>
+        <p>Read cached data from an ORC file and settings from .meta file.</p>
 
 
 <table>
@@ -2688,7 +2944,7 @@
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.IO">IO</span></code>
+                      <code><span title="typing.IO">IO</span>[<span title="bytes">bytes</span>]</code>
                   </span>
               </p>
             </td>
@@ -2708,12 +2964,12 @@
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="pandas.DataFrame">DataFrame</span> | None</code>
+                    <code><span title="ckanext.charts.types.ChartData">ChartData</span> | None</code>
                 </span>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>The data if exists, otherwise None.</p>
+                <p>ChartData or None if not found.</p>
               </div>
             </td>
           </tr>
@@ -2736,7 +2992,7 @@
 
     <div class="doc doc-contents ">
 
-        <p>Write data to an ORC file.</p>
+        <p>Write data to an ORC file and store settings in a separate .meta file.</p>
 
 
 <table>
@@ -2769,12 +3025,12 @@
             </td>
             <td class="doc-param-details">
               <div class="doc-md-description">
-                <p>The data to be stored.</p>
+                <p>The ChartData to be stored.</p>
               </div>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pandas.DataFrame">DataFrame</span></code>
+                      <code><span title="ckanext.charts.types.ChartData">ChartData</span></code>
                   </span>
               </p>
             </td>
@@ -2836,14 +3092,14 @@
 
 
 <h3 id="charts.cache.FileCacheCSV.read_data" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">read_data</span><span class="p">(</span><span class="n">file</span><span class="p">)</span></code>
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">read_data</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">file_path</span><span class="p">)</span></code>
 
 </h3>
 
 
     <div class="doc doc-contents ">
 
-        <p>Read cached data from a CSV file.</p>
+        <p>Read cached data from a CSV file and settings from .meta file.</p>
 
 
 <table>
@@ -2860,12 +3116,28 @@
             </td>
             <td class="doc-param-details">
               <div class="doc-md-description">
-                <p>The file object to read the data.</p>
+                <p>The file object.</p>
               </div>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.IO">IO</span></code>
+                      <code><span title="typing.IO">IO</span>[<span title="bytes">bytes</span>]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>file_path</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The original file path.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
                   </span>
               </p>
             </td>
@@ -2885,12 +3157,12 @@
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="pandas.DataFrame">DataFrame</span> | None</code>
+                    <code><span title="ckanext.charts.types.ChartData">ChartData</span> | None</code>
                 </span>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>The data if exists, otherwise None.</p>
+                <p>ChartData or None if not found.</p>
               </div>
             </td>
           </tr>
@@ -2913,7 +3185,7 @@
 
     <div class="doc doc-contents ">
 
-        <p>Write data to a CSV file.</p>
+        <p>Write data to a CSV file and optionally write settings metadata.</p>
 
 
 <table>
@@ -2946,12 +3218,12 @@
             </td>
             <td class="doc-param-details">
               <div class="doc-md-description">
-                <p>The data to be stored.</p>
+                <p>The ChartData to be stored.</p>
               </div>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pandas.DataFrame">DataFrame</span></code>
+                      <code><span title="ckanext.charts.types.ChartData">ChartData</span></code>
                   </span>
               </p>
             </td>
