@@ -49,7 +49,7 @@ class DataFetcherStrategy(ABC):
         """Invalidate the cache for the data fetcher."""
         self.cache.invalidate(self.make_cache_key())
 
-    def get_cached_data(self) -> types.SerializableType:
+    def get_cached_data(self) -> types.ChartData | None:
         """Fetch data from the cache.
 
         Returns:
@@ -83,6 +83,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
     def __init__(
         self,
         resource_id: str,
+        resource_view_id: str | None = None,
         settings: dict[str, Any] | None = None,
         limit: int = 1000,
         cache_strategy: str | None = None,
@@ -100,7 +101,12 @@ class DatastoreDataFetcher(DataFetcherStrategy):
         super().__init__(cache_strategy=cache_strategy)
 
         self.resource_id = resource_id
+        self.resource_view_id = resource_view_id
         self.limit = limit
+
+        if settings is None:
+            settings = {}
+
         self.settings = settings
 
     def fetch_data(self) -> pd.DataFrame:
@@ -131,7 +137,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
                 query = sa.select(*columns_expr).select_from(sa.table(self.resource_id))
 
             else:
-                columns_expr = self._get_all_table_columns()
+                columns_expr = self._get_column_expressions()
                 query = sa.select(*columns_expr).select_from(sa.table(self.resource_id))
 
             filter_conditions = self.parse_filters()
@@ -157,8 +163,11 @@ class DatastoreDataFetcher(DataFetcherStrategy):
         if config.is_cache_enabled():
             self.cache.set_data(
                 self.make_cache_key(),
-                df,
-                self.settings,
+                types.ChartData(
+                    df=df,
+                    settings=self.settings,
+                    columns=df.columns.to_list(),
+                ),
             )
 
         return df
@@ -176,6 +185,10 @@ class DatastoreDataFetcher(DataFetcherStrategy):
             return True
 
         def normalize_value(key, value):
+            # Convert lists with a single item into a scalar for comparison
+            if isinstance(value, list) and len(value) == 1:
+                value = value[0]
+
             if key in {"sort_x", "sort_y"}:
                 if isinstance(value, list):
                     value = value[-1] if value else None
@@ -223,16 +236,14 @@ class DatastoreDataFetcher(DataFetcherStrategy):
 
         return [self._format_column(col) for col in column_names]
 
-    def _get_all_table_columns(self) -> list[sa.sql.expression.ColumnElement]:
-        """Get all columns from the table, excluding system columns."""
-        inspector = sa.inspect(get_read_engine())
-        columns = inspector.get_columns(self.resource_id)
+    def _get_column_expressions(self) -> list[sa.sql.expression.ColumnElement]:
+        """Get all columns from the table as SQLAlchemy column expressions.
 
-        return [
-            self._format_column(col["name"])
-            for col in columns
-            if col["name"] not in {"_id", "_full_text"}
-        ]
+        Returns:
+            SQLAlchemy column expressions
+        """
+        column_names = self.get_all_column_names()
+        return [self._format_column(col_name) for col_name in column_names]
 
     def get_needed_columns(self) -> set[str]:
         """Extract a set of all column names required for chart generation.
@@ -334,12 +345,98 @@ class DatastoreDataFetcher(DataFetcherStrategy):
     def make_cache_key(self) -> str:
         """Generate a cache key for the DataStore data fetcher.
 
-        Uses the resource ID as the part of a cache key.
+        Uses both resource_id and resource_view_id (if available) as part of
+        the cache key.
 
         Returns:
             str: The cache key
         """
-        return f"ckanext-charts:datastore:{self.resource_id}"
+        base_key = f"ckanext-charts:datastore:{self.resource_id}"
+        if self.resource_view_id:
+            return f"{base_key}:view:{self.resource_view_id}"
+        return base_key
+
+    def make_metadata_cache_key(self) -> str:
+        """Generate a cache key for the resource metadata (column list).
+
+        Returns:
+            The metadata cache key
+        """
+        return f"ckanext-charts:metadata:{self.resource_id}"
+
+    def invalidate_cache(self):
+        """Invalidate the cache for the data fetcher."""
+        self.cache.invalidate(self.make_cache_key())
+        self.cache.invalidate(self.make_metadata_cache_key())
+
+    def get_all_column_names(self) -> list[str]:
+        """Get all column names from the table, excluding system columns.
+
+        This method doesn't format the columns, just returns their names.
+        It's used both internally and can be used by form builders.
+
+        Returns:
+            List of all column names in the resource
+        """
+        # Check if we have metadata cached
+        if config.is_cache_enabled():
+            cached_metadata = self.cache.get_data(self.make_metadata_cache_key())
+            if cached_metadata and cached_metadata.columns:
+                return cached_metadata.columns
+
+        # Otherwise, query the database
+        try:
+            inspector = sa.inspect(get_read_engine())
+            columns = inspector.get_columns(self.resource_id)
+        except NoSuchTableError as e:
+            raise exception.DataFetchError(
+                f"Error fetching column metadata from DataStore: {e}",
+            ) from e
+
+        # Filter out system columns
+        column_names = [
+            col["name"] for col in columns if col["name"] not in {"_id", "_full_text"}
+        ]
+
+        # Also cache in the persistent cache if enabled
+        if config.is_cache_enabled():
+            self.cache_column_metadata(column_names)
+
+        return column_names
+
+    def cache_column_metadata(self, columns: list[str]) -> None:
+        """Cache the complete column list for the resource.
+
+        Args:
+            columns (list[str]): List of column names to cache
+        """
+        metadata = types.ChartData(columns=columns)
+        self.cache.set_data(self.make_metadata_cache_key(), metadata)
+
+    def update_view_id(self, resource_view_id: str) -> None:
+        """Update the resource view ID after view creation.
+
+        If data was cached with just the resource_id, this method will
+        move the cached data to a key that includes the view_id.
+
+        Args:
+            resource_view_id (str): The new resource view ID
+        """
+        if not config.is_cache_enabled():
+            return
+
+        # Store the old key (resource-only)
+        old_key = self.make_cache_key()
+
+        self.resource_view_id = resource_view_id
+
+        # Get the new key (resource+view)
+        new_key = self.make_cache_key()
+
+        cached_data = self.cache.get_data(old_key)
+        if cached_data:
+            self.cache.set_data(new_key, cached_data)
+            self.cache.invalidate(old_key)
 
 
 class URLDataFetcher(DataFetcherStrategy):
@@ -410,7 +507,10 @@ class URLDataFetcher(DataFetcherStrategy):
             ) from e
 
         if config.is_cache_enabled():
-            self.cache.set_data(self.make_cache_key(), df)
+            self.cache.set_data(
+                self.make_cache_key(),
+                types.ChartData(df, columns=df.columns.to_list()),
+            )
 
         return df
 
@@ -524,7 +624,10 @@ class FileSystemDataFetcher(DataFetcherStrategy):
             ) from e
 
         if config.is_cache_enabled():
-            self.cache.set_data(self.make_cache_key(), df)
+            self.cache.set_data(
+                self.make_cache_key(),
+                types.ChartData(df, columns=df.columns.to_list()),
+            )
 
         return df
 

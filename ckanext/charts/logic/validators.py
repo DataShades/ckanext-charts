@@ -100,7 +100,7 @@ def charts_validate_extras(
 
     settings, err = tk.navl_validate(
         settings,
-        builder(settings["resource_id"]).get_validation_schema(
+        builder(settings["resource_id"], settings.get("id")).get_validation_schema(
             context.get("_for_show", False),
         ),
         {},

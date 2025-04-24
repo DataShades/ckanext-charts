@@ -21,7 +21,7 @@ class TestDataStoreFetcherCache:
 
         settings = {"x": "age"}
 
-        fetcher = fetchers.DatastoreDataFetcher(resource["id"], settings)
+        fetcher = fetchers.DatastoreDataFetcher(resource["id"], settings=settings)
 
         assert fetcher.get_cached_data() is None
 
@@ -126,7 +126,7 @@ class TestDataStoreFetcherCache:
 
         fetcher = fetchers.DatastoreDataFetcher(
             resource["id"],
-            settings,
+            settings=settings,
             cache_strategy=cache_strategy,
         )
 
@@ -146,7 +146,7 @@ class TestDataStoreFetcherCache:
 
         fetcher = fetchers.DatastoreDataFetcher(
             resource["id"],
-            settings,
+            settings=settings,
             cache_strategy=cache_strategy,
         )
 
@@ -177,7 +177,7 @@ class TestDataStoreFetcherCache:
 
         fetcher = fetchers.DatastoreDataFetcher(
             resource["id"],
-            settings,
+            settings=settings,
             cache_strategy=cache_strategy,
         )
 
@@ -212,7 +212,7 @@ class TestDataStoreFetcherCache:
 
         fetcher = fetchers.DatastoreDataFetcher(
             resource["id"],
-            settings,
+            settings=settings,
             cache_strategy=cache_strategy,
         )
 
@@ -238,7 +238,7 @@ class TestDataStoreFetcherCache:
             "x": "age",
         }
 
-        fetcher = fetchers.DatastoreDataFetcher(resource["id"], settings)
+        fetcher = fetchers.DatastoreDataFetcher(resource["id"], settings=settings)
 
         assert fetcher.get_cached_data() is None
 

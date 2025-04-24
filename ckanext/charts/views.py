@@ -14,7 +14,9 @@ ERROR_TEMPLATE = "charts/snippets/error_chart.html"
 
 
 @charts.route("/api/utils/charts/<resource_id>/update-chart")
-def update_chart(resource_id: str) -> str:  # noqa: PLR0911
+def update_chart(
+    resource_id: str,
+) -> str:  # noqa: PLR0911
     """Update chart.
 
     This will be called from the resource view to update the chart.
@@ -23,6 +25,8 @@ def update_chart(resource_id: str) -> str:  # noqa: PLR0911
         resource_id (str): The resource id
     """
     data = parse_params(tk.request.args)
+
+    resource_view_id = data.get("resource_view_id")
 
     try:
         builder = _get_form_builder(data)  # type: ignore
@@ -43,7 +47,13 @@ def update_chart(resource_id: str) -> str:  # noqa: PLR0911
     try:
         return tk.render_snippet(
             f"charts/snippets/{data['engine']}_chart.html",
-            {"chart": utils.build_chart_for_resource(data, resource_id)},
+            {
+                "chart": utils.build_chart_for_resource(
+                    data,
+                    resource_id,
+                    resource_view_id,  # type: ignore
+                ),
+            },
         )
     except exception.ChartTypeNotImplementedError:
         return tk.render(ERROR_TEMPLATE)
@@ -144,7 +154,7 @@ def _get_form_builder(data: dict[str, str]):
 
     builder = utils.get_chart_form_builder(data["engine"], data["type"])
 
-    return builder(data["resource_id"], settings=data)
+    return builder(data["resource_id"], data.get("resource_view_id"), settings=data)
 
 
 @charts.route("/api/utils/charts/get-values")

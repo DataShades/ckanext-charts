@@ -4,16 +4,14 @@ import math
 from typing import Any
 
 import pandas as pd
-import sqlalchemy as sa
 
 import ckan.plugins.toolkit as tk
+from ckan import model
 
-from ckanext.datastore.backend.postgres import get_read_engine
 
 from ckanext.charts.chart_builders import get_chart_engines
 from ckanext.charts.exception import ChartBuildError
 from ckanext.charts.fetchers import DatastoreDataFetcher
-from ckanext.charts import config, cache, types
 
 
 def get_column_options(resource_id: str) -> list[dict[str, str]]:
@@ -87,7 +85,11 @@ def build_chart_for_data(settings: dict[str, Any], data: pd.DataFrame) -> str | 
     return _build_chart(settings, data)
 
 
-def build_chart_for_resource(settings: dict[str, Any], resource_id: str) -> str | None:
+def build_chart_for_resource(
+    settings: dict[str, Any],
+    resource_id: str,
+    resource_view_id: str | None = None,
+) -> str | None:
     """Build chart for the given resource ID.
 
     Uses a DatastoreDataFetcher to fetch data from the resource.
@@ -102,7 +104,11 @@ def build_chart_for_resource(settings: dict[str, Any], resource_id: str) -> str 
     settings.pop("__extras", None)
 
     try:
-        df = DatastoreDataFetcher(resource_id, settings).fetch_data()
+        df = DatastoreDataFetcher(
+            resource_id,
+            resource_view_id,
+            settings=settings,
+        ).fetch_data()
     except tk.ValidationError:
         return None
 
@@ -150,25 +156,20 @@ def get_datastore_column_names(resource_id: str) -> list[str]:
     """Retrieve column names from the datastore for the given resource ID.
 
     Returns:
-        list[str] : Column names from cache if available; otherwise, fetched
+        Column names from cache if available; otherwise, fetched
         from the datastore.
     """
-    redis_cache = cache.RedisCache()
-    cache_key = f"ckanext.charts:datastore:columns:{resource_id}"
+    return DatastoreDataFetcher(resource_id).get_all_column_names()
 
-    if config.is_cache_enabled():
-        cached_data = redis_cache.get_data(cache_key)
-        if isinstance(cached_data, types.ChartData) and cached_data.columns:
-            return cached_data.columns
 
-    inspector = sa.inspect(get_read_engine())
-    columns_info = inspector.get_columns(resource_id)
-
-    # Filter out internal columns
-    visible_columns = [
-        col["name"] for col in columns_info if col["name"] not in {"_id", "_full_text"}
+def get_chart_view_ids(resource_id: str) -> list[str]:
+    """Return a list of chart-related ResourceView IDs for a given resource_id."""
+    return [
+        view_id
+        for (view_id,) in model.Session.query(model.ResourceView.id)
+        .filter(
+            model.ResourceView.resource_id == resource_id,
+            model.ResourceView.view_type.in_({"charts_view", "charts_builder_view"}),
+        )
+        .all()
     ]
-
-    redis_cache.set_data(cache_key, data=pd.DataFrame(), columns=visible_columns)
-
-    return visible_columns

@@ -44,7 +44,7 @@ class TestDatastoreDataFetcher:
             "limit": 5,
         }
 
-        fetcher = fetchers.DatastoreDataFetcher(resource["id"], settings)
+        fetcher = fetchers.DatastoreDataFetcher(resource["id"], settings=settings)
 
         result = fetcher.fetch_data()
 

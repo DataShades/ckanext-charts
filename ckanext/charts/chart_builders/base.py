@@ -191,6 +191,7 @@ class BaseChartForm(ABC):
     def __init__(
         self,
         resource_id: str | None = None,
+        resource_view_id: str | None = None,
         dataframe: pd.DataFrame | None = None,
         settings: dict[str, Any] | None = None,
     ) -> None:
@@ -205,6 +206,7 @@ class BaseChartForm(ABC):
             try:
                 self.df = fetchers.DatastoreDataFetcher(
                     resource_id,
+                    resource_view_id,
                     settings=settings,
                 ).fetch_data()
             except tk.ValidationError:
