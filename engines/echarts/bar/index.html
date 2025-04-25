@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../../../image/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.11">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
     
     
       
@@ -26,7 +26,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.4af4bdda.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.2afb09e1.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
@@ -1695,6 +1695,169 @@
 
 <h1 id="bar-chart">Bar chart</h1>
 <p>The bar chart is a chart with rectangular bars with lengths proportional to the values that they represent.</p>
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Title
+            (<code>title</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Title of the chart view</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+            <p class="doc-field-default"><b>Default</b>: <code>Chart</code></p>
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Description
+            (<code>description</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Description of the chart view</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Engine
+            (<code>engine</code>)
+
+            
+                <span class="doc-field-required-label" style="color: red;font-size: 0.7rem;">[Required]</span>
+            
+        </h4>
+        <p class="doc-field-description">Select the chart engine to use</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+            <p class="doc-field-default"><b>Default</b>: <code>plotly</code></p>
+        
+
+        
+            <p class="doc-field-choices"><b>Choices</b>:
+                
+                    <code>plotly</code>, 
+                
+                    <code>observable</code>, 
+                
+                    <code>chartjs</code>, 
+                
+                    <code>echarts</code>
+                
+            </p>
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Type
+            (<code>type</code>)
+
+            
+                <span class="doc-field-required-label" style="color: red;font-size: 0.7rem;">[Required]</span>
+            
+        </h4>
+        <p class="doc-field-description">Select the type of the chart, e.g. Line, Bar, Scatter, etc.</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+            <p class="doc-field-default"><b>Default</b>: <code>Line</code></p>
+        
+
+        
+            <p class="doc-field-choices"><b>Choices</b>:
+                
+                    <code>Bar</code>, 
+                
+                    <code>Line</code>, 
+                
+                    <code>Pie</code>
+                
+            </p>
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            X Axis
+            (<code>x</code>)
+
+            
+                <span class="doc-field-required-label" style="color: red;font-size: 0.7rem;">[Required]</span>
+            
+        </h4>
+        <p class="doc-field-description">Select a column for the X-axes</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Y Axis
+            (<code>y</code>)
+
+            
+                <span class="doc-field-required-label" style="color: red;font-size: 0.7rem;">[Required]</span>
+            
+        </h4>
+        <p class="doc-field-description">Select a column for the Y-axis</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Limit
+            (<code>limit</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Limit the number of rows to show in the chart</p>
+        <p class="doc-field-type"><b>Type</b>: <code>int</code></p>
+
+        
+            <p class="doc-field-default"><b>Default</b>: <code>1000</code></p>
+        
+
+        
+    </div>
+    <hr>
 
 
 
