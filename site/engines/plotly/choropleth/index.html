@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../../../image/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.11">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
     
     
       
@@ -26,7 +26,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.4af4bdda.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.2afb09e1.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
@@ -1695,6 +1695,663 @@
 
 <h1 id="choropleth-map">Choropleth Map</h1>
 <p>The choropleth map is a thematic map in which areas are shaded or patterned in proportion to the value of a variable being represented. It is useful for visualizing data that varies across geographic regions.</p>
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Title
+            (<code>title</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Title of the chart view</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+            <p class="doc-field-default"><b>Default</b>: <code>Chart</code></p>
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Description
+            (<code>description</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Description of the chart view</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Engine
+            (<code>engine</code>)
+
+            
+                <span class="doc-field-required-label" style="color: red;font-size: 0.7rem;">[Required]</span>
+            
+        </h4>
+        <p class="doc-field-description">Select the chart engine to use</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+            <p class="doc-field-default"><b>Default</b>: <code>plotly</code></p>
+        
+
+        
+            <p class="doc-field-choices"><b>Choices</b>:
+                
+                    <code>plotly</code>, 
+                
+                    <code>observable</code>, 
+                
+                    <code>chartjs</code>, 
+                
+                    <code>echarts</code>
+                
+            </p>
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Type
+            (<code>type</code>)
+
+            
+                <span class="doc-field-required-label" style="color: red;font-size: 0.7rem;">[Required]</span>
+            
+        </h4>
+        <p class="doc-field-description">Select the type of the chart, e.g. Line, Bar, Scatter, etc.</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+            <p class="doc-field-default"><b>Default</b>: <code>Line</code></p>
+        
+
+        
+            <p class="doc-field-choices"><b>Choices</b>:
+                
+                    <code>Bar</code>, 
+                
+                    <code>Horizontal Bar</code>, 
+                
+                    <code>Pie</code>, 
+                
+                    <code>Line</code>, 
+                
+                    <code>Scatter</code>, 
+                
+                    <code>Choropleth</code>
+                
+            </p>
+        
+    </div>
+    <hr>
+    
+
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            X Axis
+            (<code>x</code>)
+
+            
+                <span class="doc-field-required-label" style="color: red;font-size: 0.7rem;">[Required]</span>
+            
+        </h4>
+        <p class="doc-field-description">Select a column for the X-axes</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Y Axis
+            (<code>y</code>)
+
+            
+                <span class="doc-field-required-label" style="color: red;font-size: 0.7rem;">[Required]</span>
+            
+        </h4>
+        <p class="doc-field-description">Select a column for the Y-axis</p>
+        <p class="doc-field-type"><b>Type</b>: <code>str</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Infer ISO alpha-3 country code
+            (<code>infer_iso_a3</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Try to infer the ISO_A3 code from the country name.</p>
+        <p class="doc-field-type"><b>Type</b>: <code>bool</code></p>
+
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Projection
+            (<code>projection</code>)
+
+            
+                <span class="doc-field-required-label" style="color: red;font-size: 0.7rem;">[Required]</span>
+            
+        </h4>
+        <p class="doc-field-description">Set the map projection type.</p>
+        <p class="doc-field-type"><b>Type</b>: <code>text</code></p>
+
+        
+            <p class="doc-field-default"><b>Default</b>: <code>eckert5</code></p>
+        
+
+        
+            <p class="doc-field-choices"><b>Choices</b>:
+                
+                    <code>airy</code>, 
+                
+                    <code>aitoff</code>, 
+                
+                    <code>albers</code>, 
+                
+                    <code>albers usa</code>, 
+                
+                    <code>august</code>, 
+                
+                    <code>azimuthal equal area</code>, 
+                
+                    <code>azimuthal equidistant</code>, 
+                
+                    <code>baker</code>, 
+                
+                    <code>bertin1953</code>, 
+                
+                    <code>boggs</code>, 
+                
+                    <code>bonne</code>, 
+                
+                    <code>bottomley</code>, 
+                
+                    <code>bromley</code>, 
+                
+                    <code>collignon</code>, 
+                
+                    <code>conic conformal</code>, 
+                
+                    <code>conic equal area</code>, 
+                
+                    <code>conic equidistant</code>, 
+                
+                    <code>craig</code>, 
+                
+                    <code>craster</code>, 
+                
+                    <code>cylindrical equalarea</code>, 
+                
+                    <code>cylindrical stereographic</code>, 
+                
+                    <code>eckert1</code>, 
+                
+                    <code>eckert2</code>, 
+                
+                    <code>eckert3</code>, 
+                
+                    <code>eckert4</code>, 
+                
+                    <code>eckert5</code>, 
+                
+                    <code>eckert6</code>, 
+                
+                    <code>eisenlohr</code>, 
+                
+                    <code>equal earth</code>, 
+                
+                    <code>equirectangular</code>, 
+                
+                    <code>fahey</code>, 
+                
+                    <code>foucaut</code>, 
+                
+                    <code>foucaut sinusoidal</code>, 
+                
+                    <code>ginzburg4</code>, 
+                
+                    <code>ginzburg5</code>, 
+                
+                    <code>ginzburg6</code>, 
+                
+                    <code>ginzburg8</code>, 
+                
+                    <code>ginzburg9</code>, 
+                
+                    <code>gnomonic</code>, 
+                
+                    <code>gringorten</code>, 
+                
+                    <code>gringorten quincuncial</code>, 
+                
+                    <code>guyou</code>, 
+                
+                    <code>hammer</code>, 
+                
+                    <code>hill</code>, 
+                
+                    <code>homolosine</code>, 
+                
+                    <code>hufnagel</code>, 
+                
+                    <code>hyperelliptical</code>, 
+                
+                    <code>kavrayskiy7</code>, 
+                
+                    <code>lagrange</code>, 
+                
+                    <code>larrivee</code>, 
+                
+                    <code>laskowski</code>, 
+                
+                    <code>loximuthal</code>, 
+                
+                    <code>mercator</code>, 
+                
+                    <code>miller</code>, 
+                
+                    <code>mollweide</code>, 
+                
+                    <code>mt flat polar parabolic</code>, 
+                
+                    <code>mt flat polar quartic</code>, 
+                
+                    <code>mt flat polar sinusoidal</code>, 
+                
+                    <code>natural earth</code>, 
+                
+                    <code>natural earth1</code>, 
+                
+                    <code>natural earth2</code>, 
+                
+                    <code>nell hammer</code>, 
+                
+                    <code>nicolosi</code>, 
+                
+                    <code>orthographic</code>, 
+                
+                    <code>patterson</code>, 
+                
+                    <code>peirce quincuncial</code>, 
+                
+                    <code>polyconic</code>, 
+                
+                    <code>rectangular polyconic</code>, 
+                
+                    <code>robinson</code>, 
+                
+                    <code>satellite</code>, 
+                
+                    <code>sinu mollweide</code>, 
+                
+                    <code>sinusoidal</code>, 
+                
+                    <code>stereographic</code>, 
+                
+                    <code>times</code>, 
+                
+                    <code>transverse mercator</code>, 
+                
+                    <code>van der grinten</code>, 
+                
+                    <code>van der grinten2</code>, 
+                
+                    <code>van der grinten3</code>, 
+                
+                    <code>van der grinten4</code>, 
+                
+                    <code>wagner4</code>, 
+                
+                    <code>wagner6</code>, 
+                
+                    <code>wiechel</code>, 
+                
+                    <code>winkel tripel</code>, 
+                
+                    <code>winkel3</code>
+                
+            </p>
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Location
+            (<code>location_mode</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Set the location to display on the map.</p>
+        <p class="doc-field-type"><b>Type</b>: <code>text</code></p>
+
+        
+            <p class="doc-field-default"><b>Default</b>: <code>world</code></p>
+        
+
+        
+            <p class="doc-field-choices"><b>Choices</b>:
+                
+                    <code>World</code>, 
+                
+                    <code>Europe</code>, 
+                
+                    <code>North America</code>, 
+                
+                    <code>South America</code>, 
+                
+                    <code>Africa</code>, 
+                
+                    <code>Asia</code>, 
+                
+                    <code>Oceania (Australia &amp; Pacific Islands)</code>
+                
+            </p>
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Color Scale
+            (<code>color_scale</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Set the color scale for the choropleth map.</p>
+        <p class="doc-field-type"><b>Type</b>: <code>text</code></p>
+
+        
+            <p class="doc-field-default"><b>Default</b>: <code>blue</code></p>
+        
+
+        
+            <p class="doc-field-choices"><b>Choices</b>:
+                
+                    <code>Aazure</code>, 
+                
+                    <code>Aggrnyl</code>, 
+                
+                    <code>Agsunset</code>, 
+                
+                    <code>Blackbody</code>, 
+                
+                    <code>Bluered</code>, 
+                
+                    <code>Blues</code>, 
+                
+                    <code>Blugrn</code>, 
+                
+                    <code>Bluyl</code>, 
+                
+                    <code>Brwnyl</code>, 
+                
+                    <code>Bugn</code>, 
+                
+                    <code>Bupu</code>, 
+                
+                    <code>Burg</code>, 
+                
+                    <code>Burgyl</code>, 
+                
+                    <code>Cividis</code>, 
+                
+                    <code>Darkmint</code>, 
+                
+                    <code>Electric</code>, 
+                
+                    <code>Emrld</code>, 
+                
+                    <code>Gnbu</code>, 
+                
+                    <code>Greens</code>, 
+                
+                    <code>Greys</code>, 
+                
+                    <code>Hot</code>, 
+                
+                    <code>Inferno</code>, 
+                
+                    <code>Jet</code>, 
+                
+                    <code>Magenta</code>, 
+                
+                    <code>Magma</code>, 
+                
+                    <code>Mint</code>, 
+                
+                    <code>Orrd</code>, 
+                
+                    <code>Oranges</code>, 
+                
+                    <code>Oryel</code>, 
+                
+                    <code>Peach</code>, 
+                
+                    <code>Pinkyl</code>, 
+                
+                    <code>Plasma</code>, 
+                
+                    <code>Plotly3</code>, 
+                
+                    <code>Pubu</code>, 
+                
+                    <code>Pubugn</code>, 
+                
+                    <code>Purd</code>, 
+                
+                    <code>Purp</code>, 
+                
+                    <code>Purples</code>, 
+                
+                    <code>Purpor</code>, 
+                
+                    <code>Rainbow</code>, 
+                
+                    <code>Rdbu</code>, 
+                
+                    <code>Rdpu</code>, 
+                
+                    <code>Redor</code>, 
+                
+                    <code>Reds</code>, 
+                
+                    <code>Sunset</code>, 
+                
+                    <code>Sunsetdark</code>, 
+                
+                    <code>Teal</code>, 
+                
+                    <code>Tealgrn</code>, 
+                
+                    <code>Turbo</code>, 
+                
+                    <code>Viridis</code>, 
+                
+                    <code>Ylgn</code>, 
+                
+                    <code>Ylgnbu</code>, 
+                
+                    <code>Ylorbr</code>, 
+                
+                    <code>Ylorrd</code>, 
+                
+                    <code>Algae</code>, 
+                
+                    <code>Amp</code>, 
+                
+                    <code>Deep</code>, 
+                
+                    <code>Dense</code>, 
+                
+                    <code>Gray</code>, 
+                
+                    <code>Haline</code>, 
+                
+                    <code>Ice</code>, 
+                
+                    <code>Matter</code>, 
+                
+                    <code>Solar</code>, 
+                
+                    <code>Speed</code>, 
+                
+                    <code>Tempo</code>, 
+                
+                    <code>Thermal</code>, 
+                
+                    <code>Turbid</code>, 
+                
+                    <code>Armyrose</code>, 
+                
+                    <code>Brbg</code>, 
+                
+                    <code>Earth</code>, 
+                
+                    <code>Fall</code>, 
+                
+                    <code>Geyser</code>, 
+                
+                    <code>Prgn</code>, 
+                
+                    <code>Piyg</code>, 
+                
+                    <code>Picnic</code>, 
+                
+                    <code>Portland</code>, 
+                
+                    <code>Puor</code>, 
+                
+                    <code>Rdgy</code>, 
+                
+                    <code>Rdylbu</code>, 
+                
+                    <code>Rdylgn</code>, 
+                
+                    <code>Spectral</code>, 
+                
+                    <code>Tealrose</code>, 
+                
+                    <code>Temps</code>, 
+                
+                    <code>Tropic</code>, 
+                
+                    <code>Balance</code>, 
+                
+                    <code>Curl</code>, 
+                
+                    <code>Delta</code>, 
+                
+                    <code>Oxy</code>, 
+                
+                    <code>Edge</code>, 
+                
+                    <code>Hsv</code>, 
+                
+                    <code>Icefire</code>, 
+                
+                    <code>Phase</code>, 
+                
+                    <code>Twilight</code>, 
+                
+                    <code>Mrybm</code>, 
+                
+                    <code>Mygbm</code>
+                
+            </p>
+        
+    </div>
+    <hr>
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Show Scale Ticks
+            (<code>show_scale_ticks</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Show the scale ticks on the colorbar.</p>
+        <p class="doc-field-type"><b>Type</b>: <code>bool</code></p>
+
+        
+            <p class="doc-field-default"><b>Default</b>: <code>True</code></p>
+        
+
+        
+    </div>
+    <hr>
+    
+
+    
+
+    
+    <div class="doc-field">
+        <h4 class="doc-field-title">
+            Limit
+            (<code>limit</code>)
+
+            
+        </h4>
+        <p class="doc-field-description">Limit the number of rows to show in the chart</p>
+        <p class="doc-field-type"><b>Type</b>: <code>int</code></p>
+
+        
+            <p class="doc-field-default"><b>Default</b>: <code>1000</code></p>
+        
+
+        
+    </div>
+    <hr>
 
 
 

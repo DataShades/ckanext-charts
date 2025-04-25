@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../../image/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.11">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
     
     
       
@@ -26,7 +26,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.4af4bdda.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.2afb09e1.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
@@ -1806,23 +1806,23 @@
 </li>
 </ol>
 <p>A full example of an implementation of <code>bar</code> chart for <code>obvervable plot</code> library.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
-<span class="kn">import</span> <span class="nn">ckanext.charts.exception</span> <span class="k">as</span> <span class="nn">exception</span>
-<span class="kn">from</span> <span class="nn">ckanext.charts.chart_builders.base</span> <span class="kn">import</span> <span class="n">BaseChartBuilder</span><span class="p">,</span> <span class="n">BaseChartForm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ckanext.charts.exception</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">exception</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ckanext.charts.chart_builders.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseChartBuilder</span><span class="p">,</span> <span class="n">BaseChartForm</span>
 
 
-<span class="k">class</span> <span class="nc">ObservableBuilder</span><span class="p">(</span><span class="n">BaseChartBuilder</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ObservableBuilder</span><span class="p">(</span><span class="n">BaseChartBuilder</span><span class="p">):</span>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">get_supported_forms</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">type</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_supported_forms</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">type</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">ObservableBarForm</span><span class="p">]</span>
 
 
-<span class="k">class</span> <span class="nc">ObservableBarBuilder</span><span class="p">(</span><span class="n">ObservableBuilder</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ObservableBarBuilder</span><span class="p">(</span><span class="n">ObservableBuilder</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
             <span class="p">{</span>
                 <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bar&quot;</span><span class="p">,</span>
@@ -1832,17 +1832,17 @@
         <span class="p">)</span>
 
 
-<span class="k">class</span> <span class="nc">ObservableBarForm</span><span class="p">(</span><span class="n">BaseChartForm</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ObservableBarForm</span><span class="p">(</span><span class="n">BaseChartForm</span><span class="p">):</span>
     <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Bar&quot;</span>
     <span class="n">builder</span> <span class="o">=</span> <span class="n">ObservableBarBuilder</span>
 
-    <span class="k">def</span> <span class="nf">fill_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">choices</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fill_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">choices</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
         <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">color_field</span><span class="p">(</span><span class="n">choices</span><span class="p">)</span>
         <span class="n">field</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;field_name&quot;</span><span class="p">:</span> <span class="s2">&quot;fill&quot;</span><span class="p">,</span> <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Fill&quot;</span><span class="p">})</span>
 
         <span class="k">return</span> <span class="n">field</span>
 
-    <span class="k">def</span> <span class="nf">get_form_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_form_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">columns</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">col</span><span class="p">,</span> <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="n">col</span><span class="p">}</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
         <span class="n">chart_types</span> <span class="o">=</span> <span class="p">[</span>
             <span class="p">{</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">name</span><span class="p">}</span>

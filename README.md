@@ -37,7 +37,7 @@ To run the tests, do:
 
 We are using `mkdocs` to build the documentation. To build and deploy the documentation, do:
 
-    CHARTS_FIELDS=1 mkdocs build && mkdocs gh-deploy
+    CHARTS_FIELDS=1 mkdocs build && CHARTS_FIELDS=1 mkdocs gh-deploy
 
 We need to set the `CHARTS_FIELDS` for our custom handler, that autogenerate documentation
 for chart types fields.
