@@ -6,6 +6,7 @@ from io import BytesIO
 from typing import Any
 
 import lxml
+import numpy as np
 import pandas as pd
 import requests
 import sqlalchemy as sa
@@ -155,6 +156,12 @@ class DatastoreDataFetcher(DataFetcherStrategy):
             raise exception.DataFetchError(
                 f"Error fetching data from DataStore: {e}",
             ) from e
+
+        # Clean data in the dataframe.
+        # After applying this, the cells containing "N/A" or "NA"
+        # will be represented as NaN, allowing for proper handling
+        # of missing data in subsequent operations.
+        df.replace(["N/A", "NA"], np.nan, inplace=True)
 
         # Apply numeric conversion to all columns - it will safely ignore
         # non-numeric values
