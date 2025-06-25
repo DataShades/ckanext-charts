@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.9.1] - 2025-06-25
+
+### 🐛 Bug Fixes
+
+- Cleaning data that contain "N/A" or "NA" string values
+
+## [1.9.0] - 2025-04-24
+
+## [1.8.0] - 2025-03-02
+
 ## [1.7.0] - 2025-03-11
 
 ### 🐛 Bug Fixes
