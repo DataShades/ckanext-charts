@@ -30,7 +30,7 @@
         </button>
     </ul>
 
-    <div class="tab-content" id="pills-tabContent"
+    <div class="tab-content active" id="pills-tabContent"
         hx-get="{{ h.url_for('charts_view.update_chart', resource_id=resource_id, resource_view_id=resource_view_id) }}" hx-trigger="load, submit, change"
         hx-include="closest form" hx-target="#charts-view--preview" hx-indicator="#chart-indicator">
 

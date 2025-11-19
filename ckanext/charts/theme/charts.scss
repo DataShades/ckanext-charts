@@ -27,22 +27,17 @@
         border-radius: 3px;
         width: 100%;
     }
+}
 
-    #chart-clear {
-        margin-left: auto;
-    }
+#chart-clear {
+    margin-left: auto;
+}
 
-    .tab-content {
-        display: block !important;
-    }
-
-    #chart-indicator {
-        display: none;
-    }
-
-    .htmx-request#chart-indicator{
-        display:inline;
-    }
+#chart-indicator {
+    display: none;
+}
+.htmx-request#chart-indicator{
+    display:inline;
 }
 
 .charts-filters {
