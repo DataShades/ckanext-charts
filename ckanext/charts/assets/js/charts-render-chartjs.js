@@ -13,9 +13,6 @@ ckan.module("charts-render-chartjs", function($, _) {
         initialize: function() {
             $.proxyAll(this, /_/);
 
-            console.log('test');
-
-
             this.chartControl = this.el.next(".chart-control");
             this.chartId = this.el[0].id;
             this.isZoomSupported = !this.const.zoomUnsupportedTypes.includes(this.options.config.type);
