@@ -46,7 +46,7 @@ class DataFetcherStrategy(ABC):
             str: The cache key
         """
 
-    def invalidate_cache(self):
+    def invalidate_cache(self) -> None:
         """Invalidate the cache for the data fetcher."""
         self.cache.invalidate(self.make_cache_key())
 
@@ -88,7 +88,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
         settings: dict[str, Any] | None = None,
         limit: int = 1000,
         cache_strategy: str | None = None,
-    ):
+    ) -> None:
         """Initialize the DatastoreDataFetcher.
 
         Args:
@@ -371,7 +371,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
         """
         return f"ckanext-charts:metadata:{self.resource_id}"
 
-    def invalidate_cache(self):
+    def invalidate_cache(self) -> None:
         """Invalidate the cache for the data fetcher."""
         self.cache.invalidate(self.make_cache_key())
         self.cache.invalidate(self.make_metadata_cache_key())

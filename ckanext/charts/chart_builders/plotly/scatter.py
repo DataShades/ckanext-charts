@@ -59,7 +59,7 @@ class PlotlyScatterForm(BasePlotlyForm):
     name = "Scatter"
     builder = PlotlyScatterBuilder
 
-    def get_form_fields(self):
+    def get_form_fields(self) -> list[dict[str, Any]]:
         """Get the form fields for the Plotly scatter chart."""
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
         chart_types = [

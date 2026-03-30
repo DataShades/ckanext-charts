@@ -55,7 +55,7 @@ def printable_file_size(size_bytes: int) -> str:
     return f"{s} {size_name[i]}"
 
 
-def get_chart_form_builder(engine: str, chart_type: str):
+def get_chart_form_builder(engine: str, chart_type: str) -> type[Any]:
     """Get form builder for the given engine and chart type."""
     builders = get_chart_engines()
 
@@ -145,10 +145,6 @@ def can_view(data_dict: dict[str, Any]) -> bool:
     Returns:
         bool: True if the resource can be viewed as a chart, False otherwise
     """
-    # TODO: Add support for XML, XLS, XLSX, and other formats tabular data?
-    # if data_dict["resource"]["format"].lower() == "xml":
-    #     return True
-
     return data_dict["resource"].get("datastore_active")
 
 

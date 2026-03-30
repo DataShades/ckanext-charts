@@ -42,7 +42,7 @@ class EChartsBarForm(EchartsFormBuilder):
     name = "Bar"
     builder = EChartsBarBuilder
 
-    def get_form_fields(self):
+    def get_form_fields(self) -> list[dict[str, Any]]:
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
         chart_types = [
             {"value": form.name, "label": form.name}

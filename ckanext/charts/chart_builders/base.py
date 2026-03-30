@@ -26,7 +26,7 @@ class FilterDecoder:
         filter_input: str,
         pair_divider: str = "|",
         key_value_divider: str = ":",
-    ):
+    ) -> None:
         self.filter_input = filter_input
         self.pair_divider = pair_divider
         self.key_value_divider = key_value_divider
@@ -246,7 +246,7 @@ class BaseChartForm(ABC):
 
         return result
 
-    def get_expanded_form_fields(self):
+    def get_expanded_form_fields(self) -> list[dict[str, Any]]:
         """Expands the presets."""
         return self.expand_schema_fields(
             self.drop_validators(
@@ -526,7 +526,7 @@ class BaseChartForm(ABC):
         choices: list[dict[str, str]],
         max_items: int = 0,
         help_text: str = "Select one or more values for the chart",
-    ):
+    ) -> dict[str, Any]:
         field = self.y_multi_axis_field(choices, max_items)
 
         field.update(

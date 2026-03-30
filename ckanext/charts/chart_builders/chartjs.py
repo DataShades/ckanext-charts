@@ -204,7 +204,7 @@ class ChartJSBarForm(ChartJSBaseForm):
     name = "Bar"
     builder = ChartJSBarBuilder
 
-    def get_form_fields(self):
+    def get_form_fields(self) -> list[dict[str, Any]]:
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
         chart_types = [
             {"value": form.name, "label": form.name}
@@ -413,7 +413,7 @@ class ChartJSLineForm(ChartJSBaseForm):
     name = "Line"
     builder = ChartJSLineBuilder
 
-    def get_form_fields(self):
+    def get_form_fields(self) -> list[dict[str, Any]]:
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
         chart_types = [
             {"value": form.name, "label": form.name}
@@ -481,7 +481,7 @@ class ChartJSPieForm(ChartJSBaseForm):
     name = "Pie"
     builder = ChartJSPieBuilder
 
-    def get_form_fields(self):
+    def get_form_fields(self) -> list[dict[str, Any]]:
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
 
         chart_types = [
@@ -585,7 +585,7 @@ class ChartJSScatterForm(ChartJSBaseForm):
     name = "Scatter"
     builder = ChartJSScatterBuilder
 
-    def get_form_fields(self):
+    def get_form_fields(self) -> list[dict[str, Any]]:
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
         chart_types = [
             {"value": form.name, "label": form.name}
@@ -683,7 +683,7 @@ class ChartJSBubbleForm(ChartJSScatterForm):
     name = "Bubble"
     builder = ChartJSBubbleBuilder
 
-    def get_form_fields(self):
+    def get_form_fields(self) -> list[dict[str, Any]]:
         """Almost same as scatter form, but with an additional field for bubble size"""
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
         fields = super().get_form_fields()
@@ -729,7 +729,7 @@ class ChartJSRadarForm(ChartJSBaseForm):
     name = "Radar"
     builder = ChartJSRadarBuilder
 
-    def get_form_fields(self):
+    def get_form_fields(self) -> list[dict[str, Any]]:
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
         chart_types = [
             {"value": form.name, "label": form.name}

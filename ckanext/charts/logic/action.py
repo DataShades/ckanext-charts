@@ -11,7 +11,7 @@ def resource_view_create(
     next_action: Action,
     context: Context,
     data_dict: DataDict,
-):
+) -> DataDict:
     """Ensures chart cache is updated after view creation.
 
     During chart creation, data is initially cached using the resource_id. Once

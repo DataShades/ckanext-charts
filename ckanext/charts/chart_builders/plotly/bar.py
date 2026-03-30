@@ -42,7 +42,7 @@ class PlotlyBarForm(BasePlotlyForm):
     name = "Bar"
     builder = PlotlyBarBuilder
 
-    def get_form_fields(self):
+    def get_form_fields(self) -> list[dict[str, Any]]:
         """Get the form fields for the Plotly bar chart."""
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
         chart_types = [

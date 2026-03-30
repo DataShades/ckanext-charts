@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from flask import Blueprint, jsonify
+from typing import Any
+
+from flask import Blueprint, jsonify, Response
 from flask.views import MethodView
 
 import ckan.plugins.toolkit as tk
@@ -71,7 +73,7 @@ def update_chart(
 
 
 @charts.route("/api/utils/charts/update-form")
-def update_form():
+def update_form() -> str:
     data = parse_params(tk.request.args)
     resource_id = data["resource_id"]
     user_builder: bool = tk.asbool(data.pop("user_chart_builder", False))
@@ -94,7 +96,7 @@ def update_form():
             {"error_msg": tk._(f"Error building chart: {e}")},
         )
 
-    extra_vars = {
+    extra_vars: dict[str, Any] = {
         "builder": builder,
         "resource_id": resource_id,
         "data": data,
@@ -110,12 +112,12 @@ def update_form():
 
 
 @charts.route("/api/utils/charts/<resource_id>/clear-chart")
-def clear_chart(resource_id: str):
+def clear_chart(resource_id: str) -> str:
     return _clear_chart(resource_id)
 
 
 @charts.route("/api/utils/charts/<resource_id>/clear-builder-chart")
-def clear_user_builder_chart(resource_id: str):
+def clear_user_builder_chart(resource_id: str) -> str:
     return _clear_chart(resource_id, exclude_tabs=["General"], user_chart_builder=True)
 
 
@@ -123,7 +125,7 @@ def _clear_chart(
     resource_id: str,
     exclude_tabs: None | list[str] = None,
     user_chart_builder: bool = False,
-):
+) -> str:
     builder = _get_form_builder(
         {"engine": "plotly", "type": "Bar", "resource_id": resource_id},
     )
@@ -147,7 +149,7 @@ def _clear_chart(
     )
 
 
-def _get_form_builder(data: dict[str, str]):
+def _get_form_builder(data: dict[str, str]) -> Any:
     """Get form builder for the given engine and chart type"""
     if "engine" not in data or "type" not in data:
         raise exception.ChartTypeNotImplementedError
@@ -158,7 +160,7 @@ def _get_form_builder(data: dict[str, str]):
 
 
 @charts.route("/api/utils/charts/get-values")
-def get_chart_column_values():
+def get_chart_column_values() -> Any:
     data = parse_params(tk.request.args)
 
     resource_id = tk.get_or_bust(data, "resource_id")
@@ -185,7 +187,7 @@ if plugin_loaded("admin_panel"):
     charts_admin.before_request(ap_before_request)
 
     class ConfigClearCacheView(MethodView):
-        def post(self):
+        def post(self) -> Response:
             if "invalidate-all-cache" in tk.request.form:
                 cache.invalidate_all_cache()
 

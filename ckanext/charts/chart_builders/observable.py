@@ -116,7 +116,7 @@ class ObservableBarForm(BaseChartForm):
 
         return field
 
-    def get_form_fields(self):
+    def get_form_fields(self) -> list[dict[str, Any]]:
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
         chart_types = [
             {"value": form.name, "label": form.name}
@@ -307,7 +307,7 @@ class ObservableLineForm(BaseChartForm):
     name = "Line"
     builder = ObservableLineBuilder
 
-    def get_form_fields(self):
+    def get_form_fields(self) -> list[dict[str, Any]]:
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
         chart_types = [
             {"value": form.name, "label": form.name}
@@ -410,7 +410,7 @@ class ObservablePieForm(BaseChartForm):
             ],
         }
 
-    def get_form_fields(self):
+    def get_form_fields(self) -> list[dict[str, Any]]:
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
         chart_types = [
             {"value": form.name, "label": form.name}
@@ -477,7 +477,7 @@ class ObservableScatterForm(BaseChartForm):
     name = "Scatter"
     builder = ObservableScatterBuilder
 
-    def get_form_fields(self):
+    def get_form_fields(self) -> list[dict[str, Any]]:
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
         chart_types = [
             {"value": form.name, "label": form.name}

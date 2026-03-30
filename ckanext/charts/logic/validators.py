@@ -37,7 +37,12 @@ def charts_if_empty_same_as(other_key: str) -> Callable[..., Any]:
         Callable[..., Any]: The validator function
     """
 
-    def callable(key, data, errors, context):
+    def callable(
+        key: types.FlattenKey,
+        data: types.FlattenDataDict,
+        errors: types.FlattenErrorDict,
+        context: types.Context,
+    ) -> None:
         value = data.get(key)
         if not value or value is tk.missing:
             try:
@@ -82,7 +87,7 @@ def charts_validate_extras(
     data: types.FlattenDataDict,
     errors: types.FlattenErrorDict,
     context: types.Context,
-):
+) -> None:
     """Validate charts settings according to the chart type and engine schema.
 
     Args:

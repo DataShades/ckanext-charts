@@ -42,7 +42,7 @@ class CacheStrategy(ABC):
         self,
         key: str,
         data: types.ChartData,
-    ):
+    ) -> None:
         """Store data and settings to cache.
 
         Args:
@@ -62,7 +62,7 @@ class CacheStrategy(ABC):
 class RedisCache(CacheStrategy):
     """Cache data to Redis as a CSV string"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.client = connect_to_redis()
 
     def get_data(self, key: str) -> types.ChartData | None:
@@ -107,7 +107,7 @@ class RedisCache(CacheStrategy):
         except Exception:
             log.exception("Failed to save data to Redis")
 
-    def invalidate(self, key: str):
+    def invalidate(self, key: str) -> None:
         """Remove data from cache.
 
         Args:
@@ -124,7 +124,7 @@ class FileCache(CacheStrategy):
 
     FILE_FORMAT = ""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.directory = get_file_cache_path()
 
     def get_data(self, key: str) -> types.ChartData | None:
@@ -491,7 +491,7 @@ def remove_expired_file_cache() -> None:
     log.info("Expired files have been removed from the file cache")
 
 
-def invalidate_resource_cache(resource_id: str):
+def invalidate_resource_cache(resource_id: str) -> None:
     """Invalidate all chart-related caches (data and metadata) for a given resource."""
     fetcher = fetchers.DatastoreDataFetcher(resource_id)
 

@@ -37,13 +37,13 @@ class ChartsViewPlugin(p.SingletonPlugin):
 
     # IConfigurer
 
-    def update_config(self, config_: CKANConfig):
+    def update_config(self, config_: CKANConfig) -> None:
         tk.add_template_directory(config_, "templates")
         tk.add_resource("assets", "charts")
 
     # IConfigDeclaration
 
-    def declare_config_options(self, declaration: Declaration, key: Key):
+    def declare_config_options(self, declaration: Declaration, key: Key) -> None:
         """Allow usage of custom validators by clearing the validators cache"""
         logic.clear_validators_cache()
 
@@ -163,7 +163,7 @@ class ChartsViewPlugin(p.SingletonPlugin):
         }
 
     @staticmethod
-    def collect_config_schemas_subs(sender: None):
+    def collect_config_schemas_subs(sender: None) -> list[str]:
         return ["ckanext.charts:config_schema.yaml"]
 
     # IXloader & IDataPusher
