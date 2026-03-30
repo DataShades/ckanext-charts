@@ -52,6 +52,7 @@ charts-js:
     - js/charts-global.js
     - js/charts-select.js
     - js/charts-filters.js
+    - js/charts-conditional.js
   extra:
     preload:
       - base/main

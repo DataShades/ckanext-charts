@@ -1,3 +1,11 @@
 {% for field in fields if field.form_snippet is not none %}
-    {% snippet 'charts/snippets/charts_form_field.html', field=field, data=data, errors=errors, resource_id=resource_id %}
+    {% if field.show_if %}
+        <div data-module="charts-conditional"
+             data-module-conditions="{{ h.dump_json(field.show_if) | forceescape }}"
+             style="display:none">
+            {% snippet 'charts/snippets/charts_form_field.html', field=field, data=data, errors=errors, resource_id=resource_id %}
+        </div>
+    {% else %}
+        {% snippet 'charts/snippets/charts_form_field.html', field=field, data=data, errors=errors, resource_id=resource_id %}
+    {% endif %}
 {% endfor %}

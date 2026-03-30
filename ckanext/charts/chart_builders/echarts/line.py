@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from typing import Any
 
+import pandas as pd
+
 from ckanext.charts.chart_builders.echarts.base import (
     EChartsBuilder,
     EchartsFormBuilder,
@@ -14,7 +16,7 @@ class EChartsLineBuilder(EChartsBuilder):
         options = {
             "xAxis": {
                 "type": "category",
-                "data": self.df[self.settings["x"]].tolist(),
+                "data": [x if pd.notna(x) else None for x in self.df[self.settings["x"]]],
             },
             "yAxis": {"type": "value"},
             "series": [],
@@ -34,7 +36,7 @@ class EChartsLineBuilder(EChartsBuilder):
         }
 
         for column in self.settings["y"]:
-            data = {"type": "line", "data": self.df[column].tolist()}
+            data = {"type": "line", "data": [x if pd.notna(x) else None for x in self.df[column]]}
 
             # render chart as an area chart
             if self.settings["area_chart"]:
