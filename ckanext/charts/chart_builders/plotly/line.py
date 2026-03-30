@@ -9,6 +9,7 @@ from pandas.errors import ParserError
 from plotly.subplots import make_subplots
 
 from .base import BasePlotlyForm, PlotlyBuilder
+from ckanext.charts.const import FORM_GROUP_DATA
 
 # silence SettingWithCopyWarning
 pd.options.mode.chained_assignment = None
@@ -326,7 +327,7 @@ class PlotlyLineForm(BasePlotlyForm):
             "field_name": "fixed_365_days",
             "label": "Fixed 365 days",
             "form_snippet": "chart_checkbox.html",
-            "group": "Data",
+            "group": FORM_GROUP_DATA,
             "validators": [
                 self.get_validator("chart_checkbox"),
                 self.get_validator("default")(False),
@@ -351,7 +352,7 @@ class PlotlyLineForm(BasePlotlyForm):
             "field_name": "daily_aggregation",
             "label": "Daily aggregation",
             "form_snippet": "chart_select.html",
-            "group": "Data",
+            "group": FORM_GROUP_DATA,
             "choices": [
                 {"value": "mean", "label": "Average"},
                 {"value": "min", "label": "Minimum"},

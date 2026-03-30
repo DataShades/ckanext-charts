@@ -9,6 +9,7 @@ from ckanext.charts.chart_builders.echarts.base import (
     EChartsBuilder,
     EchartsFormBuilder,
 )
+from ckanext.charts.const import FORM_GROUP_STYLES, FORM_GROUP_DATA
 
 
 class EChartsLineBuilder(EChartsBuilder):
@@ -83,7 +84,7 @@ class EChartsLineForm(EchartsFormBuilder):
         return {
             "field_name": "area_chart",
             "label": "Area chart",
-            "group": "Style",
+            "group": FORM_GROUP_STYLES,
             "help_text": "Render chart as an area chart",
             "form_snippet": "chart_checkbox.html",
             "validators": [
@@ -99,7 +100,7 @@ class EChartsLineForm(EchartsFormBuilder):
         return {
             "field_name": "smooth",
             "label": "Smooth",
-            "group": "Style",
+            "group": FORM_GROUP_STYLES,
             "help_text": "Smooth the line",
             "form_snippet": "chart_checkbox.html",
             "validators": [
@@ -115,7 +116,7 @@ class EChartsLineForm(EchartsFormBuilder):
         return {
             "field_name": "step",
             "label": "Step",
-            "group": "Style",
+            "group": FORM_GROUP_STYLES,
             "form_snippet": "chart_select.html",
             "help_text": "Render chart as a step chart",
             "choices": [

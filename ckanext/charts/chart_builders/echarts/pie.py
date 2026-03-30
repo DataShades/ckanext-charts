@@ -7,6 +7,7 @@ from ckanext.charts.chart_builders.echarts.base import (
     EChartsBuilder,
     EchartsFormBuilder,
 )
+from ckanext.charts.const import FORM_GROUP_STYLES
 
 
 class EChartsPieBuilder(EChartsBuilder):
@@ -79,7 +80,7 @@ class EChartsPieForm(EchartsFormBuilder):
         return {
             "field_name": "rose_chart",
             "label": "Rose chart",
-            "group": "Style",
+            "group": FORM_GROUP_STYLES,
             "help_text": "Render chart as a rose chart",
             "form_snippet": "chart_checkbox.html",
             "validators": [
@@ -95,7 +96,7 @@ class EChartsPieForm(EchartsFormBuilder):
         return {
             "field_name": "inner_radius",
             "label": "Inner radius",
-            "group": "Style",
+            "group": FORM_GROUP_STYLES,
             "help_text": "Set the inner radius of the pie chart",
             "form_snippet": "chart_text.html",
             "input_type": "number",
@@ -112,7 +113,7 @@ class EChartsPieForm(EchartsFormBuilder):
         return {
             "field_name": "outer_radius",
             "label": "Outer radius",
-            "group": "Style",
+            "group": FORM_GROUP_STYLES,
             "help_text": "Set the outer radius of the pie chart",
             "form_snippet": "chart_text.html",
             "input_type": "number",

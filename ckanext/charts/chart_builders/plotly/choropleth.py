@@ -10,6 +10,7 @@ import pycountry
 from humanize import intword
 
 from ckanext.charts import exception
+from ckanext.charts.const import FORM_GROUP_DATA, FORM_GROUP_STYLES
 
 from .base import BasePlotlyForm, PlotlyBuilder
 
@@ -444,7 +445,7 @@ class PlotlyChoroplethForm(BasePlotlyForm):
         return {
             "field_name": "projection",
             "label": "Projection",
-            "group": "Styles",
+            "group": FORM_GROUP_STYLES,
             "type": "text",
             "default": "eckert5",
             "help_text": "Set the map projection type.",
@@ -461,7 +462,7 @@ class PlotlyChoroplethForm(BasePlotlyForm):
         return {
             "field_name": "infer_iso_a3",
             "label": "Infer ISO alpha-3 country code",
-            "group": "Data",
+            "group": FORM_GROUP_DATA,
             "help_text": "Try to infer the ISO_A3 code from the country name.",
             "form_snippet": "chart_checkbox.html",
             "validators": [
@@ -477,7 +478,7 @@ class PlotlyChoroplethForm(BasePlotlyForm):
         return {
             "field_name": "location_mode",
             "label": "Location",
-            "group": "Styles",
+            "group": FORM_GROUP_STYLES,
             "help_text": "Set the location to display on the map.",
             "form_snippet": "chart_select.html",
             "choices": [
@@ -510,7 +511,7 @@ class PlotlyChoroplethForm(BasePlotlyForm):
         return {
             "field_name": "color_scale",
             "label": "Color Scale",
-            "group": "Styles",
+            "group": FORM_GROUP_STYLES,
             "help_text": "Set the color scale for the choropleth map.",
             "form_snippet": "chart_select.html",
             "choices": choices,
@@ -526,7 +527,7 @@ class PlotlyChoroplethForm(BasePlotlyForm):
         return {
             "field_name": "show_scale_ticks",
             "label": "Show Scale Ticks",
-            "group": "Styles",
+            "group": FORM_GROUP_STYLES,
             "help_text": "Show the scale ticks on the colorbar.",
             "form_snippet": "chart_checkbox.html",
             "validators": [

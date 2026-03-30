@@ -10,6 +10,13 @@ import ckan.plugins.toolkit as tk
 from ckan import types
 
 from ckanext.charts import const, fetchers, utils
+from ckanext.charts.const import (
+    FORM_GROUP_DATA,
+    FORM_GROUP_FILTER,
+    FORM_GROUP_GENERAL,
+    FORM_GROUP_STYLES,
+    FORM_GROUP_STRUCTURE,
+)
 from ckanext.charts.exception import ChartBuildError, ChartTypeNotImplementedError
 
 
@@ -299,7 +306,7 @@ class BaseChartForm(ABC):
             "form_snippet": "chart_select.html",
             "required": True,
             "choices": choices,
-            "group": "Data",
+            "group": FORM_GROUP_DATA,
             "type": "str",
             "validators": [
                 self.get_validator("ignore_empty"),
@@ -313,7 +320,7 @@ class BaseChartForm(ABC):
             "label": "Title",
             "preset": "title",
             "form_placeholder": "Chart title",
-            "group": "General",
+            "group": FORM_GROUP_GENERAL,
             "type": "str",
             "default": "Chart",
             "help_text": "Title of the chart view",
@@ -329,7 +336,7 @@ class BaseChartForm(ABC):
             "label": "Chart Title",
             "preset": "title",
             "form_placeholder": "Chart title",
-            "group": "Styles",
+            "group": FORM_GROUP_STYLES,
             "type": "str",
             "help_text": "Title of the chart itself",
             "validators": [
@@ -343,7 +350,7 @@ class BaseChartForm(ABC):
             "field_name": "x_axis_label",
             "label": "Chart X axe label",
             "form_placeholder": "X label",
-            "group": "Styles",
+            "group": FORM_GROUP_STYLES,
             "type": "str",
             "help_text": "Label for the X-axis",
             "validators": [
@@ -357,7 +364,7 @@ class BaseChartForm(ABC):
             "field_name": "y_axis_label",
             "label": "Chart Y axe label",
             "form_placeholder": "Y label",
-            "group": "Styles",
+            "group": FORM_GROUP_STYLES,
             "type": "str",
             "help_text": "Label for the Y-axis",
             "validators": [
@@ -371,7 +378,7 @@ class BaseChartForm(ABC):
             "field_name": "y_axis_label_right",
             "label": "Chart Y axe right label",
             "form_placeholder": "Right Y label",
-            "group": "Styles",
+            "group": FORM_GROUP_STYLES,
             "type": "str",
             "help_text": "Label for the Y-axis on the right side",
             "validators": [
@@ -386,7 +393,7 @@ class BaseChartForm(ABC):
             "label": "Description",
             "form_snippet": "markdown.html",
             "form_placeholder": "Information about my view",
-            "group": "General",
+            "group": FORM_GROUP_GENERAL,
             "type": "str",
             "help_text": "Description of the chart view",
             "validators": [
@@ -402,7 +409,7 @@ class BaseChartForm(ABC):
             "form_snippet": "chart_select.html",
             "required": True,
             "choices": tk.h.get_available_chart_engines_options(),
-            "group": "Structure",
+            "group": FORM_GROUP_STRUCTURE,
             "type": "str",
             "help_text": "Select the chart engine to use",
             "default": "plotly",
@@ -425,7 +432,7 @@ class BaseChartForm(ABC):
             "form_snippet": "chart_select.html",
             "required": True,
             "choices": choices,
-            "group": "Structure",
+            "group": FORM_GROUP_STRUCTURE,
             "validators": [
                 self.get_validator("default")("Line"),
                 self.get_validator("unicode_safe"),
@@ -449,7 +456,7 @@ class BaseChartForm(ABC):
             "form_snippet": "chart_select.html",
             "required": True,
             "choices": choices,
-            "group": "Data",
+            "group": FORM_GROUP_DATA,
             "type": "str",
             "help_text": "Select a column for the X-axes",
             "validators": [
@@ -485,7 +492,7 @@ class BaseChartForm(ABC):
             "label": "Y Axis",
             "required": True,
             "choices": choices,
-            "group": "Data",
+            "group": FORM_GROUP_DATA,
             "form_snippet": "chart_select.html",
             "validators": [
                 self.get_validator("charts_if_empty_same_as")("x"),
@@ -526,6 +533,7 @@ class BaseChartForm(ABC):
             {
                 "field_name": "values",
                 "label": "Values",
+                "group": FORM_GROUP_DATA,
                 "validators": [
                     self.get_validator("charts_if_empty_same_as")("names"),
                     self.get_validator("not_empty"),
@@ -548,7 +556,7 @@ class BaseChartForm(ABC):
             "field_name": "split_data",
             "label": "Split by years",
             "form_snippet": "chart_checkbox.html",
-            "group": "Data",
+            "group": FORM_GROUP_DATA,
             "validators": [
                 self.get_validator("chart_checkbox"),
                 self.get_validator("default")(False),
@@ -567,7 +575,7 @@ class BaseChartForm(ABC):
             "field_name": "skip_null_values",
             "label": "Skip N/A and NULL values",
             "form_snippet": "chart_checkbox.html",
-            "group": "Data",
+            "group": FORM_GROUP_DATA,
             "validators": [
                 self.get_validator("chart_checkbox"),
                 self.get_validator("default")(False),
@@ -583,7 +591,7 @@ class BaseChartForm(ABC):
             "field_name": "break_chart",
             "label": "Break the chart",
             "form_snippet": "chart_checkbox.html",
-            "group": "Data",
+            "group": FORM_GROUP_DATA,
             "validators": [
                 self.get_validator("chart_checkbox"),
                 self.get_validator("default")(False),
@@ -598,7 +606,7 @@ class BaseChartForm(ABC):
             "field_name": "sort_x",
             "label": "Sort X-axis",
             "form_snippet": "chart_checkbox.html",
-            "group": "Data",
+            "group": FORM_GROUP_DATA,
             "validators": [
                 self.get_validator("chart_checkbox"),
                 self.get_validator("default")(False),
@@ -614,7 +622,7 @@ class BaseChartForm(ABC):
             "field_name": "sort_y",
             "label": "Sort Y-axis",
             "form_snippet": "chart_checkbox.html",
-            "group": "Data",
+            "group": FORM_GROUP_DATA,
             "validators": [
                 self.get_validator("chart_checkbox"),
                 self.get_validator("default")(False),
@@ -630,7 +638,7 @@ class BaseChartForm(ABC):
             "field_name": "invert_x",
             "label": "Invert X-axis",
             "form_snippet": "chart_checkbox.html",
-            "group": "Data",
+            "group": FORM_GROUP_DATA,
             "validators": [
                 self.get_validator("chart_checkbox"),
                 self.get_validator("default")(False),
@@ -646,7 +654,7 @@ class BaseChartForm(ABC):
             "field_name": "invert_y",
             "label": "Invert Y-axis",
             "form_snippet": "chart_checkbox.html",
-            "group": "Data",
+            "group": FORM_GROUP_DATA,
             "validators": [
                 self.get_validator("chart_checkbox"),
                 self.get_validator("default")(False),
@@ -662,7 +670,7 @@ class BaseChartForm(ABC):
             "field_name": "log_x",
             "label": "Log-scale X-axis",
             "form_snippet": "chart_checkbox.html",
-            "group": "Data",
+            "group": FORM_GROUP_DATA,
             "validators": [
                 self.get_validator("chart_checkbox"),
                 self.get_validator("default")(False),
@@ -678,7 +686,7 @@ class BaseChartForm(ABC):
             "field_name": "log_y",
             "label": "Log-scale Y-axis",
             "form_snippet": "chart_checkbox.html",
-            "group": "Data",
+            "group": FORM_GROUP_DATA,
             "validators": [
                 self.get_validator("chart_checkbox"),
                 self.get_validator("default")(False),
@@ -695,7 +703,7 @@ class BaseChartForm(ABC):
             "label": "Color",
             "form_snippet": "chart_select.html",
             "choices": choices,
-            "group": "Styles",
+            "group": FORM_GROUP_STYLES,
             "validators": [
                 self.get_validator("ignore_empty"),
                 self.get_validator("unicode_safe"),
@@ -710,7 +718,7 @@ class BaseChartForm(ABC):
             "label": "Animation Frame",
             "form_snippet": "chart_select.html",
             "choices": choices,
-            "group": "Styles",
+            "group": FORM_GROUP_STYLES,
             "validators": [
                 self.get_validator("ignore_empty"),
                 self.get_validator("unicode_safe"),
@@ -725,7 +733,7 @@ class BaseChartForm(ABC):
             "field_name": "opacity",
             "label": "Opacity",
             "form_snippet": "chart_range.html",
-            "group": "Styles",
+            "group": FORM_GROUP_STYLES,
             "validators": [
                 self.get_validator("default")(1),
                 self.get_validator("float_validator"),
@@ -747,7 +755,7 @@ class BaseChartForm(ABC):
                 self.get_validator("int_validator"),
                 self.get_validator("limit_to_configured_maximum")("", maximum),
             ],
-            "group": "Data",
+            "group": FORM_GROUP_DATA,
             "help_text": "Limit the number of rows to show in the chart",
             "type": "int",
             "default": default,
@@ -759,6 +767,7 @@ class BaseChartForm(ABC):
             {
                 "field_name": "values",
                 "label": "Values",
+                "group": FORM_GROUP_DATA,
                 "validators": [
                     self.get_validator("charts_if_empty_same_as")("y"),
                     self.get_validator("unicode_safe"),
@@ -776,6 +785,7 @@ class BaseChartForm(ABC):
             {
                 "field_name": "names",
                 "label": "Names",
+                "group": FORM_GROUP_DATA,
                 "validators": [
                     self.get_validator("charts_if_empty_same_as")("x"),
                     self.get_validator("unicode_safe"),
@@ -799,7 +809,7 @@ class BaseChartForm(ABC):
                 self.get_validator("int_validator"),
                 self.get_validator("limit_to_configured_maximum")("", 1000),
             ],
-            "group": "Data",
+            "group": FORM_GROUP_DATA,
             "help_text": "Width of the chart",
             "type": "int",
             "default": 640,
@@ -817,7 +827,7 @@ class BaseChartForm(ABC):
                 self.get_validator("int_validator"),
                 self.get_validator("limit_to_configured_maximum")("", 1000),
             ],
-            "group": "Data",
+            "group": FORM_GROUP_DATA,
             "help_text": "Height of the chart",
             "type": "int",
             "default": 400,
@@ -832,7 +842,7 @@ class BaseChartForm(ABC):
             "field_name": "more_info",
             "label": "More info",
             "form_snippet": "chart_more_info_button.html",
-            "group": "Data",
+            "group": FORM_GROUP_DATA,
             "exclude_from_mkdocs": True,
         }
 
@@ -842,7 +852,7 @@ class BaseChartForm(ABC):
             {
                 "field_name": "size",
                 "label": "Size",
-                "group": "Structure",
+                "group": FORM_GROUP_STRUCTURE,
                 "help_text": "Select a column for the size",
                 "type": "str",
             },
@@ -860,7 +870,7 @@ class BaseChartForm(ABC):
                 self.get_validator("ignore_empty"),
                 self.get_validator("unicode_safe"),
             ],
-            "group": "Filter",
+            "group": FORM_GROUP_FILTER,
             "exclude_from_mkdocs": True,
         }
 
@@ -872,7 +882,7 @@ class BaseChartForm(ABC):
             "field_name": "engine_details",
             "label": "Engine details",
             "form_snippet": "chart_engine_details.html",
-            "group": "Structure",
+            "group": FORM_GROUP_STRUCTURE,
             "exclude_from_mkdocs": True,
         }
 
@@ -884,7 +894,7 @@ class BaseChartForm(ABC):
             "min": 0,
             "max": 100,
             "step": 1,
-            "group": "Structure",
+            "group": FORM_GROUP_STRUCTURE,
             "validators": [
                 self.get_validator("default")(100),
                 self.get_validator("int_validator"),
@@ -898,7 +908,7 @@ class BaseChartForm(ABC):
             "field_name": "color_picker",
             "label": "Color Picker",
             "form_snippet": "chart_color_picker.html",
-            "group": "Styles",
+            "group": FORM_GROUP_STYLES,
             "type": "str",
             "validators": [
                 self.get_validator("default")("#ffffff"),

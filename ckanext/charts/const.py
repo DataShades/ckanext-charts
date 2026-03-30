@@ -12,3 +12,19 @@ SUPPORTED_CACHE_STRATEGIES = [
 
 REDIS_PREFIX = "ckanext-charts:*"
 CHART_DEFAULT_ROW_LIMIT = 1000
+
+# Form field group names
+FORM_GROUP_GENERAL = "General"
+FORM_GROUP_STRUCTURE = "Structure"
+FORM_GROUP_DATA = "Data"
+FORM_GROUP_STYLES = "Styles"
+FORM_GROUP_FILTER = "Filter"
+
+# All available form groups in order
+FORM_GROUPS = [
+    FORM_GROUP_GENERAL,
+    FORM_GROUP_STRUCTURE,
+    FORM_GROUP_DATA,
+    FORM_GROUP_STYLES,
+    FORM_GROUP_FILTER,
+]

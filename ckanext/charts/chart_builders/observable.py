@@ -6,6 +6,7 @@ from typing import Any
 import pandas as pd
 
 from ckanext.charts.chart_builders.base import BaseChartBuilder, BaseChartForm
+from ckanext.charts.const import FORM_GROUP_STYLES
 
 
 class ObservableBuilder(BaseChartBuilder):
@@ -376,7 +377,7 @@ class ObservablePieForm(BaseChartForm):
             "field_name": "innerRadius",
             "label": "Inner Radius",
             "input_type": "number",
-            "group": "Styles",
+            "group": FORM_GROUP_STYLES,
             "type": "number",
             "validators": [
                 self.get_validator("default")(0),
@@ -389,7 +390,7 @@ class ObservablePieForm(BaseChartForm):
             "field_name": "strokeWidth",
             "label": "Stroke Width",
             "input_type": "number",
-            "group": "Styles",
+            "group": FORM_GROUP_STYLES,
             "help_text": "Works only if inner radius is lower than 0",
             "validators": [
                 self.get_validator("default")(1),
@@ -402,7 +403,7 @@ class ObservablePieForm(BaseChartForm):
             "field_name": "fontSize",
             "label": "Font Size",
             "input_type": "number",
-            "group": "Styles",
+            "group": FORM_GROUP_STYLES,
             "validators": [
                 self.get_validator("default")(12),
                 self.get_validator("float_validator"),
