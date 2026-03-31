@@ -627,4 +627,4 @@ try:
 except Exception:
     log.exception("Failed to register File ORC cache strategy")
 
-log.debug("Registered cache strategies: %", CacheStrategyRegistry.list_strategies())
+log.debug("Registered cache strategies: %s", CacheStrategyRegistry.list_strategies())
