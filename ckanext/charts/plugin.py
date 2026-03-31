@@ -14,19 +14,16 @@ from ckan.config.declaration import Declaration, Key
 from ckanext.charts import cache, const, exception, utils
 from ckanext.charts.chart_builders import DEFAULT_CHART_FORM
 from ckanext.charts.logic.schema import settings_schema
-
+from ckanext.charts import implementations as imp
 
 @tk.blanket.actions
 @tk.blanket.helpers
 @tk.blanket.blueprints
 @tk.blanket.validators
-class ChartsViewPlugin(p.SingletonPlugin):
+class ChartsViewPlugin(imp.ResourceController, imp.SignalController, p.SingletonPlugin):
     p.implements(p.IConfigurer)
     p.implements(p.IConfigDeclaration)
     p.implements(p.IResourceView)
-    p.implements(p.IBlueprint)
-    p.implements(p.ISignal)
-    p.implements(p.IResourceController, inherit=True)
     p.implements(p.IConfigurable)
 
     # IConfigurable
@@ -137,34 +134,6 @@ class ChartsViewPlugin(p.SingletonPlugin):
     def form_template(self, context: types.Context, data_dict: dict[str, Any]) -> str:
         return "charts/charts_form.html"
 
-    # ISignal
-
-    def get_signal_subscriptions(self) -> types.SignalMapping:
-        return {
-            tk.signals.ckanext.signal("ap_main:collect_config_sections"): [
-                self.collect_config_sections_subs,
-            ],
-            tk.signals.ckanext.signal("ap_main:collect_config_schemas"): [
-                self.collect_config_schemas_subs,
-            ],
-        }
-
-    @staticmethod
-    def collect_config_sections_subs(sender: None) -> Any:
-        return {
-            "name": "Charts",
-            "configs": [
-                {
-                    "name": "Configuration",
-                    "blueprint": "charts_view_admin.config",
-                    "info": "Charts settings",
-                },
-            ],
-        }
-
-    @staticmethod
-    def collect_config_schemas_subs(sender: None) -> list[str]:
-        return ["ckanext.charts:config_schema.yaml"]
 
     # IXloader & IDataPusher
 
@@ -189,22 +158,7 @@ class ChartsViewPlugin(p.SingletonPlugin):
             """Invalidate cache after upload to DataStore"""
             cache.invalidate_resource_cache(resource_dict["id"])
 
-    # IResourceController
 
-    def before_resource_delete(
-        self,
-        context: types.Context,
-        resource: dict[str, Any],
-        resources: list[dict[str, Any]],
-    ) -> None:
-        cache.invalidate_resource_cache(resource["id"])
-
-    def after_resource_update(
-        self,
-        context: types.Context,
-        resource: dict[str, Any],
-    ) -> None:
-        cache.invalidate_resource_cache(resource["id"])
 
 
 class ChartsBuilderViewPlugin(p.SingletonPlugin):
