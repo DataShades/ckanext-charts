@@ -42,7 +42,11 @@ ckan.module("charts-select", function ($, _) {
                 config.maxItems = selectEl.getAttribute("maxitems") || null;
             }
 
-            new TomSelect(selectEl, config);
+            if (!window.chartSelects) {
+                window.chartSelects = {};
+            }
+
+            window.chartSelects[selectEl.name] = new TomSelect(selectEl, config);
         }
     };
 });

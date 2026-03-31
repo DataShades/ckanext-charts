@@ -3,22 +3,35 @@ ckan.module("charts-conditional", function ($) {
 
     return {
         options: {
-            showIf: null
+            conditions: [],
+            fieldName: null,
         },
         initialize: function () {
             $.proxyAll(this, /_/);
 
-            this.conditions = JSON.parse(this.options.showIf || "[]");
             this._form = this.el.closest("form");
-
             this._evaluate();
 
-            this._form.on("change", this._evaluate);
-            htmx.on("htmx:afterSettle", this._evaluate);
+            htmx.on("htmx:configRequest", this._beforeRequest);
         },
 
-        teardown: function () {
-            this._form.off("change", this._evaluate);
+        _evaluate: function() {
+            var allMet = this.options.conditions.every((condition) => {
+                var current = this._getFieldValue(condition.field);
+                return current === condition.value;
+            });
+
+            this.el.toggle(!!allMet);
+
+            return allMet;
+        },
+
+        _beforeRequest: function (e) {
+            var allMet = this._evaluate();
+
+            if (!allMet) {
+                delete e.detail.parameters[this.options.fieldName]
+            }
         },
 
         _getFieldValue: function (fieldName) {
@@ -30,6 +43,7 @@ ckan.module("charts-conditional", function ($) {
             }
 
             var value = null;
+
             elements.each(function () {
                 var el = $(this);
                 var type = (el.attr("type") || "").toLowerCase();
@@ -47,22 +61,6 @@ ckan.module("charts-conditional", function ($) {
             });
 
             return value;
-        },
-
-        /**
-         * Show or hide this element based on the ``data-show-if`` conditions.
-         */
-        _evaluate: function () {
-            var allMet = this.conditions.every((condition) => {
-                var current = this._getFieldValue(condition.field);
-                return current === condition.value;
-            });
-
-            if (allMet) {
-                this.el.show();
-            } else {
-                this.el.hide();
-            }
         }
     };
 });
