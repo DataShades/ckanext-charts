@@ -20,6 +20,85 @@ from ckanext.charts import config, const, exception, types, fetchers, utils
 log = logging.getLogger(__name__)
 
 
+class CacheStrategyRegistry:
+    """Registry for cache strategy implementations.
+
+    Provides a centralized, type-safe way to manage cache strategy classes
+    and their instantiation. This pattern eliminates string-based dispatch
+    and makes adding new strategies straightforward.
+
+    Example:
+        # Register a strategy (usually done at module level)
+        CacheStrategyRegistry.register("redis", RedisCache)
+
+        # Use a strategy
+        cache = CacheStrategyRegistry.get("redis")  # Returns RedisCache instance
+    """
+
+    _strategies: dict[str, type[CacheStrategy]] = {}
+
+    @classmethod
+    def register(cls, name: str, strategy_class: type[CacheStrategy]) -> None:
+        """Register a cache strategy implementation.
+
+        Args:
+            name: The name/key for this strategy (e.g., "redis", "file_csv")
+            strategy_class: The CacheStrategy class to register
+
+        Raises:
+            TypeError: If strategy_class doesn't implement CacheStrategy
+        """
+        if not issubclass(strategy_class, CacheStrategy):
+            raise TypeError(
+                f"{strategy_class.__name__} must inherit from CacheStrategy"
+            )
+        cls._strategies[name] = strategy_class
+        log.debug(f"Registered cache strategy: {name} -> {strategy_class.__name__}")
+
+    @classmethod
+    def get(cls, name: str) -> CacheStrategy:
+        """Get an instance of the specified cache strategy.
+
+        Args:
+            name: The name of the strategy to instantiate
+
+        Returns:
+            An instance of the registered strategy
+
+        Raises:
+            CacheStrategyNotImplementedError: If the strategy is not registered
+        """
+        if name not in cls._strategies:
+            available = ", ".join(cls._strategies.keys())
+            raise exception.CacheStrategyNotImplementedError(
+                f"Cache strategy '{name}' is not registered. "
+                f"Available strategies: {available}"
+            )
+        strategy_class = cls._strategies[name]
+        return strategy_class()
+
+    @classmethod
+    def list_strategies(cls) -> list[str]:
+        """List all registered strategy names.
+
+        Returns:
+            List of registered strategy names
+        """
+        return list(cls._strategies.keys())
+
+    @classmethod
+    def is_registered(cls, name: str) -> bool:
+        """Check if a strategy is registered.
+
+        Args:
+            name: The strategy name to check
+
+        Returns:
+            True if the strategy is registered, False otherwise
+        """
+        return name in cls._strategies
+
+
 class CacheStrategy(ABC):
     """Cache strategy interface.
 
@@ -383,22 +462,27 @@ class FileCacheCSV(FileCache):
         self.write_metadata(file_path, data)
 
 
-def get_cache_manager(cache_strategy: str | None) -> CacheStrategy:
-    """Return cache manager based on the strategy"""
+def get_cache_manager(cache_strategy: str | None = None) -> CacheStrategy:
+    """Return a cache manager instance based on the strategy.
+
+    Uses the CacheStrategyRegistry to instantiate the appropriate strategy.
+    If no strategy is provided, uses the configured default.
+
+    Args:
+        cache_strategy: The cache strategy name. If None, uses config default.
+
+    Returns:
+        An instance of the requested CacheStrategy
+
+    Raises:
+        CacheStrategyNotImplementedError: If the strategy is not registered
+
+    Example:
+        >>> cache = get_cache_manager("redis")
+        >>> cache.get_data("my_key")
+    """
     active_cache = cache_strategy or config.get_cache_strategy()
-
-    if active_cache == const.CACHE_REDIS:
-        return RedisCache()
-
-    if active_cache == const.CACHE_FILE_ORC:
-        return FileCacheORC()
-
-    if active_cache == const.CACHE_FILE_CSV:
-        return FileCacheCSV()
-
-    raise exception.CacheStrategyNotImplementedError(
-        f"Cache strategy {active_cache} is not implemented",
-    )
+    return CacheStrategyRegistry.get(active_cache)
 
 
 def invalidate_all_cache() -> None:
@@ -410,10 +494,22 @@ def invalidate_all_cache() -> None:
 
 
 def invalidate_by_key(key: str) -> None:
-    """Invalidate cache by key"""
-    RedisCache().invalidate(key)
-    FileCacheORC().invalidate(key)
-    FileCacheCSV().invalidate(key)
+    """Invalidate cache by key across all registered strategies.
+
+    Uses the registry to invalidate the key in all registered cache strategies,
+    ensuring consistency across multiple caching backends.
+
+    Args:
+        key: The cache key to invalidate
+    """
+    for strategy_name in CacheStrategyRegistry.list_strategies():
+        try:
+            strategy = CacheStrategyRegistry.get(strategy_name)
+            strategy.invalidate(key)
+        except Exception as e:  # noqa: BLE001
+            log.warning(
+                f"Failed to invalidate key '{key}' in strategy '{strategy_name}': {e}"
+            )
 
     log.info("Chart cache for key %s has been invalidated", key)
 
@@ -456,8 +552,17 @@ def get_file_cache_path() -> str:
 
 
 def count_redis_cache_size() -> int:
-    """Return the size of the Redis cache"""
-    redis_conn = RedisCache().client
+    """Return the size of the Redis cache.
+
+    Uses the registry to get a Redis cache instance and accesses its
+    underlying client to calculate total cache size.
+    """
+    redis_cache = CacheStrategyRegistry.get(const.CACHE_REDIS)
+    if not isinstance(redis_cache, RedisCache):
+        raise exception.CacheStrategyNotImplementedError(
+            f"Expected RedisCache instance, got {type(redis_cache).__name__}"
+        )
+    redis_conn = redis_cache.client
 
     total_size = 0
 
@@ -506,3 +611,21 @@ def invalidate_resource_cache(resource_id: str) -> None:
         invalidate_by_key(
             fetchers.DatastoreDataFetcher(resource_id, view_id).make_cache_key(),
         )
+
+
+try:
+    CacheStrategyRegistry.register(const.CACHE_REDIS, RedisCache)
+except Exception as e:
+    log.warning(f"Failed to register Redis cache strategy: {e}")
+
+try:
+    CacheStrategyRegistry.register(const.CACHE_FILE_CSV, FileCacheCSV)
+except Exception as e:
+    log.warning(f"Failed to register File CSV cache strategy: {e}")
+
+try:
+    CacheStrategyRegistry.register(const.CACHE_FILE_ORC, FileCacheORC)
+except Exception as e:
+    log.warning(f"Failed to register File ORC cache strategy: {e}")
+
+log.debug(f"Registered cache strategies: {CacheStrategyRegistry.list_strategies()}")

@@ -29,7 +29,6 @@ class ChartsViewPlugin(imp.ResourceController, imp.SignalController, p.Singleton
     # IConfigurable
 
     def configure(self, config: CKANConfig) -> None:
-        # Remove expired file cache
         cache.remove_expired_file_cache()
 
     # IConfigurer
