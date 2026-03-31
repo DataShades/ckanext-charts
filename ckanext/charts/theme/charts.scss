@@ -36,8 +36,17 @@
 #chart-indicator {
     display: none;
 }
-.htmx-request#chart-indicator{
-    display:inline;
+
+.htmx-request#chart-indicator {
+    display: inline;
+}
+
+.htmx-request.chart-indicator-overlay {
+    display: flex !important;
+}
+
+.htmx-request>.charts-view--form {
+    pointer-events: none;
 }
 
 .charts-filters {
@@ -96,4 +105,23 @@
             margin-top: 1px;
         }
     }
+}
+
+.charts-view--form-wrapper {
+    position: relative;
+}
+
+.chart-indicator-overlay {
+    display: none !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.6);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    border-radius: 4px;
 }
