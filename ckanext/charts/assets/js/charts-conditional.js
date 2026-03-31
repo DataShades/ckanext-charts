@@ -8,7 +8,7 @@ ckan.module("charts-conditional", function ($) {
         initialize: function () {
             $.proxyAll(this, /_/);
 
-            this.conditions = JSON.parse(this.options.showIf);
+            this.conditions = JSON.parse(this.options.showIf || "[]");
             this._form = this.el.closest("form");
 
             this._evaluate();
