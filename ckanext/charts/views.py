@@ -16,9 +16,9 @@ ERROR_TEMPLATE = "charts/snippets/error_chart.html"
 
 
 @charts.route("/api/utils/charts/<resource_id>/update-chart")
-def update_chart(
+def update_chart(  # noqa: PLR0911
     resource_id: str,
-) -> str:  # noqa: PLR0911
+) -> str:
     """Update chart.
 
     This will be called from the resource view to update the chart.

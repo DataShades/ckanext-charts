@@ -118,11 +118,7 @@ class ChartJsBuilder(BaseChartBuilder):
         else:
             options["scales"]["y"]["title"] = {
                 "display": True,
-                "text": (
-                    self.settings["y"]
-                    if type(self.settings["y"]) is str
-                    else self.settings["y"][0]
-                ),
+                "text": (self.settings["y"] if type(self.settings["y"]) is str else self.settings["y"][0]),
             }
 
         if y_axis_label_right := self.settings.get("y_axis_label_right"):
@@ -214,10 +210,7 @@ class ChartJSBarForm(ChartJSBaseForm):
 
     def get_form_fields(self) -> list[dict[str, Any]]:
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
-        chart_types = [
-            {"value": form.name, "label": form.name}
-            for form in self.builder.get_supported_forms()
-        ]
+        chart_types = [{"value": form.name, "label": form.name} for form in self.builder.get_supported_forms()]
 
         return [
             self.title_field(),
@@ -423,10 +416,7 @@ class ChartJSLineForm(ChartJSBaseForm):
 
     def get_form_fields(self) -> list[dict[str, Any]]:
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
-        chart_types = [
-            {"value": form.name, "label": form.name}
-            for form in self.builder.get_supported_forms()
-        ]
+        chart_types = [{"value": form.name, "label": form.name} for form in self.builder.get_supported_forms()]
 
         return [
             self.title_field(),
@@ -492,10 +482,7 @@ class ChartJSPieForm(ChartJSBaseForm):
     def get_form_fields(self) -> list[dict[str, Any]]:
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
 
-        chart_types = [
-            {"value": form.name, "label": form.name}
-            for form in self.builder.get_supported_forms()
-        ]
+        chart_types = [{"value": form.name, "label": form.name} for form in self.builder.get_supported_forms()]
 
         return [
             self.title_field(),
@@ -595,10 +582,7 @@ class ChartJSScatterForm(ChartJSBaseForm):
 
     def get_form_fields(self) -> list[dict[str, Any]]:
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
-        chart_types = [
-            {"value": form.name, "label": form.name}
-            for form in self.builder.get_supported_forms()
-        ]
+        chart_types = [{"value": form.name, "label": form.name} for form in self.builder.get_supported_forms()]
 
         return [
             self.title_field(),
@@ -739,10 +723,7 @@ class ChartJSRadarForm(ChartJSBaseForm):
 
     def get_form_fields(self) -> list[dict[str, Any]]:
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
-        chart_types = [
-            {"value": form.name, "label": form.name}
-            for form in self.builder.get_supported_forms()
-        ]
+        chart_types = [{"value": form.name, "label": form.name} for form in self.builder.get_supported_forms()]
 
         return [
             self.title_field(),
@@ -753,9 +734,7 @@ class ChartJSRadarForm(ChartJSBaseForm):
             self.names_field(columns),
             self.values_multi_field(
                 columns,
-                help_text=(
-                    "Select 3 or more different categorical variables (dimensions)"
-                ),
+                help_text=("Select 3 or more different categorical variables (dimensions)"),
             ),
             self.more_info_button_field(),
             self.limit_field(maximum=1000000),

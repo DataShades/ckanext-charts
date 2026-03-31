@@ -26,14 +26,14 @@ class PlotlyBuilder(BaseChartBuilder):
 
     @classmethod
     def get_supported_forms(cls) -> list[type[Any]]:
-        from ckanext.charts.chart_builders.plotly.bar import (
+        from ckanext.charts.chart_builders.plotly.bar import (  # noqa: PLC0415
             PlotlyBarForm,
             PlotlyHorizontalBarForm,
         )
-        from ckanext.charts.chart_builders.plotly.choropleth import PlotlyChoroplethForm
-        from ckanext.charts.chart_builders.plotly.line import PlotlyLineForm
-        from ckanext.charts.chart_builders.plotly.pie import PlotlyPieForm
-        from ckanext.charts.chart_builders.plotly.scatter import PlotlyScatterForm
+        from ckanext.charts.chart_builders.plotly.choropleth import PlotlyChoroplethForm  # noqa: PLC0415
+        from ckanext.charts.chart_builders.plotly.line import PlotlyLineForm  # noqa: PLC0415
+        from ckanext.charts.chart_builders.plotly.pie import PlotlyPieForm  # noqa: PLC0415
+        from ckanext.charts.chart_builders.plotly.scatter import PlotlyScatterForm  # noqa: PLC0415
 
         return [
             PlotlyBarForm,

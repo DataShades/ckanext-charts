@@ -21,10 +21,7 @@ class PlotlyPieForm(BasePlotlyForm):
     def get_form_fields(self) -> list[dict[str, Any]]:
         """Get the form fields for the Plotly pie chart."""
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
-        chart_types = [
-            {"value": form.name, "label": form.name}
-            for form in self.builder.get_supported_forms()
-        ]
+        chart_types = [{"value": form.name, "label": form.name} for form in self.builder.get_supported_forms()]
 
         return [
             self.title_field(),

@@ -400,9 +400,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
             ) from e
 
         # Filter out system columns
-        column_names = [
-            col["name"] for col in columns if col["name"] not in {"_id", "_full_text"}
-        ]
+        column_names = [col["name"] for col in columns if col["name"] not in {"_id", "_full_text"}]
 
         # Also cache in the persistent cache if enabled
         if config.is_cache_enabled():
@@ -608,8 +606,7 @@ class FileSystemDataFetcher(DataFetcherStrategy):
 
         if self.file_format not in self.SUPPORTED_FORMATS:
             raise exception.DataFetchError(
-                f"File format {self.file_format} is not supported. "
-                "Only CSV files are supported.",
+                f"File format {self.file_format} is not supported. Only CSV files are supported.",
             )
 
         try:

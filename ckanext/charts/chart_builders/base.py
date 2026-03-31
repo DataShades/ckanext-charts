@@ -166,9 +166,7 @@ class BaseChartBuilder(ABC):
 
     def get_unique_values(self, column: pd.Series, sort: bool = True) -> list[Any]:
         """Get unique values from a pandas Series."""
-        result = [
-            self.convert_to_native_types(value) for value in column.unique().tolist()
-        ]
+        result = [self.convert_to_native_types(value) for value in column.unique().tolist()]
 
         if not sort:
             return result
@@ -259,7 +257,7 @@ class BaseChartForm(ABC):
         fields: list[dict[str, Any]],
     ) -> list[dict[str, Any]]:
         """Expand the schema fields presets."""
-        from ckanext.scheming.plugins import _expand_schemas  # type: ignore
+        from ckanext.scheming.plugins import _expand_schemas  # type: ignore # noqa: PLC0415
 
         expanded_schemas = _expand_schemas({"schema": {"fields": fields}})
 
@@ -282,9 +280,7 @@ class BaseChartForm(ABC):
         try:
             validation_schema = {
                 field["field_name"]: (
-                    field["validators"]
-                    if not for_show
-                    else field.get("output_validators", field["validators"])
+                    field["validators"] if not for_show else field.get("output_validators", field["validators"])
                 )
                 for field in fields
                 if "validators" in field
@@ -562,10 +558,7 @@ class BaseChartForm(ABC):
                 self.get_validator("default")(False),
                 self.get_validator("boolean_validator"),
             ],
-            "help_text": (
-                "Split data into different columns by years based on datetime "
-                "column stated for the x-axis"
-            ),
+            "help_text": ("Split data into different columns by years based on datetime column stated for the x-axis"),
             "type": "bool",
             "default": False,
         }

@@ -53,7 +53,7 @@ class CacheStrategyRegistry:
                 f"{strategy_class.__name__} must inherit from CacheStrategy",
             )
         cls._strategies[name] = strategy_class
-        log.debug(f"Registered cache strategy: {name} -> {strategy_class.__name__}")
+        log.debug("Registered cache strategy: %s -> %s", name, strategy_class.__name__)
 
     @classmethod
     def get(cls, name: str) -> CacheStrategy:
@@ -71,8 +71,7 @@ class CacheStrategyRegistry:
         if name not in cls._strategies:
             available = ", ".join(cls._strategies.keys())
             raise exception.CacheStrategyNotImplementedError(
-                f"Cache strategy '{name}' is not registered. "
-                f"Available strategies: {available}",
+                f"Cache strategy '{name}' is not registered. Available strategies: {available}",
             )
         strategy_class = cls._strategies[name]
         return strategy_class()
@@ -387,7 +386,7 @@ class FileCacheORC(FileCache):
         Returns:
             ChartData or None if not found.
         """
-        from pyarrow import orc
+        from pyarrow import orc  # noqa: PLC0415
 
         df = cast(pd.DataFrame, orc.ORCFile(file).read().to_pandas())
         metadata = self.read_metadata(file_path)
@@ -508,7 +507,10 @@ def invalidate_by_key(key: str) -> None:
             strategy.invalidate(key)
         except Exception as e:  # noqa: BLE001
             log.warning(
-                f"Failed to invalidate key '{key}' in strategy '{strategy_name}': {e}",
+                "Failed to invalidate key '%s' in strategy '%s': %s",
+                key,
+                strategy_name,
+                e,
             )
 
     log.info("Chart cache for key %s has been invalidated", key)
@@ -579,10 +581,7 @@ def count_redis_cache_size() -> int:
 
 def count_file_cache_size() -> int:
     """Return the size of the file cache"""
-    return sum(
-        os.path.getsize(os.path.join(get_file_cache_path(), f))
-        for f in os.listdir(get_file_cache_path())
-    )
+    return sum(os.path.getsize(os.path.join(get_file_cache_path(), f)) for f in os.listdir(get_file_cache_path()))
 
 
 def remove_expired_file_cache() -> None:
@@ -615,17 +614,17 @@ def invalidate_resource_cache(resource_id: str) -> None:
 
 try:
     CacheStrategyRegistry.register(const.CACHE_REDIS, RedisCache)
-except Exception as e:
-    log.warning(f"Failed to register Redis cache strategy: {e}")
+except Exception:
+    log.exception("Failed to register Redis cache strategy")
 
 try:
     CacheStrategyRegistry.register(const.CACHE_FILE_CSV, FileCacheCSV)
-except Exception as e:
-    log.warning(f"Failed to register File CSV cache strategy: {e}")
+except Exception:
+    log.exception("Failed to register File CSV cache strategy")
 
 try:
     CacheStrategyRegistry.register(const.CACHE_FILE_ORC, FileCacheORC)
-except Exception as e:
-    log.warning(f"Failed to register File ORC cache strategy: {e}")
+except Exception:
+    log.exception("Failed to register File ORC cache strategy")
 
-log.debug(f"Registered cache strategies: {CacheStrategyRegistry.list_strategies()}")
+log.debug("Registered cache strategies: %", CacheStrategyRegistry.list_strategies())

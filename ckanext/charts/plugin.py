@@ -138,11 +138,11 @@ class ChartsViewPlugin(imp.ResourceController, imp.SignalController, p.Singleton
 
     if p.plugin_loaded("xloader") or p.plugin_loaded("datapusher"):
         if p.plugin_loaded("xloader"):
-            from ckanext.xloader.interfaces import IXloader
+            from ckanext.xloader.interfaces import IXloader  # noqa: PLC0415
 
             pusher_interface = IXloader
         else:
-            from ckanext.datapusher.interfaces import IDataPusher
+            from ckanext.datapusher.interfaces import IDataPusher  # noqa: PLC0415
 
             pusher_interface = IDataPusher
 
@@ -188,9 +188,7 @@ class ChartsBuilderViewPlugin(p.SingletonPlugin):
         return {
             "resource_id": data_dict["resource"]["id"],
             "resource_view_id": (
-                data_dict["resource_view"]["id"]
-                if data_dict.get("resource_view", {}).get("id")
-                else None
+                data_dict["resource_view"]["id"] if data_dict.get("resource_view", {}).get("id") else None
             ),
             "settings": {
                 "engine": "plotly",

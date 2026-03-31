@@ -67,10 +67,7 @@ class PlotlyLineBuilder(PlotlyBuilder):
 
         func = {"min": "min", "max": "max", "mean": "mean"}.get(method, "mean")
 
-        aggregated = (
-            df.groupby(["_year_", "_day_of_year_"])[column_name].agg(func).reset_index()
-        )
-        return aggregated
+        return df.groupby(["_year_", "_day_of_year_"])[column_name].agg(func).reset_index()
 
     def _split_data_by_year_fixed(self) -> None:
         """Prepare data for a fixed 365-day X-axis line chart.
@@ -126,11 +123,7 @@ class PlotlyLineBuilder(PlotlyBuilder):
         x_col = self.settings["x"]
 
         # fixed_365_days path: data is already on the MM-DD grid
-        if (
-            self.settings.get("fixed_365_days")
-            and self.settings.get("split_data")
-            and self._is_column_datetime(x_col)
-        ):
+        if self.settings.get("fixed_365_days") and self.settings.get("split_data") and self._is_column_datetime(x_col):
             df = cast(pd.DataFrame, self.df[[x_col, column_name]].copy())
             # NaN rows already represent missing days — leave them for
             # Plotly to render as breaks (connectgaps=False) or skip them.
@@ -145,9 +138,7 @@ class PlotlyLineBuilder(PlotlyBuilder):
 
         if self.settings.get("split_data") and self._is_column_datetime(x_col):
             # Split dataframe by years
-            df = df[
-                df[x_col].dt.strftime(self.YEAR_DATETIME_FORMAT) == str(column_name)
-            ]
+            df = df[df[x_col].dt.strftime(self.YEAR_DATETIME_FORMAT) == str(column_name)]
             # Convert original datetime column to the format `01-01 00:00`
             # to be able to split the graph by year on the same layout
             df[x_col] = df[x_col].dt.strftime(self.DATETIME_TICKS_FORMAT)
@@ -377,10 +368,7 @@ class PlotlyLineForm(BasePlotlyForm):
     def get_form_fields(self) -> list[dict[str, Any]]:
         """Get the form fields for the Plotly line chart."""
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
-        chart_types = [
-            {"value": form.name, "label": form.name}
-            for form in self.builder.get_supported_forms()
-        ]
+        chart_types = [{"value": form.name, "label": form.name} for form in self.builder.get_supported_forms()]
 
         return [
             self.title_field(),

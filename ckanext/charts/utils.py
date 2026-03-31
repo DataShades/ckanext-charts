@@ -23,9 +23,7 @@ def get_column_options(resource_id: str) -> list[dict[str, str]]:
     Returns:
         List of column options
     """
-    return [
-        {"text": col, "value": col} for col in get_datastore_column_names(resource_id)
-    ]
+    return [{"text": col, "value": col} for col in get_datastore_column_names(resource_id)]
 
 
 def printable_file_size(size_bytes: int) -> str:

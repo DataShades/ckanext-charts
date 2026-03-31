@@ -6,4 +6,4 @@ The line chart is a chart that displays information as a series of data points c
     handler: ChartFieldsHandler
     options:
       engine: plotly
-      chart_type: Bar
+      chart_type: Line

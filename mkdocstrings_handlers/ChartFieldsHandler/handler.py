@@ -1,20 +1,15 @@
 from __future__ import annotations
-
 import os
 from collections.abc import Mapping, MutableMapping
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
-
 from mkdocstrings import BaseHandler, CollectorItem
-
 from ckan.cli import CKANConfigLoader
 from ckan.config.middleware import make_app
-
 from ckanext.charts.utils import get_chart_form_builder
 
 config_path = os.environ["CKAN_INI"]
-
 if not os.path.exists(config_path):
     raise RuntimeError(f"CKAN config file not found: {config_path}")
 
@@ -22,6 +17,8 @@ if not os.path.exists(config_path):
 class ChartFieldsHandler(BaseHandler):
     """Custom handler for documenting different chart types fields according to the
     form fields schema."""
+
+    name = "ChartFieldsHandler"
 
     def collect(
         self,
@@ -51,11 +48,11 @@ class ChartFieldsHandler(BaseHandler):
         # Patch the inspector
         patcher_inspector = patch("sqlalchemy.inspect", return_value=mock_inspector)
         patcher_inspector.start()
-
-        form_builder = get_chart_form_builder(config["engine"], config["chart_type"])(
-            "xxx",
+        form_builder = get_chart_form_builder(
+            config["engine"],
+            config["chart_type"],
+            resource_id="xxx",
         )
-
         return {
             "fields": form_builder.get_form_fields(),
         }
@@ -70,7 +67,12 @@ class ChartFieldsHandler(BaseHandler):
 
 
 def get_handler(**kwargs: Any) -> ChartFieldsHandler:
-    return ChartFieldsHandler(handler="ChartFieldsHandler", theme=kwargs["theme"])
+    return ChartFieldsHandler(
+        theme=kwargs["theme"],
+        custom_templates=kwargs.get("custom_templates"),
+        mdx=kwargs.get("mdx", []),
+        mdx_config=kwargs.get("mdx_config", []),
+    )
 
 
 def get_templates_path() -> Path:

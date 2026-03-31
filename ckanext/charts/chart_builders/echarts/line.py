@@ -17,9 +17,7 @@ class EChartsLineBuilder(EChartsBuilder):
         options = {
             "xAxis": {
                 "type": "category",
-                "data": [
-                    x if pd.notna(x) else None for x in self.df[self.settings["x"]]
-                ],
+                "data": [x if pd.notna(x) else None for x in self.df[self.settings["x"]]],
             },
             "yAxis": {"type": "value"},
             "series": [],
@@ -67,10 +65,7 @@ class EChartsLineForm(EchartsFormBuilder):
 
     def get_form_fields(self) -> list[dict[str, Any]]:
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
-        chart_types = [
-            {"value": form.name, "label": form.name}
-            for form in self.builder.get_supported_forms()
-        ]
+        chart_types = [{"value": form.name, "label": form.name} for form in self.builder.get_supported_forms()]
 
         return [
             self.title_field(),

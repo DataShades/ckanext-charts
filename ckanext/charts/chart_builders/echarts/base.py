@@ -8,9 +8,9 @@ from ckanext.charts.chart_builders.base import BaseChartBuilder, BaseChartForm
 class EChartsBuilder(BaseChartBuilder):
     @classmethod
     def get_supported_forms(cls) -> list[type[Any]]:
-        from .bar import EChartsBarForm
-        from .line import EChartsLineForm
-        from .pie import EChartsPieForm
+        from .bar import EChartsBarForm  # noqa: PLC0415
+        from .line import EChartsLineForm  # noqa: PLC0415
+        from .pie import EChartsPieForm  # noqa: PLC0415
 
         return [
             EChartsBarForm,

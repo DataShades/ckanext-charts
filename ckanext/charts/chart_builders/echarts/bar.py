@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import Any
 import json
 
 from ckanext.charts.chart_builders.echarts.base import (
@@ -44,10 +45,7 @@ class EChartsBarForm(EchartsFormBuilder):
 
     def get_form_fields(self) -> list[dict[str, Any]]:
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
-        chart_types = [
-            {"value": form.name, "label": form.name}
-            for form in self.builder.get_supported_forms()
-        ]
+        chart_types = [{"value": form.name, "label": form.name} for form in self.builder.get_supported_forms()]
 
         return [
             self.title_field(),

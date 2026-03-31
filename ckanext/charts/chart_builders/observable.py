@@ -65,15 +65,11 @@ class ObservableBuilder(BaseChartBuilder):
         data["plot"].update(
             {
                 "x": {
-                    "label": (
-                        self.settings.get("x_axis_label") or self.settings.get("x")
-                    ),
+                    "label": (self.settings.get("x_axis_label") or self.settings.get("x")),
                     "reverse": self.settings.get("invert_x", False),
                 },
                 "y": {
-                    "label": (
-                        self.settings.get("y_axis_label") or self.settings.get("y")
-                    ),
+                    "label": (self.settings.get("y_axis_label") or self.settings.get("y")),
                     "reverse": self.settings.get("invert_y", False),
                 },
                 "color": {
@@ -126,10 +122,7 @@ class ObservableBarForm(BaseChartForm):
 
     def get_form_fields(self) -> list[dict[str, Any]]:
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
-        chart_types = [
-            {"value": form.name, "label": form.name}
-            for form in self.builder.get_supported_forms()
-        ]
+        chart_types = [{"value": form.name, "label": form.name} for form in self.builder.get_supported_forms()]
 
         return [
             self.title_field(),
@@ -317,10 +310,7 @@ class ObservableLineForm(BaseChartForm):
 
     def get_form_fields(self) -> list[dict[str, Any]]:
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
-        chart_types = [
-            {"value": form.name, "label": form.name}
-            for form in self.builder.get_supported_forms()
-        ]
+        chart_types = [{"value": form.name, "label": form.name} for form in self.builder.get_supported_forms()]
 
         return [
             self.title_field(),
@@ -420,10 +410,7 @@ class ObservablePieForm(BaseChartForm):
 
     def get_form_fields(self) -> list[dict[str, Any]]:
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
-        chart_types = [
-            {"value": form.name, "label": form.name}
-            for form in self.builder.get_supported_forms()
-        ]
+        chart_types = [{"value": form.name, "label": form.name} for form in self.builder.get_supported_forms()]
 
         return [
             self.title_field(),
@@ -487,10 +474,7 @@ class ObservableScatterForm(BaseChartForm):
 
     def get_form_fields(self) -> list[dict[str, Any]]:
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
-        chart_types = [
-            {"value": form.name, "label": form.name}
-            for form in self.builder.get_supported_forms()
-        ]
+        chart_types = [{"value": form.name, "label": form.name} for form in self.builder.get_supported_forms()]
 
         return [
             self.title_field(),

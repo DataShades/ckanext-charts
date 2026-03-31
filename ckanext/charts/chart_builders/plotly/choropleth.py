@@ -415,14 +415,8 @@ class PlotlyChoroplethForm(BasePlotlyForm):
     def get_form_fields(self) -> list[dict[str, Any]]:
         """Get the form fields for the Plotly scatter chart."""
         columns = [{"value": col, "label": col} for col in self.get_all_column_names()]
-        chart_types = [
-            {"value": form.name, "label": form.name}
-            for form in self.builder.get_supported_forms()
-        ]
-        projections = [
-            {"value": projection, "label": projection}
-            for projection in self.projections
-        ]
+        chart_types = [{"value": form.name, "label": form.name} for form in self.builder.get_supported_forms()]
+        projections = [{"value": projection, "label": projection} for projection in self.projections]
 
         return [
             self.title_field(),
@@ -504,9 +498,7 @@ class PlotlyChoroplethForm(BasePlotlyForm):
                 "value": self.builder.custom_color_scale,
                 "label": self.builder.custom_color_scale.capitalize(),
             },
-        ] + [
-            {"value": color, "label": color.capitalize()} for color in self.color_scales
-        ]
+        ] + [{"value": color, "label": color.capitalize()} for color in self.color_scales]
 
         return {
             "field_name": "color_scale",
