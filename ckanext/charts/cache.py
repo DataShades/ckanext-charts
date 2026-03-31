@@ -50,7 +50,7 @@ class CacheStrategyRegistry:
         """
         if not issubclass(strategy_class, CacheStrategy):
             raise TypeError(
-                f"{strategy_class.__name__} must inherit from CacheStrategy"
+                f"{strategy_class.__name__} must inherit from CacheStrategy",
             )
         cls._strategies[name] = strategy_class
         log.debug(f"Registered cache strategy: {name} -> {strategy_class.__name__}")
@@ -72,7 +72,7 @@ class CacheStrategyRegistry:
             available = ", ".join(cls._strategies.keys())
             raise exception.CacheStrategyNotImplementedError(
                 f"Cache strategy '{name}' is not registered. "
-                f"Available strategies: {available}"
+                f"Available strategies: {available}",
             )
         strategy_class = cls._strategies[name]
         return strategy_class()
@@ -508,7 +508,7 @@ def invalidate_by_key(key: str) -> None:
             strategy.invalidate(key)
         except Exception as e:  # noqa: BLE001
             log.warning(
-                f"Failed to invalidate key '{key}' in strategy '{strategy_name}': {e}"
+                f"Failed to invalidate key '{key}' in strategy '{strategy_name}': {e}",
             )
 
     log.info("Chart cache for key %s has been invalidated", key)
@@ -560,7 +560,7 @@ def count_redis_cache_size() -> int:
     redis_cache = CacheStrategyRegistry.get(const.CACHE_REDIS)
     if not isinstance(redis_cache, RedisCache):
         raise exception.CacheStrategyNotImplementedError(
-            f"Expected RedisCache instance, got {type(redis_cache).__name__}"
+            f"Expected RedisCache instance, got {type(redis_cache).__name__}",
         )
     redis_conn = redis_cache.client
 

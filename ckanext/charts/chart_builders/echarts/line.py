@@ -9,7 +9,7 @@ from ckanext.charts.chart_builders.echarts.base import (
     EChartsBuilder,
     EchartsFormBuilder,
 )
-from ckanext.charts.const import FORM_GROUP_STYLES, FORM_GROUP_DATA
+from ckanext.charts.const import FORM_GROUP_STYLES
 
 
 class EChartsLineBuilder(EChartsBuilder):
@@ -17,7 +17,9 @@ class EChartsLineBuilder(EChartsBuilder):
         options = {
             "xAxis": {
                 "type": "category",
-                "data": [x if pd.notna(x) else None for x in self.df[self.settings["x"]]],
+                "data": [
+                    x if pd.notna(x) else None for x in self.df[self.settings["x"]]
+                ],
             },
             "yAxis": {"type": "value"},
             "series": [],
@@ -37,7 +39,10 @@ class EChartsLineBuilder(EChartsBuilder):
         }
 
         for column in self.settings["y"]:
-            data = {"type": "line", "data": [x if pd.notna(x) else None for x in self.df[column]]}
+            data = {
+                "type": "line",
+                "data": [x if pd.notna(x) else None for x in self.df[column]],
+            }
 
             # render chart as an area chart
             if self.settings["area_chart"]:

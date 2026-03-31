@@ -205,7 +205,6 @@ class DatastoreDataFetcher(DataFetcherStrategy):
             return value or None
 
         for key in self.KEYS_TO_COMPARE:
-
             # Get the values and normalize them
             val_current = normalize_value(key, self.settings.get(key))
             val_cached = normalize_value(key, cached_settings.get(key))

@@ -55,8 +55,52 @@ def printable_file_size(size_bytes: int) -> str:
     return f"{s} {size_name[i]}"
 
 
-def get_chart_form_builder(engine: str, chart_type: str) -> type[Any]:
-    """Get form builder for the given engine and chart type."""
+def get_chart_form_builder(
+    engine: str,
+    chart_type: str,
+    **kwargs: Any,
+) -> Any:
+    """Get an instantiated form builder for the given engine and chart type.
+
+    Args:
+        engine: Chart engine name
+        chart_type: Chart type name
+        **kwargs: Arguments to pass to the builder constructor
+                 (typically: resource_id, resource_view_id, settings)
+
+    Returns:
+        An instance of the form builder class
+
+    Raises:
+        NotImplementedError: If engine is not supported
+
+    Example:
+        >>> builder = get_chart_form_builder(
+        ...     "plotly",
+        ...     "line",
+        ...     resource_id="abc123",
+        ...     settings={...},
+        ... )
+    """
+    builder_class = _get_chart_form_builder_class(engine, chart_type)
+    return builder_class(**kwargs)
+
+
+def _get_chart_form_builder_class(engine: str, chart_type: str) -> type[Any]:
+    """Get form builder class for the given engine and chart type.
+
+    Prefer get_chart_form_builder() for instantiated builders.
+
+    Args:
+        engine: Chart engine name
+        chart_type: Chart type name
+
+    Returns:
+        The form builder class (not instantiated)
+
+    Raises:
+        NotImplementedError: If engine is not supported
+    """
     builders = get_chart_engines()
 
     if engine not in builders:
@@ -76,7 +120,9 @@ def build_chart_for_data(settings: dict[str, Any], data: pd.DataFrame) -> str | 
         Chart config as JSON string
     """
 
-    builder = get_chart_form_builder(settings["engine"], settings["type"])(
+    builder = get_chart_form_builder(
+        settings["engine"],
+        settings["type"],
         dataframe=data,
     )
 

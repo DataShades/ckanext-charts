@@ -99,13 +99,21 @@ def charts_validate_extras(
     settings = _extract_setting(data)
 
     if "engine" not in settings or "type" not in settings:
-        builder = DEFAULT_CHART_FORM
+        builder = DEFAULT_CHART_FORM(
+            resource_id=settings["resource_id"],
+            resource_view_id=settings.get("id"),
+        )
     else:
-        builder = utils.get_chart_form_builder(settings["engine"], settings["type"])
+        builder = utils.get_chart_form_builder(
+            settings["engine"],
+            settings["type"],
+            resource_id=settings["resource_id"],
+            resource_view_id=settings.get("id"),
+        )
 
     settings, err = tk.navl_validate(
         settings,
-        builder(settings["resource_id"], settings.get("id")).get_validation_schema(
+        builder.get_validation_schema(
             context.get("_for_show", False),
         ),
         {},
@@ -172,6 +180,7 @@ def charts_list_length_validator(max_length: int) -> Callable[..., Any]:
     Returns:
         Callable[..., Any]: The validator function
     """
+
     def callable(
         key: types.FlattenKey,
         data: types.FlattenDataDict,

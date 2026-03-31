@@ -332,7 +332,6 @@ class TestObservableBuilder:
         assert "settings" in result
         assert "bar" in result
 
-
     def test_horizontal_bar(self, data_frame):
         result = utils.build_chart_for_data(
             {
@@ -349,7 +348,6 @@ class TestObservableBuilder:
         assert "plot" in result
         assert "settings" in result
         assert "horizontal-bar" in result
-
 
     def test_build_line(self, data_frame):
         result = utils.build_chart_for_data(

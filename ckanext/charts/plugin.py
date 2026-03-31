@@ -16,6 +16,7 @@ from ckanext.charts.chart_builders import DEFAULT_CHART_FORM
 from ckanext.charts.logic.schema import settings_schema
 from ckanext.charts import implementations as imp
 
+
 @tk.blanket.actions
 @tk.blanket.helpers
 @tk.blanket.blueprints
@@ -101,7 +102,7 @@ class ChartsViewPlugin(imp.ResourceController, imp.SignalController, p.Singleton
         # view create or edit
         if "resource_view" in context or "for_view" in context:
             try:
-                form_builder = utils.get_chart_form_builder(
+                form_builder = utils._get_chart_form_builder_class(
                     settings["engine"],
                     settings["type"],
                 )
@@ -133,7 +134,6 @@ class ChartsViewPlugin(imp.ResourceController, imp.SignalController, p.Singleton
     def form_template(self, context: types.Context, data_dict: dict[str, Any]) -> str:
         return "charts/charts_form.html"
 
-
     # IXloader & IDataPusher
 
     if p.plugin_loaded("xloader") or p.plugin_loaded("datapusher"):
@@ -156,8 +156,6 @@ class ChartsViewPlugin(imp.ResourceController, imp.SignalController, p.Singleton
         ) -> None:
             """Invalidate cache after upload to DataStore"""
             cache.invalidate_resource_cache(resource_dict["id"])
-
-
 
 
 class ChartsBuilderViewPlugin(p.SingletonPlugin):

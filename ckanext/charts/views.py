@@ -154,9 +154,13 @@ def _get_form_builder(data: dict[str, str]) -> Any:
     if "engine" not in data or "type" not in data:
         raise exception.ChartTypeNotImplementedError
 
-    builder = utils.get_chart_form_builder(data["engine"], data["type"])
-
-    return builder(data["resource_id"], data.get("resource_view_id"), settings=data)
+    return utils.get_chart_form_builder(
+        data["engine"],
+        data["type"],
+        resource_id=data["resource_id"],
+        resource_view_id=data.get("resource_view_id"),
+        settings=data,
+    )
 
 
 @charts.route("/api/utils/charts/get-values")

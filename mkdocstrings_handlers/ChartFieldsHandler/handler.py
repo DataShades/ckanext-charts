@@ -22,8 +22,11 @@ if not os.path.exists(config_path):
 class ChartFieldsHandler(BaseHandler):
     """Custom handler for documenting different chart types fields according to the
     form fields schema."""
+
     def collect(
-        self, identifier: str, config: MutableMapping[str, Any],
+        self,
+        identifier: str,
+        config: MutableMapping[str, Any],
     ) -> CollectorItem:
         if not os.environ.get("CHARTS_FIELDS"):
             return {}

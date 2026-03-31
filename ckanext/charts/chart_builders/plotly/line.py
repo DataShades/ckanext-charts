@@ -272,7 +272,7 @@ class PlotlyLineBuilder(PlotlyBuilder):
                     "type": "category",
                     "categoryorder": "array",
                     "categoryarray": full_year_index,
-                }
+                },
             )
         elif split_data and len(self.settings["years"]) > 1:
             ## Set categorized x-axis for the data splitted by year to be able to
