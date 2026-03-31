@@ -5,6 +5,12 @@ from typing import Any
 from plotly.graph_objects import Figure
 
 from ckanext.charts.chart_builders.base import BaseChartBuilder, BaseChartForm
+from ckanext.charts.const import (
+    DEFAULT_NAN_FILL_VALUE,
+    DATETIME_FORMAT_ISO8601,
+    DATETIME_FORMAT_TICKS,
+    DATETIME_FORMAT_YEAR,
+)
 
 
 class PlotlyBuilder(BaseChartBuilder):
@@ -13,10 +19,10 @@ class PlotlyBuilder(BaseChartBuilder):
     Defines supported chart types for Plotly engine.
     """
 
-    DEFAULT_NAN_FILL_VALUE = 0
-    YEAR_DATETIME_FORMAT = "%Y"
-    DATETIME_TICKS_FORMAT = "%m-%d %H:%M"
-    ISO_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
+    DEFAULT_NAN_FILL_VALUE = DEFAULT_NAN_FILL_VALUE
+    YEAR_DATETIME_FORMAT = DATETIME_FORMAT_YEAR
+    DATETIME_TICKS_FORMAT = DATETIME_FORMAT_TICKS
+    ISO_DATETIME_FORMAT = DATETIME_FORMAT_ISO8601
 
     @classmethod
     def get_supported_forms(cls) -> list[type[Any]]:

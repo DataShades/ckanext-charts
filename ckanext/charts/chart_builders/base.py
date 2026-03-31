@@ -51,7 +51,7 @@ class FilterDecoder:
 
 
 class BaseChartBuilder(ABC):
-    DEFAULT_DATETIME_FORMAT = "ISO8601"
+    DEFAULT_DATETIME_FORMAT = const.DEFAULT_DATETIME_FORMAT
 
     def __init__(
         self,

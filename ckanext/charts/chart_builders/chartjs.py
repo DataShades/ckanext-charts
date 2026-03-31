@@ -9,6 +9,14 @@ from pandas.core.frame import DataFrame
 from pandas.errors import ParserError
 
 from ckanext.charts.chart_builders.base import BaseChartBuilder, BaseChartForm
+from ckanext.charts.const import (
+    DEFAULT_AXIS_TICKS_NUMBER,
+    DEFAULT_DATETIME_FORMAT,
+    DEFAULT_NAN_FILL_VALUE,
+    DEFAULT_PLOT_HEIGHT,
+    DATETIME_FORMAT_ISO8601,
+    DATETIME_FORMAT_YEAR,
+)
 from ckanext.charts.exception import ChartBuildError
 
 
@@ -17,12 +25,12 @@ class ChartJSBaseForm(BaseChartForm):
 
 
 class ChartJsBuilder(BaseChartBuilder):
-    DEFAULT_AXIS_TICKS_NUMBER = 12
-    DEFAULT_DATETIME_FORMAT = "ISO8601"
-    ISO_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
-    YEAR_DATETIME_FORMAT = "%Y"
-    DEFAULT_PLOT_HEIGHT = 400
-    DEFAULT_NAN_FILL_VALUE = 0
+    DEFAULT_AXIS_TICKS_NUMBER = DEFAULT_AXIS_TICKS_NUMBER
+    DEFAULT_DATETIME_FORMAT = DEFAULT_DATETIME_FORMAT
+    ISO_DATETIME_FORMAT = DATETIME_FORMAT_ISO8601
+    YEAR_DATETIME_FORMAT = DATETIME_FORMAT_YEAR
+    DEFAULT_PLOT_HEIGHT = DEFAULT_PLOT_HEIGHT
+    DEFAULT_NAN_FILL_VALUE = DEFAULT_NAN_FILL_VALUE
     MIN_BUBBLE_RADIUS = 5
 
     @classmethod

@@ -28,3 +28,17 @@ FORM_GROUPS = [
     FORM_GROUP_STYLES,
     FORM_GROUP_FILTER,
 ]
+
+# DateTime Format Constants
+# Standard datetime format name used as reference
+DEFAULT_DATETIME_FORMAT = "ISO8601"
+
+# Datetime format string patterns
+DATETIME_FORMAT_ISO8601 = "%Y-%m-%dT%H:%M:%S"
+DATETIME_FORMAT_YEAR = "%Y"
+DATETIME_FORMAT_TICKS = "%m-%d %H:%M"
+
+# Chart Builder Constants
+DEFAULT_AXIS_TICKS_NUMBER = 12
+DEFAULT_PLOT_HEIGHT = 400
+DEFAULT_NAN_FILL_VALUE = 0
