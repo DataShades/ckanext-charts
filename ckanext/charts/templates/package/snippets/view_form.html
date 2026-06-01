@@ -4,6 +4,7 @@
 {% set errors = errors or {} %}
 
 {{ form.errors(error_summary) }}
+{{ form.hidden('view_type', value=resource_view.view_type) }}
 
 {% if data.view_type in ["charts_view", "charts_builder_view"] %}
     {% include form_template %}
