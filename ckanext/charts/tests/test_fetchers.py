@@ -197,3 +197,26 @@ class TestFileSystemDataFetcher:
 
         with pytest.raises(DataFetchError):
             fetcher.fetch_data()
+
+
+class TestNumericConversion:
+    def test_to_numeric_safe_preserves_text_columns(self):
+        """Ensure numeric strings are converted while text columns stay unchanged.
+
+        This covers the previous behavior of pd.to_numeric(errors="ignore"):
+        non-numeric object columns must not be coerced to NaN.
+        """
+        df = pd.DataFrame(
+            {
+                "label": ["Alice", "Bob"],
+                "value": ["10", "20"],
+            },
+        )
+
+        fetcher = fetchers.DatastoreDataFetcher("dummy_resource_id")
+        result = df.apply(fetcher._to_numeric_safe)
+
+        assert result["label"].tolist() == ["Alice", "Bob"]
+        assert result["label"].notna().all()
+        assert result["value"].tolist() == [10, 20]
+        assert pd.api.types.is_numeric_dtype(result["value"])
