@@ -97,7 +97,7 @@ def update_form() -> str:
     except tk.ValidationError:
         return tk.render(
             ERROR_TEMPLATE,
-            {"error_msg": tk._(f"Missing resource_id in request")},
+            {"error_msg": tk._("Missing resource_id in request")},
         )
 
     _check_resource_access(resource_id)
@@ -110,7 +110,7 @@ def update_form() -> str:
         data["type"] = ""
 
     try:
-        builder = _get_form_builder(data) # type: ignore
+        builder = _get_form_builder(data)  # type: ignore
     except exception.ChartTypeNotImplementedError:
         return tk.render(ERROR_TEMPLATE)
 

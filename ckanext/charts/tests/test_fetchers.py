@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from typing import Any
+from collections.abc import Callable
+
 import pandas as pd
 import pytest
 import requests
@@ -16,9 +19,9 @@ from ckanext.charts.tests import helpers
 class TestDatastoreDataFetcher:
     """Tests for DatastoreDataFetcher"""
 
-    def test_fetch_data_success(self):
+    def test_fetch_data_success(self, resource_with_datastore_factory: Callable[..., dict[str, Any]]):
         """Test fetching data from the DataStore"""
-        resource = helpers.create_resource_with_datastore(row_count=2)
+        resource = resource_with_datastore_factory(row_count=2)
 
         result = fetchers.DatastoreDataFetcher(resource["id"]).fetch_data()
 
@@ -26,17 +29,17 @@ class TestDatastoreDataFetcher:
         assert len(result) == 2
         assert set(result.columns) == {"name", "age", "city", "score"}
 
-    def test_not_in_datastore(self):
+    def test_not_in_datastore(self, dataset: dict[str, Any]):
         """Test fetching data when resource is not in the DataStore"""
-        resource = Resource()
+        resource = Resource(package_id=dataset["id"])
 
         with pytest.raises(DataFetchError):
             fetchers.DatastoreDataFetcher(resource["id"]).fetch_data()
 
     @pytest.mark.ckan_config("ckanext.charts.enable_cache", False)
-    def test_fetch_data_with_settings_no_cache(self):
+    def test_fetch_data_with_settings_no_cache(self, resource_with_datastore_factory: Callable[..., dict[str, Any]]):
         """Test fetching data from DataStore with settings, without using cache."""
-        resource = helpers.create_resource_with_datastore(row_count=100)
+        resource = resource_with_datastore_factory(row_count=100)
 
         settings = {
             "x": "age",
@@ -53,9 +56,11 @@ class TestDatastoreDataFetcher:
         assert len(result) == 1
 
     @pytest.mark.ckan_config("ckanext.charts.enable_cache", False)
-    def test_fetch_limited_data_when_no_settings_and_no_cache(self):
+    def test_fetch_limited_data_when_no_settings_and_no_cache(
+        self, resource_with_datastore_factory: Callable[..., dict[str, Any]]
+    ):
         """Test default fetch behavior without settings and with caching disabled."""
-        resource = helpers.create_resource_with_datastore(row_count=5000)
+        resource = resource_with_datastore_factory(row_count=5000)
 
         fetcher = fetchers.DatastoreDataFetcher(resource["id"])
 
@@ -70,7 +75,7 @@ class TestDatastoreDataFetcher:
 
 @pytest.mark.usefixtures("clean_redis")
 class TestURLDataFetcher:
-    URL = "http://xxx"
+    URL = "https://example.com"
 
     def test_fetch_data_success(self, requests_mock):
         requests_mock.get(self.URL, content=helpers.get_file_content("csv"))
@@ -118,6 +123,45 @@ class TestURLDataFetcher:
 
     def test_fetch_data_timeout_error(self, requests_mock):
         requests_mock.get(self.URL, exc=requests.exceptions.Timeout)
+
+        with pytest.raises(DataFetchError):
+            fetchers.URLDataFetcher(self.URL).fetch_data()
+
+    @pytest.mark.parametrize(
+        "url",
+        [
+            "http://127.0.0.1/data.csv",  # loopback
+            "http://10.0.0.1/data.csv",  # private RFC1918
+            "http://192.168.0.1/data.csv",  # private RFC1918
+            "http://169.254.169.254/latest/meta-data/",  # cloud metadata
+            "http://[::1]/data.csv",  # IPv6 loopback
+        ],
+    )
+    def test_fetch_data_blocks_internal_addresses(self, url):
+        """SSRF: requests to non-public addresses must be rejected."""
+        with pytest.raises(DataFetchError):
+            fetchers.URLDataFetcher(url).fetch_data()
+
+    @pytest.mark.parametrize(
+        "url",
+        [
+            "file:///etc/passwd",
+            "ftp://example.com/data.csv",
+            "gopher://example.com/data",
+        ],
+    )
+    def test_fetch_data_blocks_non_http_schemes(self, url):
+        """SSRF: only http(s) schemes are allowed."""
+        with pytest.raises(DataFetchError):
+            fetchers.URLDataFetcher(url).fetch_data()
+
+    def test_fetch_data_blocks_redirect_to_internal_address(self, requests_mock):
+        """SSRF: a redirect to an internal address must be re-validated."""
+        requests_mock.get(
+            self.URL,
+            status_code=302,
+            headers={"location": "http://169.254.169.254/latest/meta-data/"},
+        )
 
         with pytest.raises(DataFetchError):
             fetchers.URLDataFetcher(self.URL).fetch_data()

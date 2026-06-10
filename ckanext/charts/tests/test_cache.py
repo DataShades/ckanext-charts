@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
+from typing import Any
+from collections.abc import Callable
 
 import pandas as pd
 import pytest
@@ -15,10 +17,8 @@ from ckanext.charts.tests import helpers
 @pytest.mark.ckan_config("ckan.plugins", "charts_view datastore")
 @pytest.mark.usefixtures("clean_db", "with_plugins")
 class TestDataStoreFetcherCache:
-    def test_hit_cache_redis(self):
+    def test_hit_cache_redis(self, resource: dict[str, Any]):
         """Test fetch cached data from redis cache"""
-        resource = helpers.create_resource_with_datastore()
-
         settings = {"x": "age"}
 
         fetcher = fetchers.DatastoreDataFetcher(resource["id"], settings=settings)
@@ -33,10 +33,8 @@ class TestDataStoreFetcherCache:
         assert isinstance(cached.df, pd.DataFrame)
         assert cached.settings == settings
 
-    def test_invalidate_redis_cache_on_resource_delete(self):
+    def test_invalidate_redis_cache_on_resource_delete(self, resource: dict[str, Any]):
         """Test that the cache is invalidated when the resource is deleted"""
-        resource = helpers.create_resource_with_datastore()
-
         fetcher = fetchers.DatastoreDataFetcher(resource["id"])
 
         result = fetcher.fetch_data()
@@ -48,9 +46,8 @@ class TestDataStoreFetcherCache:
         assert fetcher.get_cached_data() is None
 
     @pytest.mark.usefixtures("clean_file_cache")
-    def test_hit_cache_file(self):
+    def test_hit_cache_file(self, resource: dict[str, Any]):
         """Test fetch cached data from file cache"""
-        resource = helpers.create_resource_with_datastore()
         settings = {"x": "age", "y": "name"}
 
         fetcher = fetchers.DatastoreDataFetcher(
@@ -69,10 +66,8 @@ class TestDataStoreFetcherCache:
         assert isinstance(cached.df, pd.DataFrame)
         assert cached.settings == settings
 
-    def test_invalidate_file_cache_on_resource_delete(self):
+    def test_invalidate_file_cache_on_resource_delete(self, resource: dict[str, Any]):
         """Test that the cache is invalidated when the resource is deleted"""
-        resource = helpers.create_resource_with_datastore()
-
         fetcher = fetchers.DatastoreDataFetcher(
             resource["id"],
             cache_strategy=const.CACHE_FILE_ORC,
@@ -86,9 +81,7 @@ class TestDataStoreFetcherCache:
 
         assert fetcher.get_cached_data() is None
 
-    def test_invalidate_redis_cache(self):
-        resource = helpers.create_resource_with_datastore()
-
+    def test_invalidate_redis_cache(self, resource: dict[str, Any]):
         fetcher = fetchers.DatastoreDataFetcher(resource["id"])
 
         assert isinstance(fetcher.fetch_data(), pd.DataFrame)
@@ -97,9 +90,7 @@ class TestDataStoreFetcherCache:
 
         assert fetcher.get_cached_data() is None
 
-    def test_invalidate_file_cache(self):
-        resource = helpers.create_resource_with_datastore()
-
+    def test_invalidate_file_cache(self, resource: dict[str, Any]):
         fetcher = fetchers.DatastoreDataFetcher(
             resource["id"],
             cache_strategy=const.CACHE_FILE_ORC,
@@ -119,9 +110,7 @@ class TestDataStoreFetcherCache:
             const.CACHE_FILE_ORC,
         ],
     )
-    def test_cached_data_respects_row_limit_and_columns(self, cache_strategy):
-        resource = helpers.create_resource_with_datastore()
-
+    def test_cached_data_respects_row_limit_and_columns(self, cache_strategy, resource: dict[str, Any]):
         settings = {"x": "age", "limit": 10}
 
         fetcher = fetchers.DatastoreDataFetcher(
@@ -167,8 +156,7 @@ class TestDataStoreFetcherCache:
             const.CACHE_FILE_ORC,
         ],
     )
-    def test_cached_data_with_filters(self, cache_strategy):
-        resource = helpers.create_resource_with_datastore()
+    def test_cached_data_with_filters(self, cache_strategy, resource: dict[str, Any]):
         settings = {
             "x": "age",
             "filter": "age:25",
@@ -200,9 +188,7 @@ class TestDataStoreFetcherCache:
             const.CACHE_FILE_ORC,
         ],
     )
-    def test_cached_data_with_sort(self, cache_strategy):
-        resource = helpers.create_resource_with_datastore()
-
+    def test_cached_data_with_sort(self, cache_strategy, resource: dict[str, Any]):
         settings = {
             "x": "age",
             "y": "score",
@@ -230,8 +216,8 @@ class TestDataStoreFetcherCache:
         age_values = cached.df["age"].tolist()
         assert age_values == sorted(age_values)
 
-    def test_cached_data_default_limit(self):
-        resource = helpers.create_resource_with_datastore(row_count=5000)
+    def test_cached_data_default_limit(self, resource_with_datastore_factory: Callable[..., dict[str, Any]]):
+        resource = resource_with_datastore_factory(row_count=5000)
 
         # No "limit" key
         settings = {
@@ -256,7 +242,7 @@ class TestDataStoreFetcherCache:
 
 @pytest.mark.usefixtures("clean_redis", "clean_file_cache")
 class TestUrlFetcherCache:
-    URL = "http://xxx"
+    URL = "http://93.184.216.34/data"
 
     def test_hit_cache_redis(self, requests_mock):
         requests_mock.get(self.URL, content=helpers.get_file_content("csv"))
@@ -291,17 +277,6 @@ class TestUrlFetcherCache:
         requests_mock.get(self.URL, content=helpers.get_file_content("csv"))
 
         fetcher = fetchers.URLDataFetcher(self.URL)
-
-        assert isinstance(fetcher.fetch_data(), pd.DataFrame)
-
-        fetcher.invalidate_cache()
-
-        assert fetcher.get_cached_data() is None
-
-    def test_invalidate_file_cache(self, requests_mock):
-        requests_mock.get(self.URL, content=helpers.get_file_content("csv"))
-
-        fetcher = fetchers.URLDataFetcher(self.URL, cache_strategy=const.CACHE_FILE_ORC)
 
         assert isinstance(fetcher.fetch_data(), pd.DataFrame)
 

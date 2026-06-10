@@ -1,3 +1,5 @@
+from typing import Any
+
 import pytest
 
 import ckan.lib.helpers as h
@@ -10,14 +12,12 @@ class TestAllowedViews:
     datastore_active field of the resource. For now we're working only
     with resources that are stored in datastore."""
 
-    def test_not_in_datastore(self):
-        dataset = factories.Dataset()
+    def test_not_in_datastore(self, dataset: dict[str, Any]):
         resource = factories.Resource(package_id=dataset["id"])
 
         assert not h.get_allowed_view_types(resource, dataset)
 
-    def test_in_datastore(self):
-        dataset = factories.Dataset()
+    def test_in_datastore(self, dataset: dict[str, Any]):
         resource = factories.Resource(package_id=dataset["id"], datastore_active=True)
 
         assert h.get_allowed_view_types(resource, dataset) == [

@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import ipaddress
 import logging
+import socket
 from abc import ABC, abstractmethod
 from io import BytesIO
 from typing import Any
+from urllib.parse import urljoin, urlparse
 
 import lxml
 import numpy as np
@@ -464,12 +467,14 @@ class URLDataFetcher(DataFetcherStrategy):
     """
 
     SUPPORTED_FORMATS = ["csv", "xlsx", "xls", "xml"]
+    ALLOWED_SCHEMES = ("http", "https")
+    MAX_REDIRECTS = 5
 
     def __init__(
         self,
         url: str,
         file_format: str = "csv",
-        timeout: int = 0,
+        timeout: int = 10,
         cache_strategy: str | None = None,
     ):
         """Initialize the URLDataFetcher.
@@ -536,8 +541,54 @@ class URLDataFetcher(DataFetcherStrategy):
         """
         return f"ckanext-charts:url:{self.url}"
 
+    def _validate_url(self, url: str) -> None:
+        """Validate a URL before requesting it to mitigate SSRF.
+
+        Args:
+            url: The URL to validate.
+
+        Raises:
+            DataFetchError: If the URL is not safe to fetch.
+        """
+        parsed = urlparse(url)
+
+        if parsed.scheme not in self.ALLOWED_SCHEMES:
+            raise exception.DataFetchError(
+                f"URL scheme '{parsed.scheme}' is not allowed. Only {', '.join(self.ALLOWED_SCHEMES)} are supported.",
+            )
+
+        hostname = parsed.hostname
+
+        if not hostname:
+            raise exception.DataFetchError("URL must include a hostname")
+
+        try:
+            addr_infos = socket.getaddrinfo(hostname, parsed.port, proto=socket.IPPROTO_TCP)
+        except socket.gaierror as e:
+            raise exception.DataFetchError(
+                f"Could not resolve host '{hostname}': {e}",
+            ) from e
+
+        for *_, sockaddr in addr_infos:
+            ip = ipaddress.ip_address(sockaddr[0])
+
+            if (
+                ip.is_private
+                or ip.is_loopback
+                or ip.is_link_local
+                or ip.is_reserved
+                or ip.is_multicast
+                or ip.is_unspecified
+            ):
+                raise exception.DataFetchError(
+                    f"Requests to non-public address '{ip}' are not allowed",
+                )
+
     def make_request(self) -> bytes:
         """Make a request to the URL and return the response content.
+
+        The target URL is validated against SSRF before each request, and
+        redirects are followed manually so every hop is re-validated.
 
         Returns:
             bytes: The response content
@@ -546,8 +597,25 @@ class URLDataFetcher(DataFetcherStrategy):
             DataFetchError: If an error occurs during the request
         """
         try:
-            response = requests.get(self.url)
-            response.raise_for_status()
+            for _ in range(self.MAX_REDIRECTS + 1):
+                self._validate_url(self.url)
+
+                response = requests.get(self.url, timeout=self.timeout, allow_redirects=False)
+
+                if response.is_redirect:
+                    location = response.headers.get("location")
+
+                    if not location:
+                        break
+
+                    # Resolve relative redirects against the current URL.
+                    self.url = urljoin(self.url, location)
+                    continue
+
+                response.raise_for_status()
+                return response.content
+        except exception.DataFetchError:
+            log.exception("An error occurred during fetching data by URL: %s", self.url)
         except requests.exceptions.HTTPError:
             log.exception("HTTP error occurred")
         except requests.exceptions.ConnectionError:
@@ -558,8 +626,6 @@ class URLDataFetcher(DataFetcherStrategy):
             log.exception("An error occurred during the request")
         except Exception:
             log.exception("An unexpected error occurred")
-        else:
-            return response.content
 
         raise exception.DataFetchError(
             f"An error occurred during fetching data by URL: {self.url}",
