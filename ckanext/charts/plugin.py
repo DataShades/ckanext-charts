@@ -185,6 +185,8 @@ class ChartsBuilderViewPlugin(p.SingletonPlugin):
     ) -> dict[str, Any]:
         form_builder = DEFAULT_CHART_FORM
 
+        data_dict["resource_view"].setdefault("title", tk._("Chart Builder"))
+
         return {
             "resource_id": data_dict["resource"]["id"],
             "resource_view_id": (

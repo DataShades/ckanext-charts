@@ -163,7 +163,8 @@ class DatastoreDataFetcher(DataFetcherStrategy):
         # After applying this, the cells containing "N/A" or "NA"
         # will be represented as NaN, allowing for proper handling
         # of missing data in subsequent operations.
-        df = df.replace(["N/A", "NA"], np.nan).infer_objects(copy=False)
+        with pd.option_context("future.no_silent_downcasting", True):
+            df = df.replace(["N/A", "NA"], np.nan)
 
         # Apply numeric conversion to all columns - leave non-numeric columns unchanged
         df = df.apply(self._to_numeric_safe)
