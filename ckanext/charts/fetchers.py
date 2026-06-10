@@ -9,7 +9,7 @@ from io import BytesIO
 from typing import Any
 from urllib.parse import urljoin, urlparse
 
-import lxml
+import lxml.etree
 import numpy as np
 import pandas as pd
 import requests
@@ -24,6 +24,47 @@ from ckanext.datastore.backend.postgres import get_read_engine
 from ckanext.charts import cache, config, exception, types
 
 log = logging.getLogger(__name__)
+
+
+def read_xml_safely(data: bytes) -> pd.DataFrame:
+    """Parse XML bytes into a DataFrame with XXE/entity-expansion protection.
+
+    XML from untrusted sources can declare a DTD with external or recursive
+    entities, enabling XXE (e.g. reading local files) or "billion laughs"
+    denial-of-service attacks. We first parse the document with a hardened lxml
+    parser that does not resolve entities or access the network, and reject any
+    document that declares a DTD/DOCTYPE before handing the data to pandas.
+    Without a DOCTYPE no entities can be defined, so the subsequent pandas parse
+    is safe.
+
+    Args:
+        data: The raw XML content.
+
+    Returns:
+        pd.DataFrame: The parsed data.
+
+    Raises:
+        DataFetchError: If the XML is malformed or declares a DTD/DOCTYPE.
+    """
+    parser = lxml.etree.XMLParser(
+        resolve_entities=False,
+        no_network=True,
+        load_dtd=False,
+        dtd_validation=False,
+        huge_tree=False,
+    )
+
+    try:
+        root = lxml.etree.fromstring(data, parser=parser)
+    except lxml.etree.XMLSyntaxError as e:
+        raise exception.DataFetchError(f"Invalid XML data: {e}") from e
+
+    if root.getroottree().docinfo.doctype:
+        raise exception.DataFetchError(
+            "XML documents containing a DTD/DOCTYPE are not allowed",
+        )
+
+    return pd.read_xml(BytesIO(data))
 
 
 class DataFetcherStrategy(ABC):
@@ -512,7 +553,7 @@ class URLDataFetcher(DataFetcherStrategy):
             if self.file_format in ("xlsx", "xls"):
                 df = pd.read_excel(BytesIO(data))
             elif self.file_format == "xml":
-                df = pd.read_xml(BytesIO(data))
+                df = read_xml_safely(data)
             else:
                 df = pd.read_csv(BytesIO(data))
         except (
@@ -730,7 +771,8 @@ class FileSystemDataFetcher(DataFetcherStrategy):
             if self.file_format in ("xlsx", "xls"):
                 df = pd.read_excel(self.file_path)
             elif self.file_format == "xml":
-                df = pd.read_xml(self.file_path)
+                with open(self.file_path, "rb") as f:
+                    df = read_xml_safely(f.read())
             else:
                 df = pd.read_csv(self.file_path)
         except (
