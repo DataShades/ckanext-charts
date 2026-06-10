@@ -5,7 +5,7 @@
         id="chart-container--{{ h.charts_generate_unique_id() }}"
         class="chart-container"
         data-module="charts-render-observable"
-        data-module-config="{{ chart }}">
+        data-module-config="{{ chart | forceescape }}">
     </div>
 
     <div class="chart-control mt-2">
