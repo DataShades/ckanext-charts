@@ -15,6 +15,20 @@ charts = Blueprint("charts_view", __name__)
 ERROR_TEMPLATE = "charts/snippets/error_chart.html"
 
 
+def _check_resource_access(resource_id: str) -> None:
+    """Ensure the current user is allowed to view the given resource."""
+    try:
+        tk.check_access(
+            "resource_show",
+            {"user": tk.current_user.name},
+            {"id": resource_id},
+        )
+    except tk.ObjectNotFound:
+        tk.abort(404, tk._("Resource not found"))
+    except tk.NotAuthorized:
+        tk.abort(403, tk._("Not authorized to view this resource"))
+
+
 @charts.route("/api/utils/charts/<resource_id>/update-chart")
 def update_chart(  # noqa: PLR0911
     resource_id: str,
@@ -26,6 +40,8 @@ def update_chart(  # noqa: PLR0911
     Args:
         resource_id (str): The resource id
     """
+    _check_resource_access(resource_id)
+
     data = parse_params(tk.request.args)
 
     resource_view_id = data.get("resource_view_id")
@@ -75,7 +91,17 @@ def update_chart(  # noqa: PLR0911
 @charts.route("/api/utils/charts/update-form")
 def update_form() -> str:
     data = parse_params(tk.request.args)
-    resource_id = data["resource_id"]
+
+    try:
+        resource_id = tk.get_or_bust(data, "resource_id")
+    except tk.ValidationError:
+        return tk.render(
+            ERROR_TEMPLATE,
+            {"error_msg": tk._(f"Missing resource_id in request")},
+        )
+
+    _check_resource_access(resource_id)
+
     user_builder: bool = tk.asbool(data.pop("user_chart_builder", False))
 
     # if we're changing the engine, drop the chart type, cause we don't know
@@ -84,7 +110,7 @@ def update_form() -> str:
         data["type"] = ""
 
     try:
-        builder = _get_form_builder(data)
+        builder = _get_form_builder(data) # type: ignore
     except exception.ChartTypeNotImplementedError:
         return tk.render(ERROR_TEMPLATE)
 
@@ -126,6 +152,8 @@ def _clear_chart(
     exclude_tabs: None | list[str] = None,
     user_chart_builder: bool = False,
 ) -> str:
+    _check_resource_access(resource_id)
+
     builder = _get_form_builder(
         {"engine": "plotly", "type": "Bar", "resource_id": resource_id},
     )
@@ -169,6 +197,8 @@ def get_chart_column_values() -> Any:
 
     resource_id = tk.get_or_bust(data, "resource_id")
     column = tk.get_or_bust(data, "column")
+
+    _check_resource_access(resource_id)
 
     fetcher = fetchers.DatastoreDataFetcher(resource_id, settings=data)
 
