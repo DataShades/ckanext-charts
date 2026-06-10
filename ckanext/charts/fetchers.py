@@ -151,7 +151,9 @@ class DatastoreDataFetcher(DataFetcherStrategy):
 
             query = query.limit(limit)
 
-            df = pd.read_sql_query(query, get_read_engine())
+            with get_read_engine().connect() as conn:
+                result = conn.execute(query)
+                df = pd.DataFrame(result.fetchall(), columns=list(result.keys()))
         except (ProgrammingError, UndefinedTable, NoSuchTableError) as e:
             raise exception.DataFetchError(
                 f"Error fetching data from DataStore: {e}",
@@ -163,9 +165,8 @@ class DatastoreDataFetcher(DataFetcherStrategy):
         # of missing data in subsequent operations.
         df.replace(["N/A", "NA"], np.nan, inplace=True)
 
-        # Apply numeric conversion to all columns - it will safely ignore
-        # non-numeric values
-        df = df.apply(pd.to_numeric, errors="ignore")
+        # Apply numeric conversion to all columns - leave non-numeric columns unchanged
+        df = df.apply(self._to_numeric_safe)
 
         if config.is_cache_enabled():
             self.cache.set_data(
@@ -178,6 +179,12 @@ class DatastoreDataFetcher(DataFetcherStrategy):
             )
 
         return df
+
+    def _to_numeric_safe(self, col: pd.Series) -> pd.Series:
+        try:
+            return pd.to_numeric(col)
+        except (ValueError, TypeError):
+            return col
 
     def _settings_changed(self, cached_settings: dict[str, Any] | None) -> bool:
         """Checks if relevant settings have changed compared to the cached version.
