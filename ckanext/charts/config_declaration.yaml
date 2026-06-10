@@ -49,3 +49,13 @@ groups:
         default: false
         type: bool
         validators: ignore_empty boolean_validator
+
+      - key: ckanext.charts.max_fetch_size
+        description: >-
+          Maximum size, in megabytes, of a file that the URL and file system
+          fetchers are allowed to download or read. Protects the server from
+          memory exhaustion caused by very large or malicious files.
+        editable: true
+        default: 100
+        type: int
+        validators: ignore_missing int_validator is_positive_integer

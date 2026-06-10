@@ -8,6 +8,7 @@ CONF_SERVERSIDE_RENDER = "ckanext.charts.use_serverside_rendering"
 CONF_ENABLE_HTMX = "ckanext.charts.include_htmx_asset"
 CONF_REINIT_JS = "ckanext.charts.reinit_ckan_js_modules"
 CONF_ALLOW_ANON_CHART = "ckanext.charts.allow_anon_building_charts"
+CONF_MAX_FETCH_SIZE = "ckanext.charts.max_fetch_size"
 
 
 def get_cache_strategy() -> str:
@@ -48,3 +49,12 @@ def reinit_ckan_js_modules() -> bool:
 def allow_anon_building_charts() -> bool:
     """Allow anonymous users to build charts."""
     return tk.asbool(tk.config[CONF_ALLOW_ANON_CHART])
+
+
+def get_max_fetch_size() -> int:
+    """Get the maximum allowed fetch size in bytes.
+
+    The configuration value is expressed in megabytes for readability and
+    converted to bytes here.
+    """
+    return tk.asint(tk.config[CONF_MAX_FETCH_SIZE]) * 1024 * 1024

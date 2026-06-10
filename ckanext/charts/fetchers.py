@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ipaddress
 import logging
+import os
 import socket
 from abc import ABC, abstractmethod
 from io import BytesIO
@@ -469,6 +470,7 @@ class URLDataFetcher(DataFetcherStrategy):
     SUPPORTED_FORMATS = ["csv", "xlsx", "xls", "xml"]
     ALLOWED_SCHEMES = ("http", "https")
     MAX_REDIRECTS = 5
+    CHUNK_SIZE = 64 * 1024  # 64 KB
 
     def __init__(
         self,
@@ -600,20 +602,24 @@ class URLDataFetcher(DataFetcherStrategy):
             for _ in range(self.MAX_REDIRECTS + 1):
                 self._validate_url(self.url)
 
-                response = requests.get(self.url, timeout=self.timeout, allow_redirects=False)
+                with requests.get(
+                    self.url,
+                    timeout=self.timeout,
+                    allow_redirects=False,
+                    stream=True,
+                ) as response:
+                    if response.is_redirect:
+                        location = response.headers.get("location")
 
-                if response.is_redirect:
-                    location = response.headers.get("location")
+                        if not location:
+                            break
 
-                    if not location:
-                        break
+                        # Resolve relative redirects against the current URL.
+                        self.url = urljoin(self.url, location)
+                        continue
 
-                    # Resolve relative redirects against the current URL.
-                    self.url = urljoin(self.url, location)
-                    continue
-
-                response.raise_for_status()
-                return response.content
+                    response.raise_for_status()
+                    return self._read_capped(response)
         except exception.DataFetchError:
             log.exception("An error occurred during fetching data by URL: %s", self.url)
         except requests.exceptions.HTTPError:
@@ -630,6 +636,41 @@ class URLDataFetcher(DataFetcherStrategy):
         raise exception.DataFetchError(
             f"An error occurred during fetching data by URL: {self.url}",
         )
+
+    def _read_capped(self, response: requests.Response) -> bytes:
+        """Read a streamed response body, enforcing the maximum fetch size.
+
+        Rejects early if the server advertises an oversized ``Content-Length``,
+        and otherwise stops as soon as the streamed body exceeds the limit, so
+        an unbounded or mis-reported response can't exhaust memory.
+
+        Args:
+            response: A streamed ``requests`` response.
+
+        Returns:
+            bytes: The response body.
+
+        Raises:
+            DataFetchError: If the body exceeds the configured maximum size.
+        """
+        max_size = config.get_max_fetch_size()
+
+        content_length = response.headers.get("content-length")
+        if content_length and content_length.isdigit() and int(content_length) > max_size:
+            raise exception.DataFetchError(
+                f"Remote file exceeds the maximum allowed size of {max_size} bytes",
+            )
+
+        buffer = bytearray()
+        for chunk in response.iter_content(chunk_size=self.CHUNK_SIZE):
+            buffer.extend(chunk)
+
+            if len(buffer) > max_size:
+                raise exception.DataFetchError(
+                    f"Remote file exceeds the maximum allowed size of {max_size} bytes",
+                )
+
+        return bytes(buffer)
 
 
 class FileSystemDataFetcher(DataFetcherStrategy):
@@ -683,6 +724,8 @@ class FileSystemDataFetcher(DataFetcherStrategy):
                 f"File format {self.file_format} is not supported. Only CSV files are supported.",
             )
 
+        self._check_file_size()
+
         try:
             if self.file_format in ("xlsx", "xls"):
                 df = pd.read_excel(self.file_path)
@@ -707,6 +750,28 @@ class FileSystemDataFetcher(DataFetcherStrategy):
             )
 
         return df
+
+    def _check_file_size(self) -> None:
+        """Reject files larger than the configured maximum fetch size.
+
+        Checking the size up front avoids loading an oversized file into memory.
+
+        Raises:
+            DataFetchError: If the file is missing, inaccessible, or too large.
+        """
+        max_size = config.get_max_fetch_size()
+
+        try:
+            file_size = os.path.getsize(self.file_path)
+        except OSError as e:
+            raise exception.DataFetchError(
+                f"An error occurred during fetching data from file: {e}",
+            ) from e
+
+        if file_size > max_size:
+            raise exception.DataFetchError(
+                f"File exceeds the maximum allowed size of {max_size} bytes",
+            )
 
     def make_cache_key(self) -> str:
         """Generate a cache key for the FileSystem data fetcher.
