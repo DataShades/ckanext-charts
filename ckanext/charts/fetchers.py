@@ -823,7 +823,7 @@ class FileSystemDataFetcher(DataFetcherStrategy):
         Returns:
             str: The cache key
         """
-        return f"ckanext-charts:url:{self.file_path}"
+        return f"ckanext-charts:file:{self.file_path}"
 
 
 class HardcodedDataFetcher(DataFetcherStrategy):
