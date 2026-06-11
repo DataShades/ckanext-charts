@@ -19,6 +19,9 @@ from ckanext.charts import config, const, exception, types, fetchers, utils
 
 log = logging.getLogger(__name__)
 
+REDIS_SIZE_CACHE_KEY = "ckanext-charts:internal:redis-size"
+REDIS_SIZE_CACHE_TTL = 60
+
 
 class CacheStrategyRegistry:
     """Registry for cache strategy implementations.
@@ -554,34 +557,48 @@ def get_file_cache_path() -> str:
 
 
 def count_redis_cache_size() -> int:
-    """Return the size of the Redis cache.
+    """Return the size of the Redis cache in bytes.
 
     Uses the registry to get a Redis cache instance and accesses its
     underlying client to calculate total cache size.
     """
     redis_cache = CacheStrategyRegistry.get(const.CACHE_REDIS)
+
     if not isinstance(redis_cache, RedisCache):
         raise exception.CacheStrategyNotImplementedError(
             f"Expected RedisCache instance, got {type(redis_cache).__name__}",
         )
-    redis_conn = redis_cache.client
+
+    cached_size = redis_cache.client.get(REDIS_SIZE_CACHE_KEY)
+
+    if cached_size is not None:
+        return int(cached_size) # type: ignore
 
     total_size = 0
 
-    for key in redis_conn.scan_iter(const.REDIS_PREFIX, count=1000):  # type: ignore
-        size: Any = redis_conn.memory_usage(key)
+    for key in redis_cache.client.scan_iter(const.REDIS_PREFIX, count=1000):  # type: ignore
+        # Defensive: never include the memo key itself in the total.
+        if key in (REDIS_SIZE_CACHE_KEY, REDIS_SIZE_CACHE_KEY.encode()):
+            continue
+
+        size: Any = redis_cache.client.memory_usage(key)
 
         if not size or not isinstance(size, int):
             continue
 
         total_size += size
 
+    redis_cache.client.setex(REDIS_SIZE_CACHE_KEY, REDIS_SIZE_CACHE_TTL, total_size)
+
     return total_size
 
 
 def count_file_cache_size() -> int:
     """Return the size of the file cache"""
-    return sum(os.path.getsize(os.path.join(get_file_cache_path(), f)) for f in os.listdir(get_file_cache_path()))
+    return sum(
+        os.path.getsize(os.path.join(get_file_cache_path(), f))
+        for f in os.listdir(get_file_cache_path())
+    )
 
 
 def remove_expired_file_cache() -> None:

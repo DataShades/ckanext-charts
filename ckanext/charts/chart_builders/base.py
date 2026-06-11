@@ -185,7 +185,7 @@ class BaseChartBuilder(ABC):
         """
         try:
             pd.to_datetime(self.df[column_name], format=self.DEFAULT_DATETIME_FORMAT)
-        except ValueError:
+        except (ValueError, TypeError):
             return False
         return True
 

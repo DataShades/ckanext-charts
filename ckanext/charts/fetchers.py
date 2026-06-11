@@ -211,8 +211,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
         with pd.option_context("future.no_silent_downcasting", True):
             df = df.replace(["N/A", "NA"], np.nan)
 
-        # Apply numeric conversion to all columns - leave non-numeric columns unchanged
-        df = df.apply(self._to_numeric_safe)
+        df = self._coerce_numeric_columns(df)
 
         if config.is_cache_enabled():
             self.cache.set_data(
@@ -231,6 +230,63 @@ class DatastoreDataFetcher(DataFetcherStrategy):
             return pd.to_numeric(col)
         except (ValueError, TypeError):
             return col
+
+    def _coerce_numeric_columns(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Convert wholly-numeric columns to a numeric dtype in place.
+
+        Only object/bool columns are inspected (numeric and datetime columns are
+        already typed and left untouched). A column is converted only when
+        coercion doesn't turn any real value into NaN, i.e. every non-null value
+        was numeric, so mixed or textual columns are preserved.
+        """
+        for col in df.select_dtypes(include=["object", "bool"]).columns:
+            coerced = pd.to_numeric(df[col], errors="coerce")
+
+            # Keep the conversion only if it introduced no new NaNs (every
+            # previously non-null value was numeric).
+            if (coerced.isna() == df[col].isna()).all():
+                df[col] = coerced
+
+        return df
+
+    def get_distinct_column_values(self, column: str, limit: int = 1000) -> list[Any]:
+        """Return the distinct, non-null values of a single column.
+
+        Runs a ``SELECT DISTINCT`` against the DataStore
+
+        Args:
+            column: The column to list values for.
+            limit: Maximum number of distinct values to return.
+
+        Returns:
+            The distinct values, ordered and limited. Returns an empty list if
+            the column does not exist in the resource.
+        """
+        if column not in self.get_all_column_names():
+            return []
+
+        col_expr = self._format_column(column)
+
+        query = (
+            sa.select(col_expr)
+            .select_from(sa.table(self.resource_id))
+            .where(col_expr.isnot(None))
+            .distinct()
+            .order_by(col_expr)
+            .limit(limit)
+        )
+
+        try:
+            with get_read_engine().connect() as conn:
+                rows = conn.execute(query).fetchall()
+        except (ProgrammingError, UndefinedTable, NoSuchTableError) as e:
+            raise exception.DataFetchError(
+                f"Error fetching column values from DataStore: {e}",
+            ) from e
+
+        # Reuse the numeric coercion so values match what fetch_data would
+        # return, and tolist() normalizes them to JSON-serializable natives.
+        return self._to_numeric_safe(pd.Series([row[0] for row in rows])).tolist()
 
     def _settings_changed(self, cached_settings: dict[str, Any] | None) -> bool:
         """Checks if relevant settings have changed compared to the cached version.

@@ -21,16 +21,11 @@ from ckanext.charts import implementations as imp
 @tk.blanket.helpers
 @tk.blanket.blueprints
 @tk.blanket.validators
+@tk.blanket.cli
 class ChartsViewPlugin(imp.ResourceController, imp.SignalController, p.SingletonPlugin):
     p.implements(p.IConfigurer)
     p.implements(p.IConfigDeclaration)
     p.implements(p.IResourceView)
-    p.implements(p.IConfigurable)
-
-    # IConfigurable
-
-    def configure(self, config: CKANConfig) -> None:
-        cache.remove_expired_file_cache()
 
     # IConfigurer
 

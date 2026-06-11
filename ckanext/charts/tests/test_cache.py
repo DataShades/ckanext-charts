@@ -381,3 +381,42 @@ class TestCalculateFileORCExpiration:
         )
 
         assert not cache.FileCacheORC().is_file_cache_expired(file_path)
+
+
+@pytest.mark.usefixtures("clean_redis")
+class TestCountRedisCacheSize:
+    def _store(self, key: str, rows: int = 100) -> None:
+        cache.RedisCache().set_data(
+            key,
+            types.ChartData(
+                df=pd.DataFrame({"a": list(range(rows))}),
+                columns=["a"],
+            ),
+        )
+
+    def test_size_reflects_stored_data(self):
+        """The size is zero when empty and positive once data is cached."""
+        assert cache.count_redis_cache_size() == 0
+
+        self._store("ckanext-charts:test:1")
+
+        # Drop the memoized value so the freshly stored key is counted.
+        cache.RedisCache().client.delete(cache.REDIS_SIZE_CACHE_KEY)
+
+        assert cache.count_redis_cache_size() > 0
+
+    def test_size_is_memoized_between_calls(self):
+        """A second call within the TTL returns the cached size, not a rescan."""
+        self._store("ckanext-charts:test:1")
+
+        first = cache.count_redis_cache_size()
+        assert first > 0
+
+        # Adding more data does not change the reported size while the memoized
+        # value is still valid.
+        self._store("ckanext-charts:test:2")
+        assert cache.count_redis_cache_size() == first
+
+        # Once the short-lived memo is gone, recomputation sees the new key.
+        cache.RedisCache().client.delete(cache.REDIS_SIZE_CACHE_KEY)
+        assert cache.count_redis_cache_size() > first

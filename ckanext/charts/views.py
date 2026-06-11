@@ -200,17 +200,8 @@ def get_chart_column_values() -> Any:
 
     _check_resource_access(resource_id)
 
-    fetcher = fetchers.DatastoreDataFetcher(resource_id, settings=data)
-
-    result = []
-
-    for val in fetcher.fetch_data()[column].tolist():
-        if val in result:
-            continue
-
-        result.append(val)
-
-    return jsonify(sorted(result))
+    fetcher = fetchers.DatastoreDataFetcher(resource_id)
+    return jsonify(fetcher.get_distinct_column_values(column))
 
 
 if plugin_loaded("admin_panel"):
