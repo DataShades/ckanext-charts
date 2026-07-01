@@ -32,7 +32,7 @@ groups:
 
       - key: ckanext.charts.include_htmx_asset
         description: Include HTMX asset
-        default: true
+        default: false
         type: bool
         validators: ignore_empty boolean_validator
 

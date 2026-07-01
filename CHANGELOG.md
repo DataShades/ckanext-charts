@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.13.0] - 2026-07-01
+
+- Disable htmx injection by default. Note: if you're using CKAN 2.10 and less, enable it.
+
 ## [1.9.1] - 2025-06-25
 
 ### 🐛 Bug Fixes

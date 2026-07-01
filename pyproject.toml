@@ -7,6 +7,7 @@ name = "ckanext-charts"
 description = ""
 keywords = ["CKAN", "charts", "visualization"]
 readme = "README.md"
+version = "1.13.0"
 authors = [
     {name = "DataShades", email = "datashades@linkdigital.com.au"},
     {name = "Sergey Motornyuk", email = "sergey.motornyuk@linkdigital.com.au"},
@@ -37,7 +38,6 @@ dependencies = [
 ]
 license = {text = "AGPL"}
 requires-python = ">=3.10"
-version = "1.12.0"
 
 [project.optional-dependencies]
 pyarrow = ["pyarrow>=16.0.0,<17.0.0"]
