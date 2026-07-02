@@ -7,7 +7,7 @@ name = "ckanext-charts"
 description = ""
 keywords = ["CKAN", "charts", "visualization"]
 readme = "README.md"
-version = "1.13.0"
+version = "1.13.1"
 authors = [
     {name = "DataShades", email = "datashades@linkdigital.com.au"},
     {name = "Sergey Motornyuk", email = "sergey.motornyuk@linkdigital.com.au"},

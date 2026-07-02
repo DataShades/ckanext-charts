@@ -29,7 +29,7 @@ def _check_resource_access(resource_id: str) -> None:
         tk.abort(403, tk._("Not authorized to view this resource"))
 
 
-@charts.route("/api/utils/charts/<resource_id>/update-chart")
+@charts.route("/api/utils/charts/<resource_id>/update-chart", methods=["GET", "POST"])
 def update_chart(  # noqa: PLR0911
     resource_id: str,
 ) -> str:
@@ -42,7 +42,7 @@ def update_chart(  # noqa: PLR0911
     """
     _check_resource_access(resource_id)
 
-    data = parse_params(tk.request.args)
+    data = parse_params(tk.request.values)
 
     resource_view_id = data.get("resource_view_id")
 
