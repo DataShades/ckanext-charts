@@ -7,7 +7,7 @@ name = "ckanext-charts"
 description = ""
 keywords = ["CKAN", "charts", "visualization"]
 readme = "README.md"
-version = "1.13.1"
+version = "1.13.2"
 authors = [
     {name = "DataShades", email = "datashades@linkdigital.com.au"},
     {name = "Sergey Motornyuk", email = "sergey.motornyuk@linkdigital.com.au"},
@@ -28,7 +28,7 @@ classifiers = [
 ]
 dependencies = [
              "typing-extensions>=4.3.0",
-             "pandas>=2.0.0",
+             "pandas>=2.2.0",
              "plotly>=5.21.0",
              "openpyxl>=3.1.2",
              "xlrd>=2.0.1",
