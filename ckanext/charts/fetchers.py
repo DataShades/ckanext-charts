@@ -205,11 +205,11 @@ class DatastoreDataFetcher(DataFetcherStrategy):
             ) from e
 
         # Clean data in the dataframe.
-        # After applying this, the cells containing "N/A" or "NA"
+        # After applying this, the cells containing "N/A", "n/a" or "NA"
         # will be represented as NaN, allowing for proper handling
         # of missing data in subsequent operations.
         with pd.option_context("future.no_silent_downcasting", True):
-            df = df.replace(["N/A", "NA"], np.nan)
+            df = df.replace(["N/A", "n/a", "NA"], np.nan)
 
         df = self._coerce_numeric_columns(df)
 

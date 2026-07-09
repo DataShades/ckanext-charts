@@ -8,6 +8,7 @@ import pytest
 import requests
 
 from ckan.tests.factories import Resource
+from ckan.tests.helpers import call_action
 
 from ckanext.charts import fetchers
 from ckanext.charts.exception import DataFetchError
@@ -71,6 +72,26 @@ class TestDatastoreDataFetcher:
         assert len(result) == 1000
         # Ensure no columns are excluded when no projection settings are applied
         assert set(result.columns) == {"name", "age", "city", "score"}
+
+    @pytest.mark.ckan_config("ckanext.charts.enable_cache", False)
+    def test_fetch_data_converts_lowercase_na_to_missing(self, dataset: dict[str, Any]):
+        resource = Resource(package_id=dataset["id"], datastore_active=True)
+        call_action(
+            "datastore_create",
+            resource_id=resource["id"],
+            fields=[{"id": "value", "type": "text"}],
+            records=[
+                {"value": "10"},
+                {"value": "N/A"},
+                {"value": "n/a"},
+            ],
+            force=True,
+        )
+
+        result = fetchers.DatastoreDataFetcher(resource["id"]).fetch_data()
+
+        assert result["value"].isna().sum() == 2
+        assert result["value"].dropna().tolist() == [10]
 
 
 @pytest.mark.usefixtures("clean_redis")
