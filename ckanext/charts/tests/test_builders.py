@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import base64
 import json
 
+import numpy as np
+import pandas as pd
 import pytest
 
 from ckanext.charts import exception, utils
@@ -56,6 +59,88 @@ class TestPlotlyBuilder:
         assert result
         assert "data" in result
         assert "layout" in result
+
+    def test_build_line_with_same_x_and_y_column(self, data_frame):
+        result = utils.build_chart_for_data(
+            {
+                "type": "Line",
+                "engine": "plotly",
+                "x": "name",
+                "y": ["name"],
+            },
+            data_frame,
+        )
+
+        chart = json.loads(result)
+
+        assert chart["data"][0]["x"] == ["Alice", "Bob"]
+        assert chart["data"][0]["y"] == ["Alice", "Bob"]
+
+    def test_build_line_uses_x_for_empty_y(self, data_frame):
+        result = utils.build_chart_for_data(
+            {
+                "type": "Line",
+                "engine": "plotly",
+                "x": "name",
+            },
+            data_frame,
+        )
+
+        chart = json.loads(result)
+
+        assert chart["data"][0]["x"] == ["Alice", "Bob"]
+        assert chart["data"][0]["y"] == ["Alice", "Bob"]
+
+    def test_build_line_with_same_x_and_y_among_multiple_series(self, data_frame):
+        result = utils.build_chart_for_data(
+            {
+                "type": "Line",
+                "engine": "plotly",
+                "x": "name",
+                "y": ["name", "age"],
+            },
+            data_frame,
+        )
+
+        chart = json.loads(result)
+        age_values = chart["data"][1]["y"]
+        if isinstance(age_values, dict):
+            age_values = np.frombuffer(
+                base64.b64decode(age_values["bdata"]),
+                dtype=age_values["dtype"],
+            ).tolist()
+
+        assert len(chart["data"]) == 2
+        assert chart["data"][0]["name"] == "name"
+        assert chart["data"][0]["x"] == ["Alice", "Bob"]
+        assert chart["data"][0]["y"] == ["Alice", "Bob"]
+        assert chart["data"][1]["name"] == "age"
+        assert chart["data"][1]["x"] == ["Alice", "Bob"]
+        assert age_values == [25, 30]
+
+    @pytest.mark.parametrize("fixed_365_days", [False, True])
+    def test_build_split_line_with_same_x_and_y_column(self, fixed_365_days):
+        data_frame = pd.DataFrame(
+            {
+                "date": ["2024-01-01", "2025-01-01"],
+            },
+        )
+
+        result = utils.build_chart_for_data(
+            {
+                "type": "Line",
+                "engine": "plotly",
+                "x": "date",
+                "y": ["date"],
+                "split_data": True,
+                "fixed_365_days": fixed_365_days,
+                "daily_aggregation": "min",
+                "skip_null_values": True,
+            },
+            data_frame,
+        )
+
+        assert len(json.loads(result)["data"]) == 2
 
     def test_build_multi_y_line(self, data_frame):
         result = utils.build_chart_for_data(

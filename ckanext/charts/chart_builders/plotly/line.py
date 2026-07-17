@@ -16,18 +16,55 @@ pd.options.mode.chained_assignment = None
 
 # A non-leap reference year used to generate a stable 365-day MM-DD index.
 _REFERENCE_YEAR = 2001
+_SAME_AXIS_Y_COLUMN = "_chart_y_"
 
 
 class PlotlyLineBuilder(PlotlyBuilder):
     def to_json(self) -> Any:
         return self.build_line_chart()
 
+    def _chart_y_column(self, x_column: str, y_column: str | int) -> str | int:
+        """Return a distinct dataframe column name for a Y axis.
+
+        A Line chart may use the same source column for both axes. pandas
+        accepts duplicate labels, while Plotly rejects the resulting dataframe.
+        """
+        if x_column != y_column:
+            return y_column
+
+        if x_column == _SAME_AXIS_Y_COLUMN:
+            return f"_{_SAME_AXIS_Y_COLUMN}"
+
+        return _SAME_AXIS_Y_COLUMN
+
+    def _axis_dataframe(
+        self,
+        x_column: str,
+        y_column: str | int,
+        *,
+        copy: bool = False,
+    ) -> tuple[DataFrame, str | int]:
+        """Select chart axes, aliasing Y only when it equals X."""
+        chart_y_column = self._chart_y_column(x_column, y_column)
+
+        if chart_y_column == y_column:
+            df = cast(pd.DataFrame, self.df[[x_column, y_column]])
+            return (df.copy() if copy else df), chart_y_column
+
+        df = cast(pd.DataFrame, self.df[[x_column]].copy())
+        df[chart_y_column] = df[x_column]
+
+        return df, chart_y_column
+
     def _split_data_by_year(self) -> None:
         """Prepare data for a line chart. It splits the data by year stated
         in the date format column which is used for x-axis.
         """
         # Remove unnecessary columns and duplicates from x-axis column
-        self.df = self.df[[self.settings["x"], self.settings["y"][0]]]
+        self.df, y_col = self._axis_dataframe(
+            self.settings["x"],
+            self.settings["y"][0],
+        )
         self.df.drop_duplicates(subset=[self.settings["x"]], inplace=True)
 
         # Create a new column with years on the base of the original
@@ -38,7 +75,7 @@ class PlotlyLineBuilder(PlotlyBuilder):
         self.df = self.df.pivot(
             index=self.settings["x"],
             columns="_year_",
-            values=self.settings["y"][0],
+            values=y_col,
         )
 
         self.settings["y"] = self.df.columns.tolist()
@@ -60,14 +97,19 @@ class PlotlyLineBuilder(PlotlyBuilder):
         x_col = self.settings["x"]
         method = self.settings.get("daily_aggregation", "mean")
 
-        df = cast(pd.DataFrame, self.df[[x_col, column_name]].copy())
+        df, y_col = self._axis_dataframe(x_col, column_name, copy=True)
         df[x_col] = pd.to_datetime(df[x_col])
         df["_year_"] = df[x_col].dt.year
         df["_day_of_year_"] = df[x_col].dt.strftime("%m-%d")
 
         func = {"min": "min", "max": "max", "mean": "mean"}.get(method, "mean")
 
-        return df.groupby(["_year_", "_day_of_year_"])[column_name].agg(func).reset_index()
+        aggregated = df.groupby(["_year_", "_day_of_year_"])[y_col].agg(func).reset_index()
+
+        if y_col != column_name:
+            aggregated.rename(columns={y_col: column_name}, inplace=True)
+
+        return aggregated
 
     def _split_data_by_year_fixed(self) -> None:
         """Prepare data for a fixed 365-day X-axis line chart.
@@ -124,16 +166,16 @@ class PlotlyLineBuilder(PlotlyBuilder):
 
         # fixed_365_days path: data is already on the MM-DD grid
         if self.settings.get("fixed_365_days") and self.settings.get("split_data") and self._is_column_datetime(x_col):
-            df = cast(pd.DataFrame, self.df[[x_col, column_name]].copy())
+            df, y_col = self._axis_dataframe(x_col, column_name, copy=True)
             # NaN rows already represent missing days — leave them for
             # Plotly to render as breaks (connectgaps=False) or skip them.
             if not self.settings.get("skip_null_values"):
-                df[column_name].fillna(self.DEFAULT_NAN_FILL_VALUE, inplace=True)
+                df[y_col].fillna(self.DEFAULT_NAN_FILL_VALUE, inplace=True)
 
             return df
 
         # Remove unnecessary columns and duplicates from x-axis column
-        df = self.df[[x_col, column_name]]
+        df, _ = self._axis_dataframe(x_col, column_name)
         df.drop_duplicates(subset=[x_col], inplace=True)
 
         if self.settings.get("split_data") and self._is_column_datetime(x_col):
@@ -232,11 +274,12 @@ class PlotlyLineBuilder(PlotlyBuilder):
 
         for column in self.settings["y"]:
             dataset = self._prepare_data(column)
+            y_col = self._chart_y_column(self.settings["x"], column)
 
             fig.add_trace(
                 go.Scatter(
                     x=dataset[self.settings["x"]],
-                    y=dataset[column],
+                    y=dataset[y_col],
                     name=str(column),
                     connectgaps=not self.settings.get("break_chart"),
                 ),
