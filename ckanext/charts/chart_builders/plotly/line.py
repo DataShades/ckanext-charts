@@ -224,7 +224,7 @@ class PlotlyLineBuilder(PlotlyBuilder):
         df = pd.merge(date_range_df, df, on="_temp_date_", how="left")
 
         # Fill null dates of the original datetime column with missing dates
-        df[self.settings["x"]].fillna(df["_temp_date_"], inplace=True)
+        df[self.settings["x"]].fillna(df["_temp_date_"].astype(str), inplace=True)
 
         if self.settings.get("split_data"):
             df[self.settings["x"]] = pd.to_datetime(
