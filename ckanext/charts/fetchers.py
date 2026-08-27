@@ -21,7 +21,7 @@ import ckan.plugins.toolkit as tk
 
 from ckanext.datastore.backend.postgres import get_read_engine
 
-from ckanext.charts import cache, config, exception, types
+from ckanext.charts import cache, config, const, exception, types
 
 log = logging.getLogger(__name__)
 
@@ -125,6 +125,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
         "sort_x",
         "sort_y",
     ]
+    MAX_ROW_LIMIT = const.CHART_MAX_ROW_LIMIT
 
     def __init__(
         self,
@@ -139,7 +140,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
         Args:
             resource_id (str): The ID of the resource to fetch data for.
             settings (dict[str, Any], optional): The settings for the chart.
-            limit (int, optional): The maximum number of rows to fetch.
+            limit (int, optional): The default number of rows to fetch.
             cache_strategy (str, optional): The cache strategy to use. If not provided,
                 the configured cache strategy will be used.
         """
@@ -161,6 +162,8 @@ class DatastoreDataFetcher(DataFetcherStrategy):
         Returns:
             pd.DataFrame: Data from the DataStore
         """
+        limit = self._get_effective_limit()
+
         if config.is_cache_enabled():
             cached = self.get_cached_data()
 
@@ -171,9 +174,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
                     cached.settings,
                 )
             ):
-                return cached.df
-
-        limit = self.settings.get("limit", self.limit) if self.settings else self.limit
+                return cached.df.head(limit)
 
         needed_columns = self.get_needed_columns()
         columns_expr = self._prepare_column_expressions(needed_columns)
@@ -322,11 +323,19 @@ class DatastoreDataFetcher(DataFetcherStrategy):
             if val_current != val_cached:
                 return True
 
-        # Check if the limit has increased
-        current_limit = tk.asint(self.settings.get("limit", 1000))
-        cached_limit = tk.asint(cached_settings.get("limit", 1000))
+        # Check if the effective limit has increased.
+        current_limit = self._get_effective_limit()
+        cached_limit = self._get_effective_limit(cached_settings)
 
         return current_limit > cached_limit
+
+    def _get_effective_limit(self, settings: dict[str, Any] | None = None) -> int:
+        """Return the requested limit capped to the maximum fetch size."""
+        if settings is None:
+            settings = self.settings
+
+        requested_limit = settings.get("limit", self.limit) if settings else self.limit
+        return min(tk.asint(requested_limit), self.MAX_ROW_LIMIT)
 
     def _format_column(self, col_name: str) -> sa.sql.expression.ColumnElement:
         """Format the 'date_time' column for SQL queries; return other columns as-is.

@@ -14,6 +14,12 @@ from ckanext.charts import cache, config, const, fetchers, types
 from ckanext.charts.tests import helpers
 
 
+class CappedDatastoreDataFetcher(fetchers.DatastoreDataFetcher):
+    """A fetcher with a small cap for focused cache-limit tests."""
+
+    MAX_ROW_LIMIT = 2
+
+
 @pytest.mark.ckan_config("ckan.plugins", "charts_view datastore")
 @pytest.mark.usefixtures("clean_db", "with_plugins")
 class TestDataStoreFetcherCache:
@@ -238,6 +244,27 @@ class TestDataStoreFetcherCache:
         # Should return 1000 rows by default
         assert cached.df.shape[0] == 1000
         assert cached.settings == settings
+
+    def test_cached_data_uses_effective_limit(self, resource: dict[str, Any]):
+        cached_settings = {"x": "age", "limit": "99999999999"}
+        fetcher = CappedDatastoreDataFetcher(
+            resource["id"],
+            settings={"x": "age", "limit": "100000000000"},
+        )
+        fetcher.cache.set_data(
+            fetcher.make_cache_key(),
+            types.ChartData(
+                df=pd.DataFrame({"age": [20, 21, 22]}),
+                settings=cached_settings,
+            ),
+        )
+
+        result = fetcher.fetch_data()
+        cached = fetcher.get_cached_data()
+
+        assert len(result) == 2
+        assert cached is not None
+        assert cached.settings == cached_settings
 
 
 @pytest.mark.usefixtures("clean_redis", "clean_file_cache")
