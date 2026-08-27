@@ -736,8 +736,14 @@ class BaseChartForm(ABC):
             "default": 1,
         }
 
-    def limit_field(self, default: int = 1000, maximum: int = 10000) -> dict[str, Any]:
+    def limit_field(
+        self,
+        default: int = const.CHART_DEFAULT_ROW_LIMIT,
+        maximum: int = const.CHART_MAX_ROW_LIMIT,
+    ) -> dict[str, Any]:
         """The limit field represent an amount of rows to show in the chart."""
+        maximum = min(maximum, const.CHART_MAX_ROW_LIMIT)
+
         return {
             "field_name": "limit",
             "label": "Limit",

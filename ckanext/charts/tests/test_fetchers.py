@@ -15,6 +15,12 @@ from ckanext.charts.exception import DataFetchError
 from ckanext.charts.tests import helpers
 
 
+class CappedDatastoreDataFetcher(fetchers.DatastoreDataFetcher):
+    """A fetcher with a small cap for focused limit tests."""
+
+    MAX_ROW_LIMIT = 2
+
+
 @pytest.mark.ckan_config("ckan.plugins", "datastore")
 @pytest.mark.usefixtures("clean_db", "with_plugins")
 class TestDatastoreDataFetcher:
@@ -72,6 +78,29 @@ class TestDatastoreDataFetcher:
         assert len(result) == 1000
         # Ensure no columns are excluded when no projection settings are applied
         assert set(result.columns) == {"name", "age", "city", "score"}
+
+    def test_effective_limit_uses_production_cap(self):
+        fetcher = fetchers.DatastoreDataFetcher(
+            "resource-id",
+            settings={"limit": "100000000000"},
+        )
+
+        assert fetcher._get_effective_limit() == 10_000
+
+    @pytest.mark.ckan_config("ckanext.charts.enable_cache", False)
+    def test_fetch_data_caps_unvalidated_limit(
+        self,
+        resource_with_datastore_factory: Callable[..., dict[str, Any]],
+    ):
+        """The SQL fetch remains bounded even without form validation."""
+        resource = resource_with_datastore_factory(row_count=3)
+
+        result = CappedDatastoreDataFetcher(
+            resource["id"],
+            settings={"limit": "100000000000"},
+        ).fetch_data()
+
+        assert len(result) == 2
 
     @pytest.mark.ckan_config("ckanext.charts.enable_cache", False)
     def test_fetch_data_converts_lowercase_na_to_missing(self, dataset: dict[str, Any]):
