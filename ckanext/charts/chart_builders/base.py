@@ -9,7 +9,7 @@ import pandas as pd
 import ckan.plugins.toolkit as tk
 from ckan import types
 
-from ckanext.charts import const, fetchers, utils
+from ckanext.charts import config, const, fetchers, utils
 from ckanext.charts.const import (
     FORM_GROUP_DATA,
     FORM_GROUP_FILTER,
@@ -739,10 +739,11 @@ class BaseChartForm(ABC):
     def limit_field(
         self,
         default: int = const.CHART_DEFAULT_ROW_LIMIT,
-        maximum: int = const.CHART_MAX_ROW_LIMIT,
+        maximum: int | None = None,
     ) -> dict[str, Any]:
         """The limit field represent an amount of rows to show in the chart."""
-        maximum = min(maximum, const.CHART_MAX_ROW_LIMIT)
+        configured_maximum = config.get_max_row_limit()
+        maximum = configured_maximum if maximum is None else min(maximum, configured_maximum)
 
         return {
             "field_name": "limit",

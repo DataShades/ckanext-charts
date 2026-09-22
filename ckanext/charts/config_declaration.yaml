@@ -59,3 +59,10 @@ groups:
         default: 100
         type: int
         validators: ignore_missing int_validator is_positive_integer
+
+      - key: ckanext.charts.max_row_limit
+        description: Maximum number of DataStore rows used to build a chart
+        editable: true
+        default: 10000
+        type: int
+        validators: ignore_missing int_validator is_positive_integer
