@@ -79,13 +79,23 @@ class TestDatastoreDataFetcher:
         # Ensure no columns are excluded when no projection settings are applied
         assert set(result.columns) == {"name", "age", "city", "score"}
 
-    def test_effective_limit_uses_production_cap(self):
+    @pytest.mark.ckan_config("ckanext.charts.max_row_limit", 10_000)
+    def test_effective_limit_uses_default_cap(self):
         fetcher = fetchers.DatastoreDataFetcher(
             "resource-id",
             settings={"limit": "100000000000"},
         )
 
         assert fetcher._get_effective_limit() == 10_000
+
+    @pytest.mark.ckan_config("ckanext.charts.max_row_limit", 25_000)
+    def test_effective_limit_uses_configured_cap(self):
+        fetcher = fetchers.DatastoreDataFetcher(
+            "resource-id",
+            settings={"limit": "50000"},
+        )
+
+        assert fetcher._get_effective_limit() == 25_000
 
     @pytest.mark.ckan_config("ckanext.charts.enable_cache", False)
     def test_fetch_data_caps_unvalidated_limit(

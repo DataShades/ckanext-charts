@@ -58,3 +58,8 @@ fields:
         label: True
       - value: false
         label: False
+
+  - field_name: ckanext.charts.max_row_limit
+    label: Maximum Chart Row Limit
+    help_text: Maximum number of DataStore rows used to build a chart.
+    input_type: number

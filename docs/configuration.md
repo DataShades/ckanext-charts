@@ -93,6 +93,18 @@ By default, only authenticated users can build charts. If you want to allow anon
 
 -----
 
+### Maximum chart row limit
+
+**`ckanext.charts.max_row_limit`** [__optional__]
+
+Maximum number of DataStore rows fetched to build a chart.
+
+**Type**: `int`
+
+**Default**: `10000`
+
+-----
+
 ## Admin config page
 
 The extension provides an admin configuration page where you can set all the listed configuration options. The admin page available only

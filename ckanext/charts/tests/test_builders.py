@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ckanext.charts import const, exception, utils
+from ckanext.charts import exception, utils
 from ckanext.charts.chart_builders.chartjs import ChartJSBarForm
 
 
@@ -242,13 +242,16 @@ class TestChartJsBuilder:
 
     def test_limit_field_uses_global_maximum(self, data_frame):
         form = ChartJSBarForm(dataframe=data_frame)
-        limit_field = next(
-            field
-            for field in form.get_form_fields()
-            if field["field_name"] == "limit"
-        )
+        limit_field = next(field for field in form.get_form_fields() if field["field_name"] == "limit")
 
-        assert limit_field["validators"][-1](1_000_000) == const.CHART_MAX_ROW_LIMIT
+        assert limit_field["validators"][-1](1_000_000) == 10_000
+
+    @pytest.mark.ckan_config("ckanext.charts.max_row_limit", 25_000)
+    def test_limit_field_uses_configured_maximum(self, data_frame):
+        form = ChartJSBarForm(dataframe=data_frame)
+        limit_field = next(field for field in form.get_form_fields() if field["field_name"] == "limit")
+
+        assert limit_field["validators"][-1](1_000_000) == 25_000
 
     def test_build_bar(self, data_frame):
         result = utils.build_chart_for_data(

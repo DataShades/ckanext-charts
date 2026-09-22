@@ -21,7 +21,7 @@ import ckan.plugins.toolkit as tk
 
 from ckanext.datastore.backend.postgres import get_read_engine
 
-from ckanext.charts import cache, config, const, exception, types
+from ckanext.charts import cache, config, exception, types
 
 log = logging.getLogger(__name__)
 
@@ -125,7 +125,7 @@ class DatastoreDataFetcher(DataFetcherStrategy):
         "sort_x",
         "sort_y",
     ]
-    MAX_ROW_LIMIT = const.CHART_MAX_ROW_LIMIT
+    MAX_ROW_LIMIT: int | None = None
 
     def __init__(
         self,
@@ -335,7 +335,8 @@ class DatastoreDataFetcher(DataFetcherStrategy):
             settings = self.settings
 
         requested_limit = settings.get("limit", self.limit) if settings else self.limit
-        return min(tk.asint(requested_limit), self.MAX_ROW_LIMIT)
+        maximum = config.get_max_row_limit() if self.MAX_ROW_LIMIT is None else self.MAX_ROW_LIMIT
+        return min(tk.asint(requested_limit), maximum)
 
     def _format_column(self, col_name: str) -> sa.sql.expression.ColumnElement:
         """Format the 'date_time' column for SQL queries; return other columns as-is.

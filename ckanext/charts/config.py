@@ -9,6 +9,7 @@ CONF_ENABLE_HTMX = "ckanext.charts.include_htmx_asset"
 CONF_REINIT_JS = "ckanext.charts.reinit_ckan_js_modules"
 CONF_ALLOW_ANON_CHART = "ckanext.charts.allow_anon_building_charts"
 CONF_MAX_FETCH_SIZE = "ckanext.charts.max_fetch_size"
+CONF_MAX_ROW_LIMIT = "ckanext.charts.max_row_limit"
 
 
 def get_cache_strategy() -> str:
@@ -58,3 +59,8 @@ def get_max_fetch_size() -> int:
     converted to bytes here.
     """
     return tk.asint(tk.config[CONF_MAX_FETCH_SIZE]) * 1024 * 1024
+
+
+def get_max_row_limit() -> int:
+    """Get the maximum number of DataStore rows used to build a chart."""
+    return tk.asint(tk.config[CONF_MAX_ROW_LIMIT])
