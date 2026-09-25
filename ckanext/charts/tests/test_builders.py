@@ -8,6 +8,7 @@ import pandas as pd
 import pytest
 
 from ckanext.charts import exception, utils
+from ckanext.charts.chart_builders.base import FilterDecoder
 from ckanext.charts.chart_builders.chartjs import ChartJSBarForm
 
 
@@ -525,3 +526,13 @@ class TestObservableBuilder:
                 {"type": "Unknown", "engine": "observable"},
                 data_frame,
             )
+
+
+def test_filter_decoder_preserves_colons_in_timestamp_values():
+    result = FilterDecoder(
+        "date_time:2020-07-16T12:00:00|date_time:2020-07-17T13:30:00",
+    ).decode_filter_params()
+
+    assert result == {
+        "date_time": ["2020-07-16T12:00:00", "2020-07-17T13:30:00"],
+    }

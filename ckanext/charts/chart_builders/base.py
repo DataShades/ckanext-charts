@@ -40,7 +40,7 @@ class FilterDecoder:
         parsed_data: dict[str, list[str]] = {}
 
         for pair in key_value_pairs:
-            key, value = pair.split(self.key_value_divider)
+            key, value = pair.split(self.key_value_divider, 1)
 
             if key in parsed_data:
                 parsed_data[key].append(value)

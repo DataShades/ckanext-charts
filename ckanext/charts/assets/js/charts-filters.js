@@ -254,7 +254,9 @@ ckan.module("charts-filters", function ($, _) {
             const parsedData = {};
 
             keyValuePairs.forEach(pair => {
-                const [key, value] = pair.split(this.const.KEY_VALUE_DIVIDER);
+                const dividerIndex = pair.indexOf(this.const.KEY_VALUE_DIVIDER);
+                const key = pair.slice(0, dividerIndex);
+                const value = pair.slice(dividerIndex + this.const.KEY_VALUE_DIVIDER.length);
 
                 if (parsedData[key]) {
                     parsedData[key].push(value);
