@@ -255,6 +255,10 @@ ckan.module("charts-filters", function ($, _) {
 
             keyValuePairs.forEach(pair => {
                 const dividerIndex = pair.indexOf(this.const.KEY_VALUE_DIVIDER);
+                if (dividerIndex === -1) {
+                    return;
+                }
+
                 const key = pair.slice(0, dividerIndex);
                 const value = pair.slice(dividerIndex + this.const.KEY_VALUE_DIVIDER.length);
 

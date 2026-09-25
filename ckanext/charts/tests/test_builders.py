@@ -536,3 +536,9 @@ def test_filter_decoder_preserves_colons_in_timestamp_values():
     assert result == {
         "date_time": ["2020-07-16T12:00:00", "2020-07-17T13:30:00"],
     }
+
+
+def test_filter_decoder_ignores_malformed_pairs():
+    result = FilterDecoder("invalid|date_time:2020-07-16T12:00:00").decode_filter_params()
+
+    assert result == {"date_time": ["2020-07-16T12:00:00"]}

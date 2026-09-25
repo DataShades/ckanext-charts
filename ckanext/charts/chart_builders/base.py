@@ -40,6 +40,9 @@ class FilterDecoder:
         parsed_data: dict[str, list[str]] = {}
 
         for pair in key_value_pairs:
+            if self.key_value_divider not in pair:
+                continue
+
             key, value = pair.split(self.key_value_divider, 1)
 
             if key in parsed_data:

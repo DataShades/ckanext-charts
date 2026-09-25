@@ -176,10 +176,10 @@ class DatastoreDataFetcher(DataFetcherStrategy):
             ):
                 return cached.df.head(limit)
 
-        needed_columns = self.get_needed_columns()
-        columns_expr = self._prepare_column_expressions(needed_columns)
-
         try:
+            needed_columns = self.get_needed_columns()
+            columns_expr = self._prepare_column_expressions(needed_columns)
+
             if columns_expr:
                 query = sa.select(*columns_expr).select_from(sa.table(self.resource_id))
 
