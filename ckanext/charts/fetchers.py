@@ -176,10 +176,10 @@ class DatastoreDataFetcher(DataFetcherStrategy):
             ):
                 return cached.df.head(limit)
 
-        needed_columns = self.get_needed_columns()
-        columns_expr = self._prepare_column_expressions(needed_columns)
-
         try:
+            needed_columns = self.get_needed_columns()
+            columns_expr = self._prepare_column_expressions(needed_columns)
+
             if columns_expr:
                 query = sa.select(*columns_expr).select_from(sa.table(self.resource_id))
 
@@ -341,15 +341,29 @@ class DatastoreDataFetcher(DataFetcherStrategy):
     def _format_column(self, col_name: str) -> sa.sql.expression.ColumnElement:
         """Format the 'date_time' column for SQL queries; return other columns as-is.
 
-        - 'date_time' is cast to TIMESTAMP and formatted as ISO 8601 string.
+        - A native date/time 'date_time' column is formatted as an ISO 8601 string.
+        - A text 'date_time' column is returned unchanged.
         - All other column names are returned as SQLAlchemy column expressions.
         """
-        if col_name == "date_time":
+        column = sa.column(col_name)
+
+        if col_name == "date_time" and self._is_native_datetime_column(col_name):
             return sa.func.to_char(
-                sa.cast(sa.column("date_time"), sa.TIMESTAMP),
+                column,
                 'YYYY-MM-DD"T"HH24:MI:SS',
             ).label("date_time")
-        return sa.column(col_name)
+        return column
+
+    def _is_native_datetime_column(self, col_name: str) -> bool:
+        """Check whether a DataStore column has a native date/time type."""
+        try:
+            columns = sa.inspect(get_read_engine()).get_columns(self.resource_id)
+        except NoSuchTableError:
+            return False
+
+        return any(
+            column["name"] == col_name and isinstance(column["type"], (sa.Date, sa.DateTime)) for column in columns
+        )
 
     def _prepare_column_expressions(
         self,

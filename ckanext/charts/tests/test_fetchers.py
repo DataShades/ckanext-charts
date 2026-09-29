@@ -132,6 +132,36 @@ class TestDatastoreDataFetcher:
         assert result["value"].isna().sum() == 2
         assert result["value"].dropna().tolist() == [10]
 
+    @pytest.mark.ckan_config("ckanext.charts.enable_cache", False)
+    def test_fetch_data_preserves_text_date_time(self, dataset: dict[str, Any]):
+        resource = Resource(package_id=dataset["id"], datastore_active=True)
+        call_action(
+            "datastore_create",
+            resource_id=resource["id"],
+            fields=[{"id": "date_time", "type": "text"}],
+            records=[{"date_time": "16/7/2020 12:00"}],
+            force=True,
+        )
+
+        result = fetchers.DatastoreDataFetcher(resource["id"]).fetch_data()
+
+        assert result["date_time"].tolist() == ["16/7/2020 12:00"]
+
+    @pytest.mark.ckan_config("ckanext.charts.enable_cache", False)
+    def test_fetch_data_formats_native_date_time_as_iso(self, dataset: dict[str, Any]):
+        resource = Resource(package_id=dataset["id"], datastore_active=True)
+        call_action(
+            "datastore_create",
+            resource_id=resource["id"],
+            fields=[{"id": "date_time", "type": "timestamp"}],
+            records=[{"date_time": "2020-07-16 12:00:00"}],
+            force=True,
+        )
+
+        result = fetchers.DatastoreDataFetcher(resource["id"]).fetch_data()
+
+        assert result["date_time"].tolist() == ["2020-07-16T12:00:00"]
+
 
 @pytest.mark.usefixtures("clean_redis")
 class TestURLDataFetcher:
