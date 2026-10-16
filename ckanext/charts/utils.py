@@ -10,7 +10,7 @@ from ckan import model
 
 
 from ckanext.charts.chart_builders import get_chart_engines
-from ckanext.charts.exception import ChartBuildError
+from ckanext.charts.exception import ChartBuildError, DataFetchError
 from ckanext.charts.fetchers import DatastoreDataFetcher
 
 
@@ -155,6 +155,13 @@ def build_chart_for_resource(
         ).fetch_data()
     except tk.ValidationError:
         return None
+    except DataFetchError as e:
+        raise ChartBuildError(
+            tk._(
+                "Cannot load chart data. The resource may have changed. "
+                "Edit the chart and select the current columns.",
+            ),
+        ) from e
 
     return _build_chart(settings, df)
 
