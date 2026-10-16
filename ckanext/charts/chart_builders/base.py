@@ -212,11 +212,9 @@ class BaseChartForm(ABC):
                 raise ChartBuildError("Resource ID is required")
 
             try:
-                self.df = fetchers.DatastoreDataFetcher(
-                    resource_id,
-                    resource_view_id,
-                    settings=settings,
-                ).fetch_data()
+                # Load the current schema independently of saved columns,
+                # filters and chart cache, so renamed columns cannot block editing.
+                self.df = fetchers.DatastoreDataFetcher(resource_id).fetch_data()
             except tk.ValidationError:
                 return
 
