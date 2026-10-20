@@ -9,7 +9,7 @@ import pandas as pd
 import ckan.plugins.toolkit as tk
 from ckan import types
 
-from ckanext.charts import config, const, fetchers, utils
+from ckanext.charts import config, const, utils
 from ckanext.charts.const import (
     FORM_GROUP_DATA,
     FORM_GROUP_FILTER,
@@ -205,20 +205,14 @@ class BaseChartForm(ABC):
     ) -> None:
         self.resource_id = resource_id
 
+        # With a resource, column choices come from the DataStore schema
+        # (see get_all_column_names), so we don't fetch rows here. Fetching
+        # with saved settings would fail if a referenced column was renamed
+        # or removed, making the chart impossible to edit.
         if dataframe is not None:
             self.df = dataframe
-        else:
-            if not resource_id:
-                raise ChartBuildError("Resource ID is required")
-
-            try:
-                self.df = fetchers.DatastoreDataFetcher(
-                    resource_id,
-                    resource_view_id,
-                    settings=settings,
-                ).fetch_data()
-            except tk.ValidationError:
-                return
+        elif not resource_id:
+            raise ChartBuildError("Resource ID is required")
 
     def get_validator(self, name: str) -> types.ValueValidator:
         """Get the validator by name. Replaces the tk.get_validator to get rid

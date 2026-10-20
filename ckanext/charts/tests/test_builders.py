@@ -542,3 +542,25 @@ def test_filter_decoder_ignores_malformed_pairs():
     result = FilterDecoder("invalid|date_time:2020-07-16T12:00:00").decode_filter_params()
 
     assert result == {"date_time": ["2020-07-16T12:00:00"]}
+
+
+@pytest.mark.ckan_config("ckan.plugins", "datastore charts_view")
+@pytest.mark.usefixtures("clean_db", "with_plugins")
+class TestChartFormWithStaleSettings:
+    """Saved settings may reference columns that no longer exist."""
+
+    def test_form_builds_with_missing_columns(self, resource_with_datastore_factory):
+        resource = resource_with_datastore_factory(row_count=2)
+
+        form = ChartJSBarForm(
+            resource_id=resource["id"],
+            settings={
+                "engine": "chartjs",
+                "type": "Bar",
+                "x": "renamed_column",
+                "y": ["age"],
+                "filter": "renamed_column:value",
+            },
+        )
+
+        assert set(form.get_all_column_names()) == {"name", "age", "city", "score"}
